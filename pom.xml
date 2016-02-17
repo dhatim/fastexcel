@@ -89,6 +89,24 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>com.github.github</groupId>
+                <artifactId>site-maven-plugin</artifactId>
+                <version>0.12</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>site</goal>
+                        </goals>
+                        <phase>deploy</phase>
+                        <configuration>
+                            <server>github</server>
+                            <message>Publish javadoc</message>
+                            <outputDirectory>target/apidocs</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>            
         </plugins>
     </build>
 
