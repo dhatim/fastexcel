@@ -4,7 +4,7 @@
 
     <groupId>com.dhatim</groupId>
     <artifactId>fastexcel</artifactId>
-    <version>0.2</version>
+    <version>0.3-SNAPSHOT</version>
 
     <name>Fast library to process Excel workbooks</name>
     <url>https://github.com/dhatim/fastexcel</url>
@@ -29,7 +29,7 @@
 
     <scm>
         <connection>scm:git:git@github.com:dhatim/fastexcel.git</connection>
-        <tag>v0.2</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <dependencies>
