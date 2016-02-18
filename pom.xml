@@ -4,7 +4,7 @@
 
     <groupId>com.dhatim</groupId>
     <artifactId>fastexcel</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.3-SNAPSHOT</version>
 
     <name>Fast library to process Excel workbooks</name>
     <url>https://github.com/dhatim/fastexcel</url>
