@@ -6,8 +6,9 @@
     <artifactId>fastexcel</artifactId>
     <version>0.6-SNAPSHOT</version>
     <packaging>jar</packaging>
-    
-    <name>Fast library to process Excel workbooks</name>
+
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>Fast library to process Excel workbooks</description>
     <url>https://github.com/dhatim/fastexcel</url>
 
     <licenses>
