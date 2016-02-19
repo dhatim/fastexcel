@@ -13,8 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.dhatim.fastexcel;
+package org.dhatim.fastexcel;
 
+import org.dhatim.fastexcel.Worksheet;
+import org.dhatim.fastexcel.Range;
+import org.dhatim.fastexcel.Workbook;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

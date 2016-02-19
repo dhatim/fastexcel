@@ -13,23 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.dhatim.fastexcel;
-
-import java.io.IOException;
+package org.dhatim.fastexcel;
 
 /**
- * Consumer throwing {@link IOException}.
- *
- * @param <T> Type being consumed.
+ * Excel formula.
  */
-@FunctionalInterface
-interface ThrowingConsumer<T> {
+class Formula {
 
     /**
-     * Consume object.
-     *
-     * @param t Object being consumed.
-     * @throws IOException If an I/O error occurs.
+     * Formula expression.
      */
-    void accept(T t) throws IOException;
+    private final String expression;
+
+    /**
+     * Constructor.
+     *
+     * @param expression Formula expression.
+     */
+    Formula(String expression) {
+        this.expression = expression;
+    }
+
+    /**
+     * Get formula expression.
+     *
+     * @return Expression.
+     */
+    public String getExpression() {
+        return expression;
+    }
+
 }
