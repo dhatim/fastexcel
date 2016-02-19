@@ -52,10 +52,9 @@ class Cell {
             w.append(">");
             if (value instanceof Formula) {
                 w.append("<f>").append(((Formula) value).getExpression()).append("</f>");
-            } else {
+            } else if (value != null) {
                 w.append("<v>");
-                if (value instanceof String) {
-                } else if (value instanceof CachedString) {
+                if (value instanceof CachedString) {
                     w.append(((CachedString) value).getIndex());
                 } else if (value instanceof Integer) {
                     w.append((int) value);
