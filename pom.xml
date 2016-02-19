@@ -4,7 +4,7 @@
 
     <groupId>org.dhatim</groupId>
     <artifactId>fastexcel</artifactId>
-    <version>0.7.3-SNAPSHOT</version>
+    <version>0.7.4-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>${project.groupId}:${project.artifactId}</name>
