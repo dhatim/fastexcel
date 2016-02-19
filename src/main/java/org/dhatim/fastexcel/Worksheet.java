@@ -241,13 +241,15 @@ public class Worksheet {
     }
 
     /**
-     * Finish the construction of this worksheet.
+     * Finish the construction of this worksheet. This creates the worksheet
+     * file on the workbook's output stream. Rows and cells in this worksheet
+     * are then destroyed.
      *
      * @throws IOException If an I/O error occurs.
      */
     public void finish() throws IOException {
         if (finished) {
-            throw new IllegalStateException("Worksheet already finished.");
+            return;
         }
         int index = workbook.getIndex(this);
         workbook.writeFile("xl/worksheets/sheet" + Integer.toString(index) + ".xml", w -> {
