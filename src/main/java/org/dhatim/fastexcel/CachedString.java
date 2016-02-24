@@ -15,52 +15,44 @@
  */
 package org.dhatim.fastexcel;
 
-/**
- * Index of a cached string.
- */
-public class CachedString {
+import java.util.Objects;
 
+/**
+ * A cached string is uniquely identified by its index.
+ */
+class CachedString {
+
+    private final String string;
     private final int index;
 
     /**
      * Constructor.
      *
-     * @param index Index of cached string: return of value
-     * {@link StringCache#cacheString(java.lang.String)}.
+     * @param string String value.
+     * @param index Index in cache.
      */
-    public CachedString(int index) {
+    CachedString(String string, int index) {
+        Objects.requireNonNull(string);
+        this.string = string;
         this.index = index;
     }
 
     /**
-     * Get index of cached string.
+     * Get string value.
      *
-     * @return Index.
+     * @return String value.
+     */
+    public String getString() {
+        return string;
+    }
+
+    /**
+     * Get cache index.
+     *
+     * @return Cache index.
      */
     public int getIndex() {
         return index;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 3;
-        hash = 67 * hash + this.index;
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final CachedString other = (CachedString) obj;
-        if (this.index != other.index) {
-            return false;
-        }
-        return true;
     }
 
 }

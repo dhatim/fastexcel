@@ -47,7 +47,7 @@ class Cell {
                 w.append(" s=\"").append(style).append('\"');
             }
             if (value != null && !(value instanceof Formula)) {
-                w.append(" t=\"").append((value instanceof String || value instanceof CachedString) ? 's' : 'n').append('\"');
+                w.append(" t=\"").append((value instanceof CachedString) ? 's' : 'n').append('\"');
             }
             w.append(">");
             if (value instanceof Formula) {

@@ -140,7 +140,7 @@ public class Worksheet {
      */
     public void value(int r, int c, Object value) {
         if (value instanceof String) {
-            cell(r, c).value = new CachedString(workbook.cacheString((String) value));
+            cell(r, c).value = workbook.cacheString((String) value);
         } else if (value == null || value instanceof Number) {
             cell(r, c).value = value;
         } else if (value instanceof Date) {
@@ -164,7 +164,7 @@ public class Worksheet {
         Cell cell = row == null || c >= row.length ? null : row[c];
         Object o = cell == null ? null : cell.value;
         if (o instanceof CachedString) {
-            o = workbook.getString(((CachedString) o).getIndex());
+            o = ((CachedString) o).getString();
         }
         return o;
     }

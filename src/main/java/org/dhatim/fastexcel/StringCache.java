@@ -17,11 +17,13 @@ package org.dhatim.fastexcel;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.Iterator;
+import java.util.Map.Entry;
+import java.util.stream.Stream;
 
 /**
  * Thread-safe cache for shared strings. Each string is uniquely identified by
- * an integer.
+ * an integer. See {@link CachedString}.
  */
 class StringCache {
 
@@ -30,43 +32,27 @@ class StringCache {
      */
     private long count = 0;
     /**
-     * Map giving string indexes for each unique string.
+     * Map giving string index for each unique string.
      */
-    private final Map<String, Integer> stringToInt = new HashMap<>();
-    /**
-     * Map giving strings for each unique string index.
-     */
-    private final Map<Integer, String> intToString = new HashMap<>();
+    private final HashMap<String, CachedString> strings = new HashMap<>();
 
     /**
      * Add a string to this cache.
      *
      * @param s String to cache.
-     * @return Index of cached string.
+     * @return Cached string.
      */
-    int cacheString(String s) {
-        synchronized (this) {
+    CachedString cacheString(String s) {
+        CachedString result;
+        synchronized (strings) {
             ++count;
-            Integer index = stringToInt.get(s);
-            if (index == null) {
-                index = stringToInt.size();
-                stringToInt.put(s, index);
-                intToString.put(index, s);
+            result = strings.get(s);
+            if (result == null) {
+                result = new CachedString(s, strings.size());
+                strings.put(s, result);
             }
-            return index;
         }
-    }
-
-    /**
-     * Convert string index into string.
-     *
-     * @param index Index value.
-     * @return Cached string or {@code null} if not found.
-     */
-    String getString(int index) {
-        synchronized (this) {
-            return intToString.get(index);
-        }
+        return result;
     }
 
     /**
@@ -76,9 +62,11 @@ class StringCache {
      * @throws IOException If an I/O error occurs.
      */
     void write(Writer w) throws IOException {
-        w.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"").append(count).append("\" uniqueCount=\"").append(stringToInt.size()).append("\">");
-        for (int i = 0; i < stringToInt.size(); ++i) {
-            w.append("<si><t>").appendEscaped(intToString.get(i)).append("</t></si>");
+        w.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"").append(count).append("\" uniqueCount=\"").append(strings.size()).append("\">");
+        Stream<String> sortedStrings = strings.entrySet().stream().sorted((e1, e2) -> Integer.compare(e1.getValue().getIndex(), e2.getValue().getIndex())).map(Entry::getKey);
+        Iterator<String> it = sortedStrings.iterator();
+        while (it.hasNext()) {
+            w.append("<si><t>").appendEscaped(it.next()).append("</t></si>");
         }
         w.append("</sst>");
     }

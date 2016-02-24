@@ -126,20 +126,10 @@ public class Workbook {
      * Cache the given string.
      *
      * @param s String to cache.
-     * @return Cached string index.
+     * @return Cached string.
      */
-    int cacheString(String s) {
+    CachedString cacheString(String s) {
         return stringCache.cacheString(s);
-    }
-
-    /**
-     * Get a cached string.
-     *
-     * @param index Cached string index.
-     * @return Cached string or {@code null} if not found.
-     */
-    String getString(int index) {
-        return stringCache.getString(index);
     }
 
     /**
