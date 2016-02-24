@@ -110,9 +110,8 @@ public class Correctness {
         byte[] data = writeWorkbook(wb -> {
             CompletableFuture<Void>[] cfs = new CompletableFuture[numWs];
             for (int i = 0; i < cfs.length; ++i) {
-                final int si = i;
+                Worksheet ws = wb.newWorksheet("Sheet " + i);
                 CompletableFuture<Void> cf = CompletableFuture.runAsync(() -> {
-                    Worksheet ws = wb.newWorksheet("Sheet " + si);
                     for (int j = 0; j < numCols; ++j) {
                         ws.value(0, j, "Column " + j);
                         ws.style(0, j).bold().fillColor(Color.GRAY2).set();
