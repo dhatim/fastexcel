@@ -31,7 +31,7 @@ So, fastexcel has been created to offer an alternative with the following key po
 
 ## Examples
 
-The javadoc for the last release is available [here](http://dhatim.github.io/fastexcel/).
+The javadoc for the last release is available [here](http://www.javadoc.io/doc/org.dhatim/fastexcel).
 
 ### Simple workbook
 
