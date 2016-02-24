@@ -23,7 +23,7 @@ So, fastexcel has been created to offer an alternative with the following key po
 <dependency>
     <groupId>org.dhatim</groupId>
     <artifactId>fastexcel</artifactId>
-    <version>x.y.z</version>
+    <version>0.8.0</version>
 </dependency>
 ```
 
