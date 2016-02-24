@@ -15,8 +15,6 @@
  */
 package org.dhatim.fastexcel;
 
-import org.dhatim.fastexcel.Worksheet;
-import org.dhatim.fastexcel.Workbook;
 import java.util.Date;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.poi.ss.usermodel.Cell;
@@ -25,6 +23,8 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.dhatim.fastexcel.Workbook;
+import org.dhatim.fastexcel.Worksheet;
 import org.openjdk.jmh.annotations.Benchmark;
 
 /**

@@ -191,10 +191,21 @@ public class Range {
         return r >= top && r <= bottom && c >= left && c <= right;
     }
 
-    void shadeAlternateRows(Fill fill) {
+    /**
+     * Apply shading to alternate rows in this range with the given fill
+     * pattern.
+     *
+     * @param fill Fill pattern.
+     */
+    public void shadeAlternateRows(Fill fill) {
         worksheet.shadeAlternateRows(this, fill);
     }
 
+    /**
+     * Return the set of styles used by the cells in this range.
+     *
+     * @return Set of styles.
+     */
     Set<Integer> getStyles() {
         Set<Integer> result = new HashSet<>();
         for (int r = top; r <= bottom; ++r) {
@@ -205,6 +216,11 @@ public class Range {
         return result;
     }
 
+    /**
+     * Apply new (merged) styles to the cells in this range.
+     *
+     * @param styles Map giving new style for each old style.
+     */
     void applyStyle(Map<Integer, Integer> styles) {
         for (int r = top; r <= bottom; ++r) {
             for (int c = left; c <= right; ++c) {
