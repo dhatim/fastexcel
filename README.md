@@ -2,8 +2,9 @@
 
 [![Build Status](https://travis-ci.org/dhatim/fastexcel.png?branch=master)](https://travis-ci.org/dhatim/fastexcel)
 [![Coverage Status](https://coveralls.io/repos/github/dhatim/fastexcel/badge.svg?branch=master)](https://coveralls.io/github/dhatim/fastexcel?branch=master)
- [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.dhatim/fastexcel/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.dhatim/fastexcel)
- 
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.dhatim/fastexcel/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.dhatim/fastexcel)
+[![Javadoc](https://javadoc-emblem.rhcloud.com/doc/org.dhatim/fastexcel/badge.svg)](http://www.javadoc.io/doc/org.dhatim/fastexcel)
+
 There are not many alternatives when you have to generate xlsx Excel workbooks in Java. The most popular one ([Apache POI](https://poi.apache.org/)) includes many features, but when it comes down to huge worksheets it quickly becomes a memory hog.
 
 Its streaming API may mitigate this problem but it introduces several limitations:
