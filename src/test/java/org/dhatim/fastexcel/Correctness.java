@@ -17,7 +17,9 @@ package org.dhatim.fastexcel;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -106,7 +108,7 @@ public class Correctness {
     public void multipleWorksheets() throws Exception {
         int numWs = 10;
         int numRows = 5000;
-        int numCols = 5;
+        int numCols = 6;
         byte[] data = writeWorkbook(wb -> {
             CompletableFuture<Void>[] cfs = new CompletableFuture[numWs];
             for (int i = 0; i < cfs.length; ++i) {
@@ -133,6 +135,10 @@ public class Correctness {
                                     ws.value(k, j, new Date());
                                     ws.style(k, j).format("yyyy-MM-dd HH:mm:ss").set();
                                     break;
+                                case 5:
+                                    ws.value(k, j, LocalDate.now());
+                                    ws.style(k, j).format("yyyy-MM-dd").set();
+                                    break;
                                 default:
                                     throw new IllegalArgumentException();
                             }
@@ -143,6 +149,8 @@ public class Correctness {
                     ws.formula(numRows + 1, 3, "=SUM(" + ws.range(1, 3, numRows, 3).toString() + ")");
                     ws.formula(numRows + 1, 4, "=AVERAGE(" + ws.range(1, 4, numRows, 4).toString() + ")");
                     ws.style(numRows + 1, 4).format("yyyy-MM-dd HH:mm:ss").set();
+                    ws.formula(numRows + 1, 5, "=AVERAGE(" + ws.range(1, 5, numRows, 5).toString() + ")");
+                    ws.style(numRows + 1, 5).format("yyyy-MM-dd").set();
                     ws.range(1, 0, numRows, numCols).style().shadeAlternateRows(Color.RED).set();
                 });
                 cfs[i] = cf;

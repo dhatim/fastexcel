@@ -16,6 +16,7 @@
 package org.dhatim.fastexcel;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -134,7 +135,7 @@ public class Worksheet {
      * @param r Zero-based row number.
      * @param c Zero-based column number.
      * @param value Cell value. Supported types are
-     * {@link String}, {@link Date}, {@link LocalDateTime}, {@link ZonedDateTime}
+     * {@link String}, {@link Date}, {@link LocalDate}, {@link LocalDateTime}, {@link ZonedDateTime}
      * and {@link Number} implementations. Note Excel timestamps do not carry
      * any timezone information; {@link Date} values are converted to an Excel
      * serial number with the system timezone. If you need a specific timezone,
@@ -149,6 +150,8 @@ public class Worksheet {
             cell(r, c).value = TimestampUtil.convertDate((Date) value);
         } else if (value instanceof LocalDateTime) {
             cell(r, c).value = TimestampUtil.convertDate(Date.from(((LocalDateTime) value).atZone(ZoneId.systemDefault()).toInstant()));
+        } else if (value instanceof LocalDate) {
+            cell(r, c).value = TimestampUtil.convertDate((LocalDate) value);
         } else if (value instanceof ZonedDateTime) {
             cell(r, c).value = TimestampUtil.convertZonedDateTime((ZonedDateTime) value);
         } else {

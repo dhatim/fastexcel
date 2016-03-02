@@ -15,12 +15,13 @@
  */
 package org.dhatim.fastexcel;
 
-import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 /**
@@ -50,6 +51,16 @@ public final class TimestampUtil {
      */
     public static Double convertDate(Date date) {
         return convertDate(date, ZoneId.systemDefault());
+    }
+
+    /**
+     * Convert a {@link LocalDate} to a serial number.
+     *
+     * @param date Local date value.
+     * @return Serial number value.
+     */
+    public static Double convertDate(LocalDate date) {
+        return ChronoUnit.DAYS.between(EPOCH_1900.toLocalDate(), date) + 2.0;
     }
 
     /**
