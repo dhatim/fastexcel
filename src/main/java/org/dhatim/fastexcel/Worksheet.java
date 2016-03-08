@@ -222,7 +222,7 @@ public class Worksheet {
      */
     private void writeCols(Writer w, int nbCols) throws IOException {
         // Adjust column widths
-        w.append("<cols autoFit=\"true\">");
+        w.append("<cols>");
         for (int c = 0; c < nbCols; ++c) {
             double maxWidth = 0;
             for (int r = 0; r < rows.size(); ++r) {
