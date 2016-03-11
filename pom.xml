@@ -4,7 +4,7 @@
 
     <groupId>org.dhatim</groupId>
     <artifactId>fastexcel</artifactId>
-    <version>0.8.3</version>
+    <version>0.8.4-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>${project.groupId}:${project.artifactId}</name>
@@ -40,7 +40,7 @@
         <connection>scm:git:git@github.com:dhatim/fastexcel.git</connection>
         <developerConnection>scm:git:git@github.com:dhatim/fastexcel.git</developerConnection>
         <url>git@github.com:dhatim/fastexcel.git</url>
-        <tag>v0.8.3</tag>
+        <tag>v0.5-SNAPSHOT</tag>
     </scm>
 
     <distributionManagement>
