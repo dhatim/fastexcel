@@ -32,6 +32,16 @@ import java.util.Set;
  */
 public class Worksheet {
 
+    /**
+     * Maximum number of rows in Excel.
+     */
+    public static final int MAX_ROWS = 1_048_576;
+
+    /**
+     * Maximum number of columns in Excel.
+     */
+    public static final int MAX_COLS = 16_384;
+
     private final Workbook workbook;
     private final String name;
     /**
@@ -88,6 +98,11 @@ public class Worksheet {
      * @return An existing or newly created cell.
      */
     Cell cell(int r, int c) {
+        // Check limits
+        if (r < 0 || r >= MAX_ROWS || c < 0 || c >= MAX_COLS) {
+            throw new IllegalArgumentException();
+        }
+
         // Add null for missing rows.
         while (r >= rows.size()) {
             rows.add(null);

@@ -17,7 +17,6 @@ package org.dhatim.fastexcel;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -47,6 +46,7 @@ public class Correctness {
     public void colToName() throws Exception {
         assertEquals("AA", Range.colToString(26));
         assertEquals("AAA", Range.colToString(702));
+        assertEquals("XFD", Range.colToString(Worksheet.MAX_COLS - 1));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -63,6 +63,36 @@ public class Correctness {
     @Test
     public void singleEmptyWorksheet() throws Exception {
         byte[] data = writeWorkbook(wb -> wb.newWorksheet("Worksheet 1"));
+    }
+
+    @Test
+    public void checkMaxRows() throws Exception {
+        byte[] data = writeWorkbook(wb -> wb.newWorksheet("Worksheet 1").value(Worksheet.MAX_ROWS - 1, 0, "test"));
+    }
+
+    @Test
+    public void checkMaxCols() throws Exception {
+        byte[] data = writeWorkbook(wb -> wb.newWorksheet("Worksheet 1").value(0, Worksheet.MAX_COLS - 1, "test"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void exceedMaxRows() throws Exception {
+        byte[] data = writeWorkbook(wb -> wb.newWorksheet("Worksheet 1").value(Worksheet.MAX_ROWS, 0, "test"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void negativeRow() throws Exception {
+        byte[] data = writeWorkbook(wb -> wb.newWorksheet("Worksheet 1").value(-1, 0, "test"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void exceedMaxCols() throws Exception {
+        byte[] data = writeWorkbook(wb -> wb.newWorksheet("Worksheet 1").value(0, Worksheet.MAX_COLS, "test"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void negativeCol() throws Exception {
+        byte[] data = writeWorkbook(wb -> wb.newWorksheet("Worksheet 1").value(0, -1, "test"));
     }
 
     @Test

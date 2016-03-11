@@ -58,6 +58,14 @@ public class Range {
      */
     Range(Worksheet worksheet, int top, int left, int bottom, int right) {
         this.worksheet = Objects.requireNonNull(worksheet);
+
+        // Check limits
+        if (top < 0 || top >= Worksheet.MAX_ROWS || bottom < 0 || bottom >= Worksheet.MAX_ROWS) {
+            throw new IllegalArgumentException();
+        }
+        if (left < 0 || left >= Worksheet.MAX_COLS || right < 0 || right >= Worksheet.MAX_COLS) {
+            throw new IllegalArgumentException();
+        }
         this.top = top <= bottom ? top : bottom;
         this.left = left <= right ? left : right;
         this.bottom = bottom >= top ? bottom : top;
@@ -197,7 +205,7 @@ public class Range {
      *
      * @param fill Fill pattern.
      */
-    public void shadeAlternateRows(Fill fill) {
+    void shadeAlternateRows(Fill fill) {
         worksheet.shadeAlternateRows(this, fill);
     }
 
