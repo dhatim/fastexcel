@@ -29,6 +29,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import org.apache.commons.io.output.NullOutputStream;
+import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.Test;
@@ -148,7 +149,9 @@ public class Correctness {
         assertThat(xwb.getActiveSheetIndex()).isEqualTo(0);
         assertThat(xwb.getNumberOfSheets()).isEqualTo(1);
         XSSFSheet xws = xwb.getSheet(sheetName);
-        assertThat((Iterable) xws.getRow(0)).isNull();
+        @SuppressWarnings("unchecked")
+        Comparable<XSSFRow> row = (Comparable) xws.getRow(0);
+        assertThat(row).isNull();
         int i = 1;
         assertThat(xws.getRow(i).getCell(i++).getStringCellValue()).isEqualTo(stringValue);
         assertThat(xws.getRow(i).getCell(i++).getDateCellValue()).isEqualTo(dateValue);
@@ -168,6 +171,7 @@ public class Correctness {
         int numRows = 5000;
         int numCols = 6;
         byte[] data = writeWorkbook(wb -> {
+            @SuppressWarnings("unchecked")
             CompletableFuture<Void>[] cfs = new CompletableFuture[numWs];
             for (int i = 0; i < cfs.length; ++i) {
                 Worksheet ws = wb.newWorksheet("Sheet " + i);
@@ -209,7 +213,7 @@ public class Correctness {
                     ws.style(numRows + 1, 4).format("yyyy-MM-dd HH:mm:ss").set();
                     ws.formula(numRows + 1, 5, "=AVERAGE(" + ws.range(1, 5, numRows, 5).toString() + ")");
                     ws.style(numRows + 1, 5).format("yyyy-MM-dd").horizontalAlignment("center").verticalAlignment("top").wrapText(true).set();
-                    ws.range(1, 0, numRows, numCols).style().borderColor(Color.RED).borderStyle("thick").shadeAlternateRows(Color.RED).set();
+                    ws.range(1, 0, numRows, numCols - 1).style().borderColor(Color.RED).borderStyle("thick").shadeAlternateRows(Color.RED).set();
                 });
                 cfs[i] = cf;
             }

@@ -20,7 +20,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.time.chrono.ChronoZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -45,7 +44,7 @@ public final class TimestampUtil {
      * carry any timezone information; this method uses the system timezone to
      * convert the timestamp to a serial number. If you need a specific
      * timezone, prefer using
-     * {@link #convertZonedDateTime(java.time.ChronoZonedDateTime)}.
+     * {@link #convertZonedDateTime(java.time.chrono.ChronoZonedDateTime)}.
      *
      * @param date Date value.
      * @return Serial number value.
@@ -65,7 +64,7 @@ public final class TimestampUtil {
     }
 
     /**
-     * Convert a {@link ZonedDateTime} to a serial number.
+     * Convert a {@link ChronoZonedDateTime} to a serial number.
      *
      * @param zdt Date and timezone values.
      * @return Serial number value.
