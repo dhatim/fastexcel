@@ -135,7 +135,7 @@ public class Correctness {
     @Test
     public void singleWorksheet() throws Exception {
         String sheetName = "Worksheet 1";
-        String stringValue = "Sample text";
+        String stringValue = "Sample text with chars to escape : < > & \\ \" ~ é è à ç ù µ £ €";
         Date dateValue = new Date();
         LocalDateTime localDateTimeValue = LocalDateTime.now();
         ZoneId timezone = ZoneId.of("Australia/Sydney");
