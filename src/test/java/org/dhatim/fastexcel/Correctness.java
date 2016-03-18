@@ -120,6 +120,19 @@ public class Correctness {
     }
 
     @Test
+    public void mergedRanges() throws Exception {
+        byte[] data = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Worksheet 1");
+            ws.value(0, 0, "One");
+            ws.value(0, 1, "Two");
+            ws.value(0, 2, "Three");
+            ws.value(1, 0, "Merged");
+            ws.range(1, 0, 1, 2).merge();
+            ws.style(1, 0).horizontalAlignment("center").set();
+        });
+    }
+
+    @Test
     public void singleWorksheet() throws Exception {
         String sheetName = "Worksheet 1";
         String stringValue = "Sample text";
