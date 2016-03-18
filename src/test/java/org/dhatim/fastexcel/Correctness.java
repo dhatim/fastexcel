@@ -18,7 +18,9 @@ package org.dhatim.fastexcel;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -29,8 +31,8 @@ import java.util.function.Consumer;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import static org.junit.Assert.*;
 import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class Correctness {
 
@@ -44,9 +46,9 @@ public class Correctness {
 
     @Test
     public void colToName() throws Exception {
-        assertEquals("AA", Range.colToString(26));
-        assertEquals("AAA", Range.colToString(702));
-        assertEquals("XFD", Range.colToString(Worksheet.MAX_COLS - 1));
+        assertThat(Range.colToString(26)).isEqualTo("AA");
+        assertThat(Range.colToString(702)).isEqualTo("AAA");
+        assertThat(Range.colToString(Worksheet.MAX_COLS - 1)).isEqualTo("XFD");
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -95,43 +97,69 @@ public class Correctness {
         byte[] data = writeWorkbook(wb -> wb.newWorksheet("Worksheet 1").value(0, -1, "test"));
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void notSupportedTypeCell() throws Exception {
+        byte[] data = writeWorkbook(wb -> wb.newWorksheet("Worksheet 1").value(0, 0, new Object()));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void invalidRange() throws Exception {
+        byte[] data = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Worksheet 1");
+            ws.range(-1, -1, Worksheet.MAX_COLS, Worksheet.MAX_ROWS);
+        });
+    }
+
+    @Test
+    public void reorderedRange() throws Exception {
+        byte[] data = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Worksheet 1");
+            assertThat(ws.range(0, 1, 10, 11)).isEqualTo(ws.range(10, 11, 0, 1));
+        });
+    }
+
     @Test
     public void singleWorksheet() throws Exception {
         String sheetName = "Worksheet 1";
         String stringValue = "Sample text";
         Date dateValue = new Date();
+        LocalDateTime localDateTimeValue = LocalDateTime.now();
         ZoneId timezone = ZoneId.of("Australia/Sydney");
         ZonedDateTime zonedDateValue = ZonedDateTime.ofInstant(dateValue.toInstant(), timezone);
         double doubleValue = 1.234;
         int intValue = 2_016;
         long longValue = 2_016_000_000_000L;
+        BigDecimal bigDecimalValue = BigDecimal.TEN;
         byte[] data = writeWorkbook(wb -> {
             Worksheet ws = wb.newWorksheet(sheetName);
             int i = 1;
             ws.value(i, i++, stringValue);
             ws.value(i, i++, dateValue);
+            ws.value(i, i++, localDateTimeValue);
             ws.value(i, i++, zonedDateValue);
             ws.value(i, i++, doubleValue);
             ws.value(i, i++, intValue);
             ws.value(i, i++, longValue);
+            ws.value(i, i++, bigDecimalValue);
         });
 
         // Check generated workbook with Apache POI
         XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
-        assertEquals(0, xwb.getActiveSheetIndex());
-        assertEquals(1, xwb.getNumberOfSheets());
+        assertThat(xwb.getActiveSheetIndex()).isEqualTo(0);
+        assertThat(xwb.getNumberOfSheets()).isEqualTo(1);
         XSSFSheet xws = xwb.getSheet(sheetName);
-        assertNull(xws.getRow(0));
+        assertThat((Iterable) xws.getRow(0)).isNull();
         int i = 1;
-        assertEquals(stringValue, xws.getRow(i).getCell(i++).getStringCellValue());
-        assertEquals(dateValue, xws.getRow(i).getCell(i++).getDateCellValue());
-
-        // Check zoned timestamp has the same textual representation as the Date extracted from the workbook
+        assertThat(xws.getRow(i).getCell(i++).getStringCellValue()).isEqualTo(stringValue);
+        assertThat(xws.getRow(i).getCell(i++).getDateCellValue()).isEqualTo(dateValue);
+        // Check zoned timestamps have the same textual representation as the Dates extracted from the workbook
         // (Excel date serial numbers do not carry timezone information)
-        assertEquals(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(zonedDateValue), DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(ZonedDateTime.ofInstant(xws.getRow(i).getCell(i++).getDateCellValue().toInstant(), ZoneId.systemDefault())));
-        assertEquals(doubleValue, xws.getRow(i).getCell(i++).getNumericCellValue(), 0);
-        assertEquals(intValue, xws.getRow(i).getCell(i++).getNumericCellValue(), 0);
-        assertEquals(longValue, xws.getRow(i).getCell(i++).getNumericCellValue(), 0);
+        assertThat(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(ZonedDateTime.ofInstant(xws.getRow(i).getCell(i++).getDateCellValue().toInstant(), ZoneId.systemDefault()))).isEqualTo(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(localDateTimeValue));
+        assertThat(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(ZonedDateTime.ofInstant(xws.getRow(i).getCell(i++).getDateCellValue().toInstant(), ZoneId.systemDefault()))).isEqualTo(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(zonedDateValue));
+        assertThat(xws.getRow(i).getCell(i++).getNumericCellValue()).isEqualTo(doubleValue);
+        assertThat(xws.getRow(i).getCell(i++).getNumericCellValue()).isEqualTo(intValue);
+        assertThat(xws.getRow(i).getCell(i++).getNumericCellValue()).isEqualTo(longValue);
+        assertThat(new BigDecimal(xws.getRow(i).getCell(i++).getRawValue())).isEqualTo(bigDecimalValue);
     }
 
     @Test
@@ -180,8 +208,8 @@ public class Correctness {
                     ws.formula(numRows + 1, 4, "=AVERAGE(" + ws.range(1, 4, numRows, 4).toString() + ")");
                     ws.style(numRows + 1, 4).format("yyyy-MM-dd HH:mm:ss").set();
                     ws.formula(numRows + 1, 5, "=AVERAGE(" + ws.range(1, 5, numRows, 5).toString() + ")");
-                    ws.style(numRows + 1, 5).format("yyyy-MM-dd").set();
-                    ws.range(1, 0, numRows, numCols).style().shadeAlternateRows(Color.RED).set();
+                    ws.style(numRows + 1, 5).format("yyyy-MM-dd").horizontalAlignment("center").verticalAlignment("top").wrapText(true).set();
+                    ws.range(1, 0, numRows, numCols).style().borderColor(Color.RED).borderStyle("thick").shadeAlternateRows(Color.RED).set();
                 });
                 cfs[i] = cf;
             }
@@ -194,14 +222,14 @@ public class Correctness {
 
         // Check generated workbook with Apache POI
         XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
-        assertEquals(0, xwb.getActiveSheetIndex());
-        assertEquals(numWs, xwb.getNumberOfSheets());
+        assertThat(xwb.getActiveSheetIndex()).isEqualTo(0);
+        assertThat(xwb.getNumberOfSheets()).isEqualTo(numWs);
         for (int i = 0; i < numWs; ++i) {
-            assertEquals("Sheet " + i, xwb.getSheetName(i));
+            assertThat(xwb.getSheetName(i)).isEqualTo("Sheet " + i);
             XSSFSheet xws = xwb.getSheetAt(i);
-            assertEquals(numRows + 1, xws.getLastRowNum());
+            assertThat(xws.getLastRowNum()).isEqualTo(numRows + 1);
             for (int j = 1; j <= numRows; ++j) {
-                assertEquals("String value " + j, xws.getRow(j).getCell(0).getStringCellValue());
+                assertThat(xws.getRow(j).getCell(0).getStringCellValue()).isEqualTo("String value " + j);
             }
         }
 

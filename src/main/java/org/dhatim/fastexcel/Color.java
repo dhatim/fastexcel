@@ -18,7 +18,7 @@ package org.dhatim.fastexcel;
 /**
  * Predefined RGB colors.
  */
-public class Color {
+public final class Color {
     
     public static final String RED = "FF0000";
     /**
