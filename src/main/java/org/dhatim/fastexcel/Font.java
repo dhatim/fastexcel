@@ -95,7 +95,7 @@ class Font {
     @Override
     public boolean equals(Object obj) {
         boolean result;
-        if (obj instanceof Font) {
+        if (obj != null && obj.getClass() == this.getClass()) {
             Font other = (Font) obj;
             result = Objects.equals(bold, other.bold) && Objects.equals(italic, other.italic) && Objects.equals(name, other.name) && Objects.equals(family, other.family) && Objects.equals(size, other.size) && Objects.equals(rgbColor, other.rgbColor);
         } else {

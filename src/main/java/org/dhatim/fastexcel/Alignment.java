@@ -52,7 +52,7 @@ class Alignment {
     @Override
     public boolean equals(Object obj) {
         boolean result;
-        if (obj instanceof Alignment) {
+        if (obj != null && obj.getClass() == this.getClass()) {
             Alignment other = (Alignment) obj;
             result = Objects.equals(horizontal, other.horizontal) && Objects.equals(vertical, other.vertical) && Objects.equals(wrapText, other.wrapText);
         } else {

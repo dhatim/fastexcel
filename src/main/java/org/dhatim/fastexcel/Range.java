@@ -125,7 +125,7 @@ public class Range {
     @Override
     public boolean equals(Object obj) {
         boolean result;
-        if (obj instanceof Range) {
+        if (obj != null && obj.getClass() == this.getClass()) {
             Range other = (Range) obj;
             result = Objects.equals(worksheet, other.worksheet) && Objects.equals(top, other.top) && Objects.equals(left, other.left) && Objects.equals(bottom, other.bottom) && Objects.equals(right, other.right);
         } else {

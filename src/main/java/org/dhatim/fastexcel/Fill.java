@@ -90,7 +90,7 @@ class Fill {
     @Override
     public boolean equals(Object obj) {
         boolean result;
-        if (obj instanceof Fill) {
+        if (obj != null && obj.getClass() == this.getClass()) {
             Fill other = (Fill) obj;
             result = Objects.equals(patternType, other.patternType) && Objects.equals(colorRgb, other.colorRgb) && Objects.equals(fg, other.fg);
         } else {

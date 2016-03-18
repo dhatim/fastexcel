@@ -87,7 +87,7 @@ class Border {
     @Override
     public boolean equals(Object obj) {
         boolean result;
-        if (obj instanceof Border) {
+        if (obj != null && obj.getClass() == this.getClass()) {
             Border other = (Border) obj;
             result = Objects.equals(left, other.left) && Objects.equals(right, other.right) && Objects.equals(top, other.top) && Objects.equals(bottom, other.bottom) && Objects.equals(diagonal, other.diagonal);
         } else {

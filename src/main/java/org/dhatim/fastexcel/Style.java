@@ -72,7 +72,7 @@ class Style {
     @Override
     public boolean equals(Object obj) {
         boolean result;
-        if (obj instanceof Style) {
+        if (obj != null && obj.getClass() == this.getClass()) {
             Style other = (Style) obj;
             result = Objects.equals(valueFormatting, other.valueFormatting) && Objects.equals(font, other.font) && Objects.equals(fill, other.fill) && Objects.equals(border, other.border) && Objects.equals(alignment, other.alignment);
         } else {

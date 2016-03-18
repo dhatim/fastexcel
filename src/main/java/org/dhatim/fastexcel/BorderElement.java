@@ -59,7 +59,7 @@ class BorderElement {
     @Override
     public boolean equals(Object obj) {
         boolean result;
-        if (obj instanceof BorderElement) {
+        if (obj != null && obj.getClass() == this.getClass()) {
             BorderElement other = (BorderElement) obj;
             result = Objects.equals(style, other.style) && Objects.equals(rgbColor, other.rgbColor);
         } else {
