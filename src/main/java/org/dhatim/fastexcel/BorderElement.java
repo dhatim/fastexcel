@@ -91,7 +91,7 @@ class BorderElement {
             }
             w.append('>');
             if (rgbColor != null) {
-                w.append("<color rgb=\"").append(rgbColor).append("/>");
+                w.append("<color rgb=\"").append(rgbColor).append("\"/>");
             }
             w.append("</").append(name).append(">");
         }
