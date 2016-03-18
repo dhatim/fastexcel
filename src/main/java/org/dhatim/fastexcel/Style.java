@@ -71,29 +71,14 @@ class Style {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
+        boolean result;
+        if (obj instanceof Style) {
+            Style other = (Style) obj;
+            result = Objects.equals(valueFormatting, other.valueFormatting) && Objects.equals(font, other.font) && Objects.equals(fill, other.fill) && Objects.equals(border, other.border) && Objects.equals(alignment, other.alignment);
+        } else {
+            result = false;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Style other = (Style) obj;
-        if (this.valueFormatting != other.valueFormatting) {
-            return false;
-        }
-        if (this.font != other.font) {
-            return false;
-        }
-        if (this.fill != other.fill) {
-            return false;
-        }
-        if (this.border != other.border) {
-            return false;
-        }
-        if (!Objects.equals(this.alignment, other.alignment)) {
-            return false;
-        }
-        return true;
+        return result;
     }
 
     /**

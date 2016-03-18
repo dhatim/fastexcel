@@ -51,23 +51,14 @@ class Alignment {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
+        boolean result;
+        if (obj instanceof Alignment) {
+            Alignment other = (Alignment) obj;
+            result = Objects.equals(horizontal, other.horizontal) && Objects.equals(vertical, other.vertical) && Objects.equals(wrapText, other.wrapText);
+        } else {
+            result = false;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Alignment other = (Alignment) obj;
-        if (!Objects.equals(this.horizontal, other.horizontal)) {
-            return false;
-        }
-        if (!Objects.equals(this.vertical, other.vertical)) {
-            return false;
-        }
-        if (this.wrapText != other.wrapText) {
-            return false;
-        }
-        return true;
+        return result;
     }
 
     /**

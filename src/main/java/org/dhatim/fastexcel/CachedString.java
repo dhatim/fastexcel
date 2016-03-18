@@ -42,7 +42,7 @@ class CachedString {
      *
      * @return String value.
      */
-    public String getString() {
+    String getString() {
         return string;
     }
 
@@ -51,7 +51,7 @@ class CachedString {
      *
      * @return Cache index.
      */
-    public int getIndex() {
+    int getIndex() {
         return index;
     }
 

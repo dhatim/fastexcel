@@ -94,32 +94,14 @@ class Font {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
+        boolean result;
+        if (obj instanceof Font) {
+            Font other = (Font) obj;
+            result = Objects.equals(bold, other.bold) && Objects.equals(italic, other.italic) && Objects.equals(name, other.name) && Objects.equals(family, other.family) && Objects.equals(size, other.size) && Objects.equals(rgbColor, other.rgbColor);
+        } else {
+            result = false;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Font other = (Font) obj;
-        if (this.bold != other.bold) {
-            return false;
-        }
-        if (this.italic != other.italic) {
-            return false;
-        }
-        if (!Objects.equals(this.name, other.name)) {
-            return false;
-        }
-        if (this.family != other.family) {
-            return false;
-        }
-        if (this.size.compareTo(other.size) != 0) {
-            return false;
-        }
-        if (!Objects.equals(this.rgbColor, other.rgbColor)) {
-            return false;
-        }
-        return true;
+        return result;
     }
 
     /**

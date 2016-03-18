@@ -134,7 +134,7 @@ class Cell {
      *
      * @return Cell style.
      */
-    public int getStyle() {
+    int getStyle() {
         return style;
     }
 
@@ -143,7 +143,7 @@ class Cell {
      *
      * @param style New cell style.
      */
-    public void setStyle(int style) {
+    void setStyle(int style) {
         this.style = style;
     }
 

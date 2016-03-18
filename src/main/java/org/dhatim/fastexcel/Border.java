@@ -86,29 +86,14 @@ class Border {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
+        boolean result;
+        if (obj instanceof Border) {
+            Border other = (Border) obj;
+            result = Objects.equals(left, other.left) && Objects.equals(right, other.right) && Objects.equals(top, other.top) && Objects.equals(bottom, other.bottom) && Objects.equals(diagonal, other.diagonal);
+        } else {
+            result = false;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Border other = (Border) obj;
-        if (!Objects.equals(this.left, other.left)) {
-            return false;
-        }
-        if (!Objects.equals(this.right, other.right)) {
-            return false;
-        }
-        if (!Objects.equals(this.top, other.top)) {
-            return false;
-        }
-        if (!Objects.equals(this.bottom, other.bottom)) {
-            return false;
-        }
-        if (!Objects.equals(this.diagonal, other.diagonal)) {
-            return false;
-        }
-        return true;
+        return result;
     }
 
     /**

@@ -89,23 +89,14 @@ class Fill {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
+        boolean result;
+        if (obj instanceof Fill) {
+            Fill other = (Fill) obj;
+            result = Objects.equals(patternType, other.patternType) && Objects.equals(colorRgb, other.colorRgb) && Objects.equals(fg, other.fg);
+        } else {
+            result = false;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Fill other = (Fill) obj;
-        if (!Objects.equals(this.patternType, other.patternType)) {
-            return false;
-        }
-        if (!Objects.equals(this.colorRgb, other.colorRgb)) {
-            return false;
-        }
-        if (this.fg != other.fg) {
-            return false;
-        }
-        return true;
+        return result;
     }
 
     /**

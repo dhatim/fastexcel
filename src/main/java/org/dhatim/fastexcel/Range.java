@@ -124,26 +124,14 @@ public class Range {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
+        boolean result;
+        if (obj instanceof Range) {
+            Range other = (Range) obj;
+            result = Objects.equals(worksheet, other.worksheet) && Objects.equals(top, other.top) && Objects.equals(left, other.left) && Objects.equals(bottom, other.bottom) && Objects.equals(right, other.right);
+        } else {
+            result = false;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Range other = (Range) obj;
-        if (!Objects.equals(this.worksheet, other.worksheet)) {
-            return false;
-        }
-        if (this.top != other.top) {
-            return false;
-        }
-        if (this.left != other.left) {
-            return false;
-        }
-        if (this.bottom != other.bottom) {
-            return false;
-        }
-        return this.right == other.right;
+        return result;
     }
 
     /**

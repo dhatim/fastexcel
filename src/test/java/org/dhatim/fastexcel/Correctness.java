@@ -115,7 +115,21 @@ public class Correctness {
     public void reorderedRange() throws Exception {
         byte[] data = writeWorkbook(wb -> {
             Worksheet ws = wb.newWorksheet("Worksheet 1");
-            assertThat(ws.range(0, 1, 10, 11)).isEqualTo(ws.range(10, 11, 0, 1));
+            int top = 0;
+            int left = 1;
+            int bottom = 10;
+            int right = 11;
+            Range range = ws.range(top, left, bottom, right);
+            Range otherRange = ws.range(bottom, right, top, left);
+            assertThat(range).isEqualTo(otherRange);
+            assertThat(range.getTop()).isEqualTo(top);
+            assertThat(range.getLeft()).isEqualTo(left);
+            assertThat(range.getBottom()).isEqualTo(bottom);
+            assertThat(range.getRight()).isEqualTo(right);
+            assertThat(otherRange.getTop()).isEqualTo(top);
+            assertThat(otherRange.getLeft()).isEqualTo(left);
+            assertThat(otherRange.getBottom()).isEqualTo(bottom);
+            assertThat(otherRange.getRight()).isEqualTo(right);
         });
     }
 

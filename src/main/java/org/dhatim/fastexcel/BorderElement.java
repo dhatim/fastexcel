@@ -58,20 +58,14 @@ class BorderElement {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
+        boolean result;
+        if (obj instanceof BorderElement) {
+            BorderElement other = (BorderElement) obj;
+            result = Objects.equals(style, other.style) && Objects.equals(rgbColor, other.rgbColor);
+        } else {
+            result = false;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final BorderElement other = (BorderElement) obj;
-        if (!Objects.equals(this.style, other.style)) {
-            return false;
-        }
-        if (!Objects.equals(this.rgbColor, other.rgbColor)) {
-            return false;
-        }
-        return true;
+        return result;
     }
 
     /**

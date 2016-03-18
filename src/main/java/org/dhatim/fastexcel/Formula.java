@@ -39,7 +39,7 @@ class Formula {
      *
      * @return Expression.
      */
-    public String getExpression() {
+    String getExpression() {
         return expression;
     }
 
