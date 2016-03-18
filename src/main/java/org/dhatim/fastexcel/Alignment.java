@@ -46,11 +46,7 @@ class Alignment {
 
     @Override
     public int hashCode() {
-        int hash = 5;
-        hash = 59 * hash + Objects.hashCode(this.horizontal);
-        hash = 59 * hash + Objects.hashCode(this.vertical);
-        hash = 59 * hash + (this.wrapText ? 1 : 0);
-        return hash;
+        return Objects.hash(horizontal, vertical, wrapText);
     }
 
     @Override

@@ -53,10 +53,7 @@ class BorderElement {
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 41 * hash + Objects.hashCode(this.style);
-        hash = 41 * hash + Objects.hashCode(this.rgbColor);
-        return hash;
+        return Objects.hash(style, rgbColor);
     }
 
     @Override

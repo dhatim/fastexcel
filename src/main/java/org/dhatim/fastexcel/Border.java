@@ -69,7 +69,8 @@ class Border {
     /**
      * Create a border where all sides have the same style and color.
      *
-     * @param style Border style. Possible values are defined <a href="https://msdn.microsoft.com/en-us/library/documentformat.openxml.spreadsheet.borderstylevalues(v=office.14).aspx">here</a>.
+     * @param style Border style. Possible values are defined
+     * <a href="https://msdn.microsoft.com/en-us/library/documentformat.openxml.spreadsheet.borderstylevalues(v=office.14).aspx">here</a>.
      * @param color RGB border color.
      * @return A new border object.
      */
@@ -80,13 +81,7 @@ class Border {
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 17 * hash + Objects.hashCode(this.left);
-        hash = 17 * hash + Objects.hashCode(this.right);
-        hash = 17 * hash + Objects.hashCode(this.top);
-        hash = 17 * hash + Objects.hashCode(this.bottom);
-        hash = 17 * hash + Objects.hashCode(this.diagonal);
-        return hash;
+        return Objects.hash(left, right, top, bottom, diagonal);
     }
 
     @Override

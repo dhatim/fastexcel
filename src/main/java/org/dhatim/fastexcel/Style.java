@@ -66,13 +66,7 @@ class Style {
 
     @Override
     public int hashCode() {
-        int hash = 5;
-        hash = 29 * hash + this.valueFormatting;
-        hash = 29 * hash + this.font;
-        hash = 29 * hash + this.fill;
-        hash = 29 * hash + this.border;
-        hash = 29 * hash + Objects.hashCode(this.alignment);
-        return hash;
+        return Objects.hash(valueFormatting, font, fill, border, alignment);
     }
 
     @Override

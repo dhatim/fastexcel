@@ -88,14 +88,7 @@ class Font {
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 83 * hash + (this.bold ? 1 : 0);
-        hash = 83 * hash + (this.italic ? 1 : 0);
-        hash = 83 * hash + Objects.hashCode(this.name);
-        hash = 83 * hash + this.family;
-        hash = 83 * hash + Objects.hashCode(this.size);
-        hash = 83 * hash + Objects.hashCode(this.rgbColor);
-        return hash;
+        return Objects.hash(bold, italic, name, family, size, rgbColor);
     }
 
     @Override

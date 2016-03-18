@@ -84,11 +84,7 @@ class Fill {
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 83 * hash + Objects.hashCode(this.patternType);
-        hash = 83 * hash + Objects.hashCode(this.colorRgb);
-        hash = 83 * hash + (this.fg ? 1 : 0);
-        return hash;
+        return Objects.hash(patternType, colorRgb, fg);
     }
 
     @Override

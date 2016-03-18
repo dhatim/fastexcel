@@ -119,13 +119,7 @@ public class Range {
 
     @Override
     public int hashCode() {
-        int hash = 5;
-        hash = 59 * hash + Objects.hashCode(this.worksheet);
-        hash = 59 * hash + this.top;
-        hash = 59 * hash + this.left;
-        hash = 59 * hash + this.bottom;
-        hash = 59 * hash + this.right;
-        return hash;
+        return Objects.hash(worksheet, top, left, bottom, right);
     }
 
     @Override
