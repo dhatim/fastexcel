@@ -26,12 +26,12 @@ class Fill {
     /**
      * Reserved Excel fill: none.
      */
-    static final Fill NONE = new Fill("none", null, true);
+    protected static final Fill NONE = new Fill("none", null, true);
 
     /**
      * Reserved Excel fill: "gray125".
      */
-    static final Fill GRAY125 = new Fill("gray125", null, true);
+    protected static final Fill GRAY125 = new Fill("gray125", null, true);
 
     /**
      * Pattern type.

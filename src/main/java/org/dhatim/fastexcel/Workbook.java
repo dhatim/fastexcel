@@ -37,7 +37,7 @@ public class Workbook {
     private final StringCache stringCache = new StringCache();
     private final StyleCache styleCache = new StyleCache();
     private final ZipOutputStream os;
-    private final Writer w;
+    private final Writer writer;
 
     /**
      * Constructor.
@@ -52,14 +52,12 @@ public class Workbook {
      */
     public Workbook(OutputStream os, String applicationName, String applicationVersion) {
         this.os = new ZipOutputStream(os, Charset.forName("UTF-8"));
-        this.w = new Writer(this.os);
+        this.writer = new Writer(this.os);
         this.applicationName = Objects.requireNonNull(applicationName);
 
         // Check application version
-        if (applicationVersion != null) {
-            if (!applicationVersion.matches("\\d{1,2}\\.\\d{1,4}")) {
-                throw new IllegalArgumentException("Application version must be of the form XX.YYYY");
-            }
+        if (applicationVersion != null && !applicationVersion.matches("\\d{1,2}\\.\\d{1,4}")) {
+            throw new IllegalArgumentException("Application version must be of the form XX.YYYY");
         }
         this.applicationVersion = applicationVersion;
     }
@@ -116,8 +114,8 @@ public class Workbook {
     void writeFile(String name, ThrowingConsumer<Writer> consumer) throws IOException {
         synchronized (os) {
             os.putNextEntry(new ZipEntry(name));
-            consumer.accept(w);
-            w.flush();
+            consumer.accept(writer);
+            writer.flush();
             os.closeEntry();
         }
     }

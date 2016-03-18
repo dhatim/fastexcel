@@ -18,7 +18,6 @@ package org.dhatim.fastexcel;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
@@ -59,7 +58,7 @@ public class Worksheet {
     /**
      * Is this worksheet construction completed?
      */
-    private boolean finished = false;
+    private boolean finished;
 
     /**
      * Constructor.
@@ -109,11 +108,11 @@ public class Worksheet {
         }
         Cell[] row = rows.get(r);
         if (row == null) {
-            int columns = Math.max(c + 1, (r > 0 && rows.get(r - 1) != null) ? rows.get(r - 1).length : c + 1);
+            int columns = Math.max(c + 1, (r > 0 && rows.get(r - 1) != null) ? rows.get(r - 1).length : (c + 1));
             row = new Cell[columns];
             rows.set(r, row);
         } else if (c >= row.length) {
-            int columns = Math.max(c + 1, (r > 0 && rows.get(r - 1) != null) ? rows.get(r - 1).length : c + 1);
+            int columns = Math.max(c + 1, (r > 0 && rows.get(r - 1) != null) ? rows.get(r - 1).length : (c + 1));
             Cell[] tmp = new Cell[columns];
             System.arraycopy(row, 0, tmp, 0, row.length);
             row = tmp;
@@ -157,21 +156,7 @@ public class Worksheet {
      * prefer passing a {@link ZonedDateTime}.
      */
     public void value(int r, int c, Object value) {
-        if (value instanceof String) {
-            cell(r, c).value = workbook.cacheString((String) value);
-        } else if (value == null || value instanceof Number) {
-            cell(r, c).value = value;
-        } else if (value instanceof Date) {
-            cell(r, c).value = TimestampUtil.convertDate((Date) value);
-        } else if (value instanceof LocalDateTime) {
-            cell(r, c).value = TimestampUtil.convertDate(Date.from(((LocalDateTime) value).atZone(ZoneId.systemDefault()).toInstant()));
-        } else if (value instanceof LocalDate) {
-            cell(r, c).value = TimestampUtil.convertDate((LocalDate) value);
-        } else if (value instanceof ZonedDateTime) {
-            cell(r, c).value = TimestampUtil.convertZonedDateTime((ZonedDateTime) value);
-        } else {
-            throw new IllegalArgumentException("No supported cell type for " + value.getClass().toString());
-        }
+        cell(r, c).setValue(workbook, value);
     }
 
     /**
@@ -184,11 +169,7 @@ public class Worksheet {
     public Object value(int r, int c) {
         Cell[] row = r < rows.size() ? rows.get(r) : null;
         Cell cell = row == null || c >= row.length ? null : row[c];
-        Object o = cell == null ? null : cell.value;
-        if (o instanceof CachedString) {
-            o = ((CachedString) o).getString();
-        }
-        return o;
+        return cell == null ? null : cell.getValue();
     }
 
     /**
@@ -199,7 +180,7 @@ public class Worksheet {
      * @param expression Cell formula expression.
      */
     public void formula(int r, int c, String expression) {
-        cell(r, c).value = new Formula(expression);
+        cell(r, c).setFormula(expression);
     }
 
     /**
@@ -229,6 +210,18 @@ public class Worksheet {
     }
 
     /**
+     * Check if the given cell is within merged ranges.
+     *
+     * @param r Zero-based row number.
+     * @param c Zero-based column number.
+     * @return {@code true} if the cell is within merged ranges, {@code false}
+     * otherwise.
+     */
+    private boolean isCellInMergedRanges(int r, int c) {
+        return mergedRanges.stream().filter(range -> range.contains(r, c)).findAny().isPresent();
+    }
+
+    /**
      * Write column definitions of this worksheet as an XML element.
      *
      * @param w Output writer.
@@ -242,14 +235,7 @@ public class Worksheet {
             double maxWidth = 0;
             for (int r = 0; r < rows.size(); ++r) {
                 // Exclude merged cells from computation
-                boolean ignore = false;
-                for (Range range : mergedRanges) {
-                    if (range.contains(r, c)) {
-                        ignore = true;
-                        break;
-                    }
-                }
-                Object o = ignore ? null : value(r, c);
+                Object o = isCellInMergedRanges(r, c) ? null : value(r, c);
                 if (o != null && !(o instanceof Formula)) {
                     int length = o.toString().length();
                     maxWidth = Math.max(maxWidth, (int) ((length * 7 + 10) / 7.0 * 256) / 256.0);

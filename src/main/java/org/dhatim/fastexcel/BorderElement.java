@@ -27,7 +27,7 @@ class BorderElement {
     /**
      * Default border element: no border.
      */
-    static final BorderElement NONE = new BorderElement(null, null);
+    protected static final BorderElement NONE = new BorderElement(null, null);
 
     /**
      * Border style.

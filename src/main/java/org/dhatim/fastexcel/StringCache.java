@@ -30,7 +30,7 @@ class StringCache {
     /**
      * Number of strings, including duplicates.
      */
-    private long count = 0;
+    private long count;
     /**
      * Map giving string index for each unique string.
      */

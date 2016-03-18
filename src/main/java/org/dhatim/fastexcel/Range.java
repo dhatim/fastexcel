@@ -212,7 +212,7 @@ public class Range {
         Set<Integer> result = new HashSet<>();
         for (int r = top; r <= bottom; ++r) {
             for (int c = left; c <= right; ++c) {
-                result.add(getWorksheet().cell(r, c).style);
+                result.add(getWorksheet().cell(r, c).getStyle());
             }
         }
         return result;
@@ -227,7 +227,7 @@ public class Range {
         for (int r = top; r <= bottom; ++r) {
             for (int c = left; c <= right; ++c) {
                 Cell cell = getWorksheet().cell(r, c);
-                cell.style = styles.get(cell.style);
+                cell.setStyle(styles.get(cell.getStyle()));
             }
         }
     }

@@ -16,6 +16,7 @@
 package org.dhatim.fastexcel;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.Objects;
 
 /**
@@ -28,7 +29,7 @@ class Font {
     /**
      * Default font.
      */
-    static final Font DEFAULT = build(false, false, "000000");
+    protected static final Font DEFAULT = build(false, false, "000000");
 
     /**
      * Bold flag.
@@ -49,7 +50,7 @@ class Font {
     /**
      * Font size.
      */
-    private final double size;
+    private final BigDecimal size;
     /**
      * RGB font color.
      */
@@ -65,7 +66,7 @@ class Font {
      * @param size Font size, in points.
      * @param rgbColor RGB font color.
      */
-    Font(boolean bold, boolean italic, String name, int family, double size, String rgbColor) {
+    Font(boolean bold, boolean italic, String name, int family, BigDecimal size, String rgbColor) {
         this.bold = bold;
         this.italic = italic;
         this.name = name;
@@ -83,7 +84,7 @@ class Font {
      * @return New font object.
      */
     static Font build(boolean bold, boolean italic, String rgbColor) {
-        return new Font(bold, italic, "Calibri", 2, 11.0, rgbColor);
+        return new Font(bold, italic, "Calibri", 2, BigDecimal.valueOf(11.0), rgbColor);
     }
 
     @Override
@@ -112,7 +113,7 @@ class Font {
         if (this.family != other.family) {
             return false;
         }
-        if (this.size != other.size) {
+        if (this.size.compareTo(other.size) != 0) {
             return false;
         }
         if (!Objects.equals(this.rgbColor, other.rgbColor)) {
@@ -128,7 +129,7 @@ class Font {
      * @throws IOException If an I/O error occurs.
      */
     void write(Writer w) throws IOException {
-        w.append("<font>").append(bold ? "<b/>" : "").append(italic ? "<i/>" : "").append("<sz val=\"").append(size).append("\"/>");
+        w.append("<font>").append(bold ? "<b/>" : "").append(italic ? "<i/>" : "").append("<sz val=\"").append(size.toString()).append("\"/>");
         if (rgbColor != null) {
             w.append("<color rgb=\"").append(rgbColor).append("\"/>");
         }

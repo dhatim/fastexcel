@@ -16,6 +16,11 @@
 package org.dhatim.fastexcel;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Date;
 
 /**
  * A cell contains a value and a cached style index.
@@ -25,12 +30,12 @@ class Cell {
     /**
      * Cell value.
      */
-    Object value;
+    private Object value;
 
     /**
      * Cached style index.
      */
-    int style = 0;
+    private int style;
 
     /**
      * Write this cell as an XML element.
@@ -69,6 +74,77 @@ class Cell {
             }
             w.append("</c>");
         }
-
     }
+
+    /**
+     * Set value of this cell.
+     *
+     * @param wb Parent workbook.
+     * @param v Cell value. Supported types are
+     * {@link String}, {@link Date}, {@link LocalDate}, {@link LocalDateTime}, {@link ZonedDateTime}
+     * and {@link Number} implementations. Note Excel timestamps do not carry
+     * any timezone information; {@link Date} values are converted to an Excel
+     * serial number with the system timezone. If you need a specific timezone,
+     * prefer passing a {@link ZonedDateTime}.
+     */
+    void setValue(Workbook wb, Object v) {
+        if (v instanceof String) {
+            value = wb.cacheString((String) v);
+        } else if (v == null || v instanceof Number) {
+            value = v;
+        } else if (v instanceof Date) {
+            value = TimestampUtil.convertDate((Date) v);
+        } else if (v instanceof LocalDateTime) {
+            value = TimestampUtil.convertDate(Date.from(((LocalDateTime) v).atZone(ZoneId.systemDefault()).toInstant()));
+        } else if (v instanceof LocalDate) {
+            value = TimestampUtil.convertDate((LocalDate) v);
+        } else if (v instanceof ZonedDateTime) {
+            value = TimestampUtil.convertZonedDateTime((ZonedDateTime) v);
+        } else {
+            throw new IllegalArgumentException("No supported cell type for " + v.getClass());
+        }
+    }
+
+    /**
+     * Get value or formula stored in this cell.
+     *
+     * @return Value or {@link Formula}, or {@code null}.
+     */
+    Object getValue() {
+        Object result;
+        if (value instanceof CachedString) {
+            result = ((CachedString) value).getString();
+        } else {
+            result = value;
+        }
+        return result;
+    }
+
+    /**
+     * Assign a formula to this cell.
+     *
+     * @param expression Formula expression.
+     */
+    void setFormula(String expression) {
+        value = new Formula(expression);
+    }
+
+    /**
+     * Get the style of this cell.
+     *
+     * @return Cell style.
+     */
+    public int getStyle() {
+        return style;
+    }
+
+    /**
+     * Set the style of this cell.
+     *
+     * @param style New cell style.
+     */
+    public void setStyle(int style) {
+        this.style = style;
+    }
+
 }

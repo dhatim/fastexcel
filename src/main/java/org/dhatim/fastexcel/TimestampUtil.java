@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.chrono.ChronoZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
@@ -31,20 +32,20 @@ import java.util.Date;
  */
 public final class TimestampUtil {
 
-    private TimestampUtil() {
-    }
-
     /**
      * Epoch for timestamps.
      */
     private static final LocalDateTime EPOCH_1900 = LocalDateTime.of(1900, 1, 1, 0, 0, 0, 0);
+
+    private TimestampUtil() {
+    }
 
     /**
      * Convert a {@link Date} to a serial number. Note Excel timestamps do not
      * carry any timezone information; this method uses the system timezone to
      * convert the timestamp to a serial number. If you need a specific
      * timezone, prefer using
-     * {@link #convertZonedDateTime(java.time.ZonedDateTime)}.
+     * {@link #convertZonedDateTime(java.time.ChronoZonedDateTime)}.
      *
      * @param date Date value.
      * @return Serial number value.
@@ -69,7 +70,7 @@ public final class TimestampUtil {
      * @param zdt Date and timezone values.
      * @return Serial number value.
      */
-    public static Double convertZonedDateTime(ZonedDateTime zdt) {
+    public static Double convertZonedDateTime(ChronoZonedDateTime zdt) {
         return convertDate(Date.from(zdt.toInstant()), zdt.getZone());
     }
 

@@ -229,29 +229,29 @@ public class StyleSetter {
      * done otherwise style changes are lost!</b>
      */
     public void set() {
-        final Alignment alignment;
-        if (horizontalAlignment != null || verticalAlignment != null || wrapText == true) {
+        Alignment alignment;
+        if (horizontalAlignment != null || verticalAlignment != null || wrapText) {
             alignment = new Alignment(horizontalAlignment, verticalAlignment, wrapText);
         } else {
             alignment = null;
         }
-        final Font font;
+        Font font;
         if (bold || italic || fontColor != null) {
             font = Font.build(bold, italic, fontColor);
         } else {
             font = Font.DEFAULT;
         }
-        final Fill fill;
-        if (fillColor != null) {
-            fill = Fill.fromColor(fillColor);
-        } else {
+        Fill fill;
+        if (fillColor == null) {
             fill = Fill.NONE;
-        }
-        final Border border;
-        if (borderStyle != null || borderColor != null) {
-            border = Border.fromStyleAndColor(borderStyle, borderColor);
         } else {
+            fill = Fill.fromColor(fillColor);
+        }
+        Border border;
+        if (borderStyle == null && borderColor == null) {
             border = Border.NONE;
+        } else {
+            border = Border.fromStyleAndColor(borderStyle, borderColor);
         }
 
         // Compute a map giving new styles for current styles

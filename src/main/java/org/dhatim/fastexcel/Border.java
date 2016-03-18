@@ -26,7 +26,7 @@ class Border {
     /**
      * Default border attributes: no borders.
      */
-    static final Border NONE = new Border(BorderElement.NONE, BorderElement.NONE, BorderElement.NONE, BorderElement.NONE, BorderElement.NONE);
+    protected static final Border NONE = new Border(BorderElement.NONE, BorderElement.NONE, BorderElement.NONE, BorderElement.NONE, BorderElement.NONE);
 
     /**
      * Left border element.
