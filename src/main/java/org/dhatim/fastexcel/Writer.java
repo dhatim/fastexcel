@@ -144,19 +144,6 @@ class Writer {
     }
 
     /**
-     * Append a boolean.
-     *
-     * @param b Boolean.
-     * @return This writer.
-     * @throws IOException If an I/O error occurs.
-     */
-    Writer append(boolean b) throws IOException {
-        sb.append(b);
-        check();
-        return this;
-    }
-
-    /**
      * Append an integer.
      *
      * @param n Integer.

@@ -141,6 +141,7 @@ public class Correctness {
             ws.value(0, 1, "Two");
             ws.value(0, 2, "Three");
             ws.value(1, 0, "Merged");
+            ws.range(1, 0, 1, 2).style().merge().set();
             ws.range(1, 0, 1, 2).merge();
             ws.style(1, 0).horizontalAlignment("center").set();
         });
@@ -149,7 +150,7 @@ public class Correctness {
     @Test
     public void singleWorksheet() throws Exception {
         String sheetName = "Worksheet 1";
-        String stringValue = "Sample text with chars to escape : < > & \\ \" ~ é è à ç ù µ £ €";
+        String stringValue = "Sample text with chars to escape : < > & \\ \" ' ~ é è à ç ù µ £ €";
         Date dateValue = new Date();
         LocalDateTime localDateTimeValue = LocalDateTime.now();
         ZoneId timezone = ZoneId.of("Australia/Sydney");
@@ -239,7 +240,7 @@ public class Correctness {
                     ws.formula(numRows + 1, 4, "=AVERAGE(" + ws.range(1, 4, numRows, 4).toString() + ")");
                     ws.style(numRows + 1, 4).format("yyyy-MM-dd HH:mm:ss").set();
                     ws.formula(numRows + 1, 5, "=AVERAGE(" + ws.range(1, 5, numRows, 5).toString() + ")");
-                    ws.style(numRows + 1, 5).format("yyyy-MM-dd").horizontalAlignment("center").verticalAlignment("top").wrapText(true).set();
+                    ws.style(numRows + 1, 5).format("yyyy-MM-dd").bold().italic().fontColor(Color.RED).horizontalAlignment("center").verticalAlignment("top").wrapText(true).set();
                     ws.range(1, 0, numRows, numCols - 1).style().borderColor(Color.RED).borderStyle("thick").shadeAlternateRows(Color.RED).set();
                 });
                 cfs[i] = cf;
