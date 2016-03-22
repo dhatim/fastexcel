@@ -23,8 +23,6 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.dhatim.fastexcel.Workbook;
-import org.dhatim.fastexcel.Worksheet;
 import org.openjdk.jmh.annotations.Benchmark;
 
 /**
@@ -32,6 +30,8 @@ import org.openjdk.jmh.annotations.Benchmark;
  * <a href="https://poi.apache.org/">Apache POI</a>.
  */
 public class Benchmarks {
+
+    private static final int NB_ROWS = 100_000;
 
     @Benchmark
     public void poiNoStreaming() throws Exception {
@@ -47,7 +47,7 @@ public class Benchmarks {
         Sheet ws = wb.createSheet("Sheet 1");
         CellStyle dateStyle = wb.createCellStyle();
         dateStyle.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat("yyyy-mm-dd hh:mm:ss"));
-        for (int r = 0; r < 100_000; ++r) {
+        for (int r = 0; r < NB_ROWS; ++r) {
             Row row = ws.createRow(r);
             row.createCell(0).setCellValue(r);
             row.createCell(1).setCellValue(Integer.toString(r % 1000));
@@ -63,13 +63,13 @@ public class Benchmarks {
     public void fastExcel() throws Exception {
         Workbook wb = new Workbook(new NullOutputStream(), "Perf", "1.0");
         Worksheet ws = wb.newWorksheet("Sheet 1");
-        for (int r = 0; r < 100_000; ++r) {
+        for (int r = 0; r < NB_ROWS; ++r) {
             ws.value(r, 0, r);
             ws.value(r, 1, Integer.toString(r % 1000));
             ws.value(r, 2, r / 87.0);
-            ws.style(r, 3).format("yyyy-mm-dd hh:mm:ss").set();
             ws.value(r, 3, new Date());
         }
+        ws.range(0, 3, NB_ROWS - 1, 3).style().format("yyyy-mm-dd hh:mm:ss").set();
         wb.finish();
     }
 }
