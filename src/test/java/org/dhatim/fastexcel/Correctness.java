@@ -170,6 +170,11 @@ public class Correctness {
             ws.value(i, i++, intValue);
             ws.value(i, i++, longValue);
             ws.value(i, i++, bigDecimalValue);
+            try {
+                ws.finish();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
         });
 
         // Check generated workbook with Apache POI
