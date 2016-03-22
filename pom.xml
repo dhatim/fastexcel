@@ -86,7 +86,7 @@
             <artifactId>jmh-generator-annprocess</artifactId>
             <version>1.11.3</version>
             <scope>test</scope>
-        </dependency>    
+        </dependency>
     </dependencies>
     
     <profiles>
@@ -148,7 +148,7 @@
                                 <goals>
                                     <goal>report</goal>
                                 </goals>
-                            </execution>                        
+                            </execution>
                         </executions>
                     </plugin>
                     <plugin>
@@ -252,7 +252,7 @@
                                 </configuration>
                             </execution>
                         </executions>
-                    </plugin>            
+                    </plugin>
                 </plugins>
             </build>
         </profile>
