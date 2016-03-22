@@ -27,7 +27,7 @@ The streaming API of Apache POI is almost on par with fastexcel in terms of perf
 
 ![Heap memory usage](doc/heap_memory_usage.png)
 
-Note heap memory usage is measured just before flushing the workbook to the outputstream.
+Note heap memory usage is measured just before flushing the workbook to the output stream.
 
 
 ## Prerequisites
