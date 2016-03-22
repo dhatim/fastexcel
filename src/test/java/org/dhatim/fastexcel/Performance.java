@@ -35,7 +35,7 @@ public class Performance {
                 .mode(Mode.SingleShotTime)
                 .warmupIterations(0)
                 .warmupBatchSize(1)
-                .measurementIterations(5)
+                .measurementIterations(1)
                 .threads(1)
                 .forks(0)
                 .timeUnit(TimeUnit.MILLISECONDS)
