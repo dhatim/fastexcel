@@ -22,7 +22,9 @@ So, fastexcel has been created to offer an alternative with the following key po
 In this simple benchmark test, we generate a workbook with a single worksheet containing 100,000 rows and 4 columns.
 Apache PO (non-streaming) is about 10 times slower and uses 12 times more heap memory.
 The streaming API of Apache POI is almost on par with fastexcel in terms of performance and uses less heap just because it keeps only 100 rows in memory; see limitations in the paragraph above.
+
 ![Generation time](doc/generation_time.png)
+
 ![Heap memory usage](doc/heap_memory_usage.png)
 
 Note heap memory usage is measured just before flushing the workbook to the outputstream.
