@@ -38,7 +38,7 @@ Note heap memory usage is measured just before flushing the workbook to the outp
 <dependency>
     <groupId>org.dhatim</groupId>
     <artifactId>fastexcel</artifactId>
-    <version>0.8.5</version>
+    <version>0.8.4</version>
 </dependency>
 ```
 
