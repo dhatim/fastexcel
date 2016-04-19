@@ -69,6 +69,14 @@ public class Correctness {
     }
 
     @Test
+    public void worksheetWithNameLongerThan31Chars() throws Exception {
+        byte[] data = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("01234567890123456789012345678901");
+            assertThat(ws.getName()).isEqualTo("0123456789012345678901234567890");
+        });
+    }
+
+    @Test
     public void checkMaxRows() throws Exception {
         byte[] data = writeWorkbook(wb -> wb.newWorksheet("Worksheet 1").value(Worksheet.MAX_ROWS - 1, 0, "test"));
     }
