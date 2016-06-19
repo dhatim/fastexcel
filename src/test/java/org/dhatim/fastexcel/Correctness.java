@@ -32,8 +32,8 @@ import org.apache.commons.io.output.NullOutputStream;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.junit.Test;
 import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.Test;
 
 public class Correctness {
 
@@ -73,6 +73,21 @@ public class Correctness {
         byte[] data = writeWorkbook(wb -> {
             Worksheet ws = wb.newWorksheet("01234567890123456789012345678901");
             assertThat(ws.getName()).isEqualTo("0123456789012345678901234567890");
+        });
+    }
+
+    @Test
+    public void worksheetsWithSameNames() throws Exception {
+        byte[] data = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("01234567890123456789012345678901");
+            assertThat(ws.getName()).isEqualTo("0123456789012345678901234567890");
+            ws = wb.newWorksheet("0123456789012345678901234567890");
+            assertThat(ws.getName()).isEqualTo("01234567890123456789012345678_1");
+            ws = wb.newWorksheet("01234567890123456789012345678_1");
+            assertThat(ws.getName()).isEqualTo("01234567890123456789012345678_2");
+            wb.newWorksheet("abc");
+            ws = wb.newWorksheet("abc");
+            assertThat(ws.getName()).isEqualTo("abc_1");
         });
     }
 

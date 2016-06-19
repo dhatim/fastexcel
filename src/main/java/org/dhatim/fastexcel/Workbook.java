@@ -22,7 +22,10 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -182,10 +185,23 @@ public class Workbook {
         if (sheetName.length() > 31) {
             sheetName = sheetName.substring(0, 31);
         }
-        Worksheet worksheet = new Worksheet(this, sheetName);
+
         synchronized (worksheets) {
+            // If the worksheet name already exists, append a number
+            int number = 1;
+            Set<String> names = worksheets.stream().map(Worksheet::getName).collect(Collectors.toSet());
+            while (names.contains(sheetName)) {
+                String suffix = String.format(Locale.ROOT, "_%d", number);
+                if (sheetName.length() + suffix.length() > 31) {
+                    sheetName = sheetName.substring(0, 31 - suffix.length()) + suffix;
+                } else {
+                    sheetName += suffix;
+                }
+                ++number;
+            }
+            Worksheet worksheet = new Worksheet(this, sheetName);
             worksheets.add(worksheet);
+            return worksheet;
         }
-        return worksheet;
     }
 }
