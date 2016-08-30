@@ -29,7 +29,7 @@ final class Font {
     /**
      * Default font.
      */
-    protected static final Font DEFAULT = build(false, false, null, null, null);
+    static final Font DEFAULT = build(false, false, null, null, null);
 
     /**
      * Bold flag.
