@@ -29,7 +29,7 @@ class Font {
     /**
      * Default font.
      */
-    protected static final Font DEFAULT = build(false, false, "000000");
+    protected static final Font DEFAULT = build(false, false, null, null, null);
 
     /**
      * Bold flag.
@@ -43,10 +43,6 @@ class Font {
      * Font name.
      */
     private final String name;
-    /**
-     * Font family.
-     */
-    private final int family;
     /**
      * Font size.
      */
@@ -62,34 +58,34 @@ class Font {
      * @param bold Bold flag.
      * @param italic Italic flag.
      * @param name Font name.
-     * @param family Font family numbering.
      * @param size Font size, in points.
      * @param rgbColor RGB font color.
      */
-    Font(boolean bold, boolean italic, String name, int family, BigDecimal size, String rgbColor) {
+    Font(boolean bold, boolean italic, String name, BigDecimal size, String rgbColor) {
         this.bold = bold;
         this.italic = italic;
         this.name = name;
-        this.family = family;
-        this.size = size;
+        this.size = size.setScale(2);
         this.rgbColor = rgbColor;
     }
 
     /**
-     * Helper to create a new "Calibri" font, family 2.
+     * Helper to create a new font.
      *
      * @param bold Bold flag.
      * @param italic Italic flag.
-     * @param rgbColor RGB font color.
+     * @param name Font name. Defaults to "Calibri".
+     * @param size Font size, in points. Defaults to 11.0.
+     * @param rgbColor RGB font color. Defaults to "000000".
      * @return New font object.
      */
-    static Font build(boolean bold, boolean italic, String rgbColor) {
-        return new Font(bold, italic, "Calibri", 2, BigDecimal.valueOf(11.0), rgbColor);
+    static Font build(boolean bold, boolean italic, String name, BigDecimal size, String rgbColor) {
+        return new Font(bold, italic, name == null ? "Calibri" : name, size == null ? BigDecimal.valueOf(11.0) : size, rgbColor == null ? "000000" : rgbColor);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(bold, italic, name, family, size, rgbColor);
+        return Objects.hash(bold, italic, name, size, rgbColor);
     }
 
     @Override
@@ -97,7 +93,7 @@ class Font {
         boolean result;
         if (obj != null && obj.getClass() == this.getClass()) {
             Font other = (Font) obj;
-            result = Objects.equals(bold, other.bold) && Objects.equals(italic, other.italic) && Objects.equals(name, other.name) && Objects.equals(family, other.family) && Objects.equals(size, other.size) && Objects.equals(rgbColor, other.rgbColor);
+            result = Objects.equals(bold, other.bold) && Objects.equals(italic, other.italic) && Objects.equals(name, other.name) && Objects.equals(size, other.size) && Objects.equals(rgbColor, other.rgbColor);
         } else {
             result = false;
         }
@@ -115,6 +111,7 @@ class Font {
         if (rgbColor != null) {
             w.append("<color rgb=\"").append(rgbColor).append("\"/>");
         }
-        w.append("<name val=\"").appendEscaped(name).append("\"/></font>");
+        w.append("<name val=\"").appendEscaped(name).append("\"/>");
+        w.append("</font>");
     }
 }
