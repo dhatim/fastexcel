@@ -234,7 +234,7 @@ public class Correctness {
                 CompletableFuture<Void> cf = CompletableFuture.runAsync(() -> {
                     for (int j = 0; j < numCols; ++j) {
                         ws.value(0, j, "Column " + j);
-                        ws.style(0, j).bold().fillColor(Color.GRAY2).set();
+                        ws.style(0, j).bold().fontSize(12).fillColor(Color.GRAY2).set();
                         for (int k = 1; k <= numRows; ++k) {
                             switch (j) {
                                 case 0:

@@ -24,7 +24,7 @@ import java.util.Objects;
  * <a href="https://msdn.microsoft.com/en-us/library/documentformat.openxml.spreadsheet.font(v=office.14).aspx">this
  * page</a>.
  */
-class Font {
+final class Font {
 
     /**
      * Default font.
