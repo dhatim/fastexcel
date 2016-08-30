@@ -24,12 +24,12 @@ import java.util.Objects;
  * <a href="https://msdn.microsoft.com/en-us/library/documentformat.openxml.spreadsheet.font(v=office.14).aspx">this
  * page</a>.
  */
-final class Font {
+class Font {
 
     /**
      * Default font.
      */
-    static final Font DEFAULT = build(false, false, null, null, null);
+    protected static final Font DEFAULT = build(false, false, null, null, null);
 
     /**
      * Bold flag.
@@ -61,12 +61,21 @@ final class Font {
      * @param size Font size, in points.
      * @param rgbColor RGB font color.
      */
-    private Font(boolean bold, boolean italic, String name, BigDecimal size, String rgbColor) {
+    Font(boolean bold, boolean italic, String name, BigDecimal size, String rgbColor) {
         this.bold = bold;
         this.italic = italic;
         this.name = name;
         this.size = size.setScale(2);
         this.rgbColor = rgbColor;
+    }
+
+    /**
+     * Get the default font.
+     *
+     * @return Default font.
+     */
+    static Font getDefault() {
+        return DEFAULT;
     }
 
     /**
