@@ -15,6 +15,7 @@
  */
 package org.dhatim.fastexcel;
 
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -55,6 +56,14 @@ public class StyleSetter {
      * Italic flag.
      */
     private boolean italic;
+    /**
+     * Font name.
+     */
+    private String fontName;
+    /**
+     * Font size.
+     */
+    private BigDecimal fontSize;
     /**
      * RGB font color.
      */
@@ -132,6 +141,39 @@ public class StyleSetter {
      */
     public StyleSetter fontColor(String rgb) {
         this.fontColor = rgb;
+        return this;
+    }
+
+    /**
+     * Set font name.
+     *
+     * @param name Font name.
+     * @return This style setter.
+     */
+    public StyleSetter fontName(String name) {
+        this.fontName = name;
+        return this;
+    }
+
+    /**
+     * Set font size.
+     *
+     * @param size Font size, in points.
+     * @return This style setter.
+     */
+    public StyleSetter fontSize(BigDecimal size) {
+        this.fontSize = size;
+        return this;
+    }
+
+    /**
+     * Set font size.
+     *
+     * @param size Font size, in points.
+     * @return This style setter.
+     */
+    public StyleSetter fontSize(int size) {
+        this.fontSize = BigDecimal.valueOf(size);
         return this;
     }
 
@@ -236,8 +278,8 @@ public class StyleSetter {
             alignment = null;
         }
         Font font;
-        if (bold || italic || fontColor != null) {
-            font = Font.build(bold, italic, fontColor);
+        if (bold || italic || fontColor != null || fontName != null || fontSize != null) {
+            font = Font.build(bold, italic, fontName, fontSize, fontColor);
         } else {
             font = Font.DEFAULT;
         }
