@@ -70,15 +70,6 @@ class Font {
     }
 
     /**
-     * Get the default font.
-     *
-     * @return Default font.
-     */
-    static Font getDefault() {
-        return DEFAULT;
-    }
-
-    /**
      * Helper to create a new font.
      *
      * @param bold Bold flag.
