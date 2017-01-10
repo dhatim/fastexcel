@@ -66,12 +66,11 @@ class Writer {
     }
 
     /**
-     * Append a char with escaping.
+     * Append a char with XML escaping.
      *
      * @param c Character.
-     * @throws IOException If an I/O error occurs.
      */
-    private void escape(char c) throws IOException {
+    private void escape(char c) {
         switch (c) {
             case '<':
                 sb.append("&lt;");
