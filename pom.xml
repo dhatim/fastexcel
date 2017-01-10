@@ -42,6 +42,13 @@
         </snapshotRepository>
     </distributionManagement>
 
+    <properties>
+        <sonar.projectVersion>${env.BUILD_NUMBER}</sonar.projectVersion>
+        <sonar.login>${env.SONAR_AUTH_TOKEN}</sonar.login>
+        <sonar.github.repository>dhatim/fastexcel</sonar.github.repository>
+        <sonar.github.oauth>${env.SONAR_GITHUB_OAUTH}</sonar.github.oauth>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.poi</groupId>
@@ -164,6 +171,10 @@
                                 </goals>
                             </execution>
                         </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonarsource.scanner.maven</groupId>
+                        <artifactId>sonar-maven-plugin</artifactId>
                     </plugin>
                 </plugins>
             </build>
