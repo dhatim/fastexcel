@@ -8,7 +8,7 @@ then
     echo ${GPG_SECRET_KEY} | base64 --decode | gpg --import
     echo ${GPG_OWNERTRUST} | base64 --decode | gpg --import-ownertrust
     mvn versions:set -DnewVersion=${TRAVIS_TAG}
-    mvn -s .travis/settings.xml -Pbuild,release deploy
+    mvn -s .travis/settings.xml -Prelease deploy
 else
     # this is a regular build
     mvn install
