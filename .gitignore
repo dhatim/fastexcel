@@ -13,4 +13,4 @@ hs_err_pid*
 
 # JMH report file
 jmh.csv
-/target
+*/target
