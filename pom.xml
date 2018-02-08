@@ -13,11 +13,11 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>writer</module>
+        <module>fastexcel-writer</module>
         <module>fastexcel-reader</module>
     </modules>
 
-    <name>${project.groupId}:${project.artifactId}</name>
+    <name>Fastexcel Project</name>
     <description>Fast library to process Excel workbooks</description>
     <url>https://github.com/dhatim/fastexcel</url>
 

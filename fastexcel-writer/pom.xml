@@ -9,6 +9,7 @@
     </parent>
     
     <artifactId>fastexcel</artifactId>
+    <name>Fastexcel Writer</name>
     <packaging>jar</packaging>
 
     <dependencies>
