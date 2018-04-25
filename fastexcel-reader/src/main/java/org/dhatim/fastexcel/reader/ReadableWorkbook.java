@@ -12,6 +12,7 @@ import java.util.stream.StreamSupport;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.openxml4j.exceptions.NotOfficeXmlFileException;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
@@ -32,7 +33,7 @@ public class ReadableWorkbook implements Closeable {
             pkg = OPCPackage.open(inputStream);
             reader = new XSSFReader(pkg);
             sst = reader.getSharedStringsTable();
-        } catch (OpenXML4JException e) {
+        } catch (NotOfficeXmlFileException | OpenXML4JException e) {
             throw new ExcelReaderException(e);
         }
         factory = XMLInputFactory.newInstance();
