@@ -33,9 +33,7 @@ public class ReadableWorkbook implements Closeable {
             pkg = OPCPackage.open(inputStream);
             reader = new XSSFReader(pkg);
             sst = reader.getSharedStringsTable();
-        } catch (NotOfficeXmlFileException e) {
-            throw new ExcelReaderException(e);
-        } catch (OpenXML4JException e) {
+        } catch (NotOfficeXmlFileException | OpenXML4JException e) {
             throw new ExcelReaderException(e);
         }
         factory = XMLInputFactory.newInstance();
