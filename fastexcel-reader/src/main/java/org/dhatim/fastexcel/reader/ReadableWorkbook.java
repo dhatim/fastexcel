@@ -14,6 +14,9 @@ import javax.xml.stream.XMLStreamException;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.poifs.common.POIFSConstants;
+import org.apache.poi.poifs.storage.HeaderBlockConstants;
+import org.apache.poi.util.LittleEndian;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.poi.xssf.model.SharedStringsTable;
 
@@ -77,7 +80,7 @@ public class ReadableWorkbook implements Closeable {
                 r.forEach("sheet", "sheets", this::createSheet);
             } else if ("workbookPr".equals(r.getLocalName())) {
                 String date1904Value = r.getAttribute("date1904");
-                date1904 = date1904Value == null ? false : Boolean.parseBoolean(date1904Value);
+                date1904 = Boolean.parseBoolean(date1904Value);
             } else {
                 break;
             }
@@ -107,6 +110,42 @@ public class ReadableWorkbook implements Closeable {
 
     SharedStringsTable getSharedStringsTable() {
         return sst;
+    }
+
+    public static boolean isOOXMLZipHeader(byte[] bytes) {
+        requireLength(bytes, POIFSConstants.OOXML_FILE_HEADER.length);
+        return arrayEquals(bytes, 0, POIFSConstants.OOXML_FILE_HEADER, 0, POIFSConstants.OOXML_FILE_HEADER.length);
+    }
+
+    public static boolean isOLE2Header(byte[] bytes) {
+        requireLength(bytes, 8);
+        byte[] ole2Header = new byte[8];
+        LittleEndian.putLong(ole2Header, 0, HeaderBlockConstants._signature);
+        return arrayEquals(bytes, 0, ole2Header, 0, ole2Header.length);
+    }
+
+    private static void requireLength(byte[] bytes, int requiredLength) {
+        if (bytes.length < requiredLength) {
+            throw new IllegalArgumentException("Insufficient header bytes");
+        }
+    }
+
+    private static boolean arrayEquals(byte[] a, int offsetA, byte[] b, int offsetB, int length) {
+        if (a == b) {
+            return true;
+        }
+        if (a == null || b == null) {
+            return false;
+        }
+        if ((offsetA + length > a.length) || (offsetB + length > b.length)) {
+            return false;
+        }
+        for (int i=0; i<length; i++) {
+            if (a[offsetA + i] != b[offsetB + i]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static Runnable asUncheckedRunnable(Closeable c) {
