@@ -2,6 +2,7 @@ package org.dhatim.fastexcel.reader;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -56,10 +57,8 @@ public class Cell {
         return (BigDecimal) value;
     }
 
-    public OffsetDateTime asDate() {
-        if (type == CellType.DATE) {
-            return (OffsetDateTime) value;
-        } else if (type == CellType.NUMBER) {
+    public LocalDateTime asDate() {
+        if (type == CellType.NUMBER) {
             return convertToDate(Double.parseDouble(rawValue));
         } else if (type == CellType.EMPTY) {
             return null;
@@ -68,7 +67,7 @@ public class Cell {
         }
     }
 
-    private OffsetDateTime convertToDate(double value) {
+    private LocalDateTime convertToDate(double value) {
         int wholeDays = (int) Math.floor(value);
         long millisecondsInDay = (long) (((value - wholeDays) * DAY_MILLISECONDS) + 0.5D);
 
@@ -84,8 +83,7 @@ public class Cell {
         }
         LocalDate localDate = LocalDate.of(startYear, 1, 1).plusDays((long) wholeDays + dayAdjust - 1);
         LocalTime localTime = LocalTime.ofNanoOfDay(millisecondsInDay * 1_000_000);
-        ZonedDateTime date = ZonedDateTime.of(localDate, localTime, ZoneId.systemDefault());
-        return date.toOffsetDateTime();
+        return LocalDateTime.of(localDate, localTime);
     }
 
     public boolean asBoolean() {

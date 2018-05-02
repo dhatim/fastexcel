@@ -17,6 +17,8 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class FastExcelReaderTest {
 
@@ -55,7 +57,36 @@ public class FastExcelReaderTest {
 
     private static final String EXCEL_DATES = "/xlsx/dates.xlsx";
 
-    private static final String[] EXCEL_FILES = {
+    private static final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
+
+    @Test
+    public void testDates() throws IOException, OpenXML4JException {
+        ArrayList<RowDates> values = new ArrayList<>();
+
+        try (InputStream inputStream = open(EXCEL_DATES); ReadableWorkbook fworkbook = new ReadableWorkbook(inputStream)) {
+            try (Stream<Row> stream = fworkbook.getFirstSheet().openStream()) {
+                stream.forEach(row -> {
+                    values.add(new RowDates(row.getRowNum(), row.getCell(0).asDate().toString(), row.getCell(1).asDate().toString()));
+                });
+            }
+        }
+
+        ArrayList<RowDates> wvalues = new ArrayList<>();
+        try (InputStream inputStream = open(EXCEL_DATES); Workbook workbook = WorkbookFactory.create(inputStream)) {
+            for (org.apache.poi.ss.usermodel.Row row : workbook.getSheetAt(0)) {
+                wvalues.add(new RowDates(row.getRowNum() + 1, toODT(row.getCell(0).getDateCellValue()), toODT(row.getCell(1).getDateCellValue())));
+            }
+        }
+
+        for (int i = 0; i < values.size(); i++) {
+            if (!values.get(i).equals(wvalues.get(i))) {
+                assertThat(values.get(i)).isEqualTo(wvalues.get(i));
+            }
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
             "/xlsx/AutoFilter.xlsx",
             "/xlsx/calendar_stress_test.xlsx",
             "/xlsx/cell_style_simple.xlsx",
@@ -85,102 +116,66 @@ public class FastExcelReaderTest {
             "/xlsx/sushi.xlsx",
             "/xlsx/text_and_numbers.xlsx",
             "/xlsx/world.xlsx",
-            "/xlsx/write.xlsx"
+            "/xlsx/write.xlsx",
             // "/xlsx/xlsx-stream-d-date-cell.xlsx"
-    };
+    })
+    public void testFile(String file) {
+        LOGGER.info("Test " + file);
+        try (InputStream inputStream = open(file); InputStream inputStream2 = open(file)) {
+            try (ReadableWorkbook excel = new ReadableWorkbook(inputStream); Workbook workbook = WorkbookFactory.create(inputStream2)) {
+                Iterator<Sheet> it = excel.getSheets().iterator();
+                while (it.hasNext()) {
+                    Sheet sheetDef = it.next();
 
-    private static final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mmXXX");
+                    org.apache.poi.ss.usermodel.Sheet sheet = workbook.getSheetAt(sheetDef.getIndex());
 
-    @Test
-    public void testDates() throws IOException, OpenXML4JException {
-        ArrayList<RowDates> values = new ArrayList<>();
+                    try (Stream<Row> data = sheetDef.openStream()) {
+                        Iterator<Row> rowIt = data.iterator();
+                        Iterator<org.apache.poi.ss.usermodel.Row> itr = sheet.iterator();
 
-        try (InputStream inputStream = open(EXCEL_DATES); ReadableWorkbook fworkbook = new ReadableWorkbook(inputStream)) {
-            try (Stream<Row> stream = fworkbook.getFirstSheet().openStream()) {
-                stream.forEach(row -> {
-                    values.add(new RowDates(row.getRowNum(), row.getCell(0).asDate().toString(), row.getCell(1).asDate().toString()));
-                });
-            }
-        }
+                        while (rowIt.hasNext()) {
+                            Row row = rowIt.next();
+                            org.apache.poi.ss.usermodel.Row expected = itr.next();
 
-        ArrayList<RowDates> wvalues = new ArrayList<>();
-        try (InputStream inputStream = open(EXCEL_DATES); Workbook workbook = WorkbookFactory.create(inputStream)) {
-            for (org.apache.poi.ss.usermodel.Row row : workbook.getSheetAt(0)) {
-                wvalues.add(new RowDates(row.getRowNum() + 1, toODT(row.getCell(0).getDateCellValue()), toODT(row.getCell(1).getDateCellValue())));
-            }
-        }
+                            assertThat(row.getPhysicalCellCount()).as("physical cell").isEqualTo(expected.getPhysicalNumberOfCells());
+                            assertThat(row.getCellCount()).as("logical cell").isEqualTo(expected.getLastCellNum() == -1 ? 0 : expected.getLastCellNum());
 
-        for (int i = 0; i < values.size(); i++) {
-            if (!values.get(i).equals(wvalues.get(i))) {
-                assertThat(values.get(i)).isEqualTo(wvalues.get(i));
-            }
-        }
-    }
+                            for (int i = 0; i < row.getCellCount(); i++) {
+                                Cell cell = row.getCell(i);
+                                org.apache.poi.ss.usermodel.Cell expCell = expected.getCell(i);
 
-    @Test
-    public void testFiles() {
-        for (String file : EXCEL_FILES) {
-            LOGGER.info("Test " + file);
-            try (InputStream inputStream = open(file); InputStream inputStream2 = open(file)) {
-                try (ReadableWorkbook excel = new ReadableWorkbook(inputStream); Workbook workbook = WorkbookFactory.create(inputStream2)) {
-                    Iterator<Sheet> it = excel.getSheets().iterator();
-                    while (it.hasNext()) {
-                        Sheet sheetDef = it.next();
+                                assertThat(cell == null).as("cell defined " + i).isEqualTo(expCell == null);
+                                if (cell != null) {
+                                    String cellAddr = cell.getAddress().toString();
+                                    assertThat(toCode(cell.getType())).as("cell type code " + cellAddr).isEqualTo(expCell.getCellTypeEnum().getCode());
 
-                        org.apache.poi.ss.usermodel.Sheet sheet = workbook.getSheetAt(sheetDef.getIndex());
-
-                        try (Stream<Row> data = sheetDef.openStream()) {
-                            Iterator<Row> rowIt = data.iterator();
-                            Iterator<org.apache.poi.ss.usermodel.Row> itr = sheet.iterator();
-
-                            while (rowIt.hasNext()) {
-                                Row row = rowIt.next();
-                                org.apache.poi.ss.usermodel.Row expected = itr.next();
-
-                                assertThat(row.getPhysicalCellCount()).as("physical cell").isEqualTo(expected.getPhysicalNumberOfCells());
-                                assertThat(row.getCellCount()).as("logical cell").isEqualTo(expected.getLastCellNum() == -1 ? 0 : expected.getLastCellNum());
-
-                                for (int i = 0; i < row.getCellCount(); i++) {
-                                    Cell cell = row.getCell(i);
-                                    org.apache.poi.ss.usermodel.Cell expCell = expected.getCell(i);
-
-                                    assertThat(cell == null).as("cell defined " + i).isEqualTo(expCell == null);
-                                    if (cell != null) {
-                                        String cellAddr = cell.getAddress().toString();
-                                        assertThat(toCode(cell.getType())).as("cell type code " + cellAddr).isEqualTo(expCell.getCellTypeEnum().getCode());
-
-                                        if (cell.getType() == CellType.NUMBER) {
-                                            BigDecimal n = cell.asNumber();
-                                            BigDecimal expN = new BigDecimal(getRawValue(expCell));
-                                            assertThat(n).as("Number " + cellAddr).isEqualTo(expN);
-                                        } else if (cell.getType() == CellType.STRING) {
-                                            String s = cell.asString();
-                                            String expS = expCell.getStringCellValue();
-                                            assertThat(s).as("String " + cellAddr).isEqualTo(expS);
-                                        }
+                                    if (cell.getType() == CellType.NUMBER) {
+                                        BigDecimal n = cell.asNumber();
+                                        BigDecimal expN = new BigDecimal(getRawValue(expCell));
+                                        assertThat(n).as("Number " + cellAddr).isEqualTo(expN);
+                                    } else if (cell.getType() == CellType.STRING) {
+                                        String s = cell.asString();
+                                        String expS = expCell.getStringCellValue();
+                                        assertThat(s).as("String " + cellAddr).isEqualTo(expS);
                                     }
                                 }
                             }
-                        } catch (Throwable e) {
-                            throw new RuntimeException("On sheet " + sheetDef.getId() + " " + sheetDef.getName(), e);
                         }
+                    } catch (Throwable e) {
+                        throw new RuntimeException("On sheet " + sheetDef.getId() + " " + sheetDef.getName(), e);
                     }
-
                 }
-            } catch (Throwable e) {
-                throw new RuntimeException("On file " + file, e);
+
             }
-
+        } catch (Throwable e) {
+            throw new RuntimeException("On file " + file, e);
         }
-
     }
 
     private static int toCode(CellType type) {
         switch (type) {
             case BOOLEAN:
                 return 4;
-            case DATE:
-                return 10;
             case EMPTY:
                 return 3;
             case ERROR:

@@ -2,7 +2,6 @@ package org.dhatim.fastexcel.reader;
 
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -127,10 +126,6 @@ class RowSpliterator implements Spliterator<Row> {
                     case "e":
                         definedType = CellType.ERROR;
                         parser = Function.identity();
-                        break;
-                    case "d":
-                        definedType = CellType.DATE;
-                        parser = OffsetDateTime::parse;
                         break;
                     case "n":
                         definedType = CellType.NUMBER;
