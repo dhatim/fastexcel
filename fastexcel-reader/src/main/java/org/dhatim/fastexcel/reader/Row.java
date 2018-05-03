@@ -1,7 +1,7 @@
 package org.dhatim.fastexcel.reader;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -81,7 +81,7 @@ public class Row implements Iterable<Cell> {
         return getOptionalCell(cellIndex).map(Cell::asString);
     }
 
-    public Optional<OffsetDateTime> getCellAsDate(int cellIndex) {
+    public Optional<LocalDateTime> getCellAsDate(int cellIndex) {
         return getOptionalCell(cellIndex).map(Cell::asDate);
     }
 
