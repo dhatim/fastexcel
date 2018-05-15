@@ -1,9 +1,12 @@
-# fastexcel
-
+fastexcel
+=========
 [![Build Status](https://travis-ci.org/dhatim/fastexcel.png?branch=master)](https://travis-ci.org/dhatim/fastexcel)
 [![Coverage Status](https://coveralls.io/repos/github/dhatim/fastexcel/badge.svg?branch=master)](https://coveralls.io/github/dhatim/fastexcel?branch=master)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/aaa0b14bdc2944a7b5a46c06557314e8)](https://www.codacy.com/app/mathieu-ligocki/fastexcel?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=dhatim/fastexcel&amp;utm_campaign=Badge_Grade)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.dhatim/fastexcel/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.dhatim/fastexcel)
 [![Javadocs](http://www.javadoc.io/badge/org.dhatim/fastexcel.svg)](http://www.javadoc.io/doc/org.dhatim/fastexcel)
+
+# fastexcel-writer
 
 There are not many alternatives when you have to generate xlsx Excel workbooks in Java. The most popular one ([Apache POI](https://poi.apache.org/)) includes many features, but when it comes down to huge worksheets it quickly becomes a memory hog.
 
@@ -38,7 +41,7 @@ Note heap memory usage is measured just before flushing the workbook to the outp
 <dependency>
     <groupId>org.dhatim</groupId>
     <artifactId>fastexcel</artifactId>
-    <version>0.9.0</version>
+    <version>0.9.3</version>
 </dependency>
 ```
 
@@ -117,4 +120,62 @@ try (OutputStream os = ...) {
     CompletableFuture.allOf(cf1, cf2).get();
     wb.finish();
 }
+```
+
+# fastexcel-reader
+
+The reader part of fastexcel is a streaming alternative of [Apache POI](https://poi.apache.org/). It only reads cell content. It discards styles, graphs, and many other stuff. The API is simplier than streaming API of Apache POI.
+
+## Benchmarks
+
+In this simple benchmark test, we read a workbook of 65536 lines. We see that Apache Poi (non-streaming) is about 10x times slower than fastexcel read. The streaming API of Apache POI is about 2x times slower.
+
+![Reading time](doc/reading_time.png)
+
+## Prerequisites
+
+- Java 8. Build with Maven.
+- Include the following dependency in your POM:
+```xml
+<dependency>
+    <groupId>org.dhatim</groupId>
+    <artifactId>fastexcel-reader</artifactId>
+    <version>0.9.3</version>
+</dependency>
+```
+
+## Examples
+
+### Simple reading
+
+Open a workbook and read all rows in a streaming way.
+
+```java
+
+try (InputStream is = ...; ReadableWorkbook wb = new ReadableWorkbook(is)) {
+    Sheet sheet = wb.getFirstSheet();
+    try (Stream<Row> rows = sheet.openStream()) {
+        rows.forEach(r -> {
+            BigDecimal num = r.getCellAsNumber(0).orElse(null);
+            String str = r.getCellAsString(1).orElse(null);
+            LocalDateTime date = r.getCellAsDate(2).orElse(null);
+        });
+    }
+}
+
+```
+
+You can read all rows to a list with:
+
+```java
+List<Row> rows = sheet.read();
+```
+
+Iterate on row to get all cells.
+
+```java
+Row row = ...;
+row.forEach(cell -> {
+    ...
+});
 ```
