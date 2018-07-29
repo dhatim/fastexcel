@@ -68,9 +68,9 @@ class Writer {
     /**
      * Append a char with XML escaping.
      *
-     * @param c Character.
+     * @param c Character code point.
      */
-    private void escape(char c) {
+    private void escape(int c) {
         switch (c) {
             case '<':
                 sb.append("&lt;");
@@ -91,7 +91,7 @@ class Writer {
                 if (c > 0x7e) {
                     sb.append("&#x").append(Integer.toHexString(c)).append(';');
                 } else {
-                    sb.append(c);
+                    sb.append((char) c);
                 }
                 break;
         }
@@ -107,8 +107,11 @@ class Writer {
      */
     private Writer append(String s, boolean escape) throws IOException {
         if (escape) {
-            for (int i = 0; i < s.length(); ++i) {
-                escape(s.charAt(i));
+            int offset = 0;
+            while (offset < s.length()) {
+                int codePoint = s.codePointAt(offset);
+                escape(codePoint);
+                offset += Character.charCount(codePoint);
             }
         } else {
             sb.append(s);
