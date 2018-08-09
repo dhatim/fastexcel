@@ -66,11 +66,18 @@ class Writer {
     }
 
     /**
-     * Append a char with XML escaping.
+     * Append a char with XML escaping. Invalid characters in XML 1.0 are
+     * ignored.
      *
      * @param c Character code point.
      */
     private void escape(int c) {
+        if (!(c == 0x9 || c == 0xa || c == 0xD
+                || (c >= 0x20 && c <= 0xd7ff)
+                || (c >= 0xe000 && c <= 0xfffd)
+                || (c >= 0x10000 && c <= 0x10ffff))) {
+            return;
+        }
         switch (c) {
             case '<':
                 sb.append("&lt;");
@@ -88,7 +95,7 @@ class Writer {
                 sb.append("&quot;");
                 break;
             default:
-                if (c > 0x7e) {
+                if (c > 0x7e || c < 0x20) {
                     sb.append("&#x").append(Integer.toHexString(c)).append(';');
                 } else {
                     sb.append((char) c);

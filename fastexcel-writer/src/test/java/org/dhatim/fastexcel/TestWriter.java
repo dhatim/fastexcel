@@ -31,4 +31,14 @@ public class TestWriter {
         String s = baos.toString("UTF-8");
         assertThat(s).isEqualTo("not escaped but &lt;this will be escaped &#x1f601;&gt;");
     }
+
+    @Test
+    public void testEscapingInvalidCharacters() throws Exception {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        Writer w = new Writer(baos);
+        w.appendEscaped("some characters are ignored: \b or \u0001");
+        w.flush();
+        String s = baos.toString("UTF-8");
+        assertThat(s).isEqualTo("some characters are ignored:  or ");
+    }
 }
