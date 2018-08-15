@@ -16,7 +16,8 @@
 package org.dhatim.fastexcel;
 
 import java.io.IOException;
-import java.util.Objects;
+import java.util.EnumMap;
+import java.util.Map;
 
 /**
  * Border attributes.
@@ -26,28 +27,28 @@ class Border {
     /**
      * Default border attributes: no borders.
      */
-    protected static final Border NONE = new Border(BorderElement.NONE, BorderElement.NONE, BorderElement.NONE, BorderElement.NONE, BorderElement.NONE);
+    protected static final Border NONE = new Border();
 
     /**
-     * Left border element.
+     * Border elements.
      */
-    private final BorderElement left;
+    final Map<BorderSide, BorderElement> elements = new EnumMap<>(BorderSide.class);
+
     /**
-     * Right border element.
+     * Default constructor.
      */
-    private final BorderElement right;
+    Border() {
+        this(BorderElement.NONE, BorderElement.NONE, BorderElement.NONE, BorderElement.NONE, BorderElement.NONE);
+    }
+
     /**
-     * Top border element.
+     * Simple constructor.
+     *
+     * @param element Border element for all sides, except diagonal.
      */
-    private final BorderElement top;
-    /**
-     * Bottom border element.
-     */
-    private final BorderElement bottom;
-    /**
-     * Diagonal border element.
-     */
-    private final BorderElement diagonal;
+    Border(BorderElement element) {
+        this(element, element, element, element, BorderElement.NONE);
+    }
 
     /**
      * Constructor.
@@ -59,11 +60,21 @@ class Border {
      * @param diagonal Border element for diagonal side.
      */
     Border(BorderElement left, BorderElement right, BorderElement top, BorderElement bottom, BorderElement diagonal) {
-        this.left = left;
-        this.right = right;
-        this.top = top;
-        this.bottom = bottom;
-        this.diagonal = diagonal;
+        elements.put(BorderSide.TOP, top);
+        elements.put(BorderSide.LEFT, left);
+        elements.put(BorderSide.BOTTOM, bottom);
+        elements.put(BorderSide.RIGHT, right);
+        elements.put(BorderSide.DIAGONAL, diagonal);
+    }
+
+    /**
+     * Set a single border element.
+     *
+     * @param side Border side.
+     * @param element Border element.
+     */
+    void setElement(BorderSide side, BorderElement element) {
+        elements.put(side, element);
     }
 
     /**
@@ -81,7 +92,7 @@ class Border {
 
     @Override
     public int hashCode() {
-        return Objects.hash(left, right, top, bottom, diagonal);
+        return elements.hashCode();
     }
 
     @Override
@@ -89,7 +100,7 @@ class Border {
         boolean result;
         if (obj != null && obj.getClass() == this.getClass()) {
             Border other = (Border) obj;
-            result = Objects.equals(left, other.left) && Objects.equals(right, other.right) && Objects.equals(top, other.top) && Objects.equals(bottom, other.bottom) && Objects.equals(diagonal, other.diagonal);
+            result = elements.equals(other.elements);
         } else {
             result = false;
         }
@@ -104,11 +115,11 @@ class Border {
      */
     void write(Writer w) throws IOException {
         w.append("<border>");
-        left.write("left", w);
-        right.write("right", w);
-        top.write("top", w);
-        bottom.write("bottom", w);
-        diagonal.write("diagonal", w);
+        elements.get(BorderSide.LEFT).write("left", w);
+        elements.get(BorderSide.RIGHT).write("right", w);
+        elements.get(BorderSide.TOP).write("top", w);
+        elements.get(BorderSide.BOTTOM).write("bottom", w);
+        elements.get(BorderSide.DIAGONAL).write("diagonal", w);
         w.append("</border>");
     }
 

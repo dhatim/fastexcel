@@ -16,6 +16,7 @@
 package org.dhatim.fastexcel;
 
 import java.math.BigDecimal;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -81,13 +82,9 @@ public class StyleSetter {
      */
     private boolean wrapText;
     /**
-     * Border style.
+     * Border.
      */
-    private String borderStyle;
-    /**
-     * RGB border color.
-     */
-    private String borderColor;
+    private Border border;
 
     /**
      * Constructor.
@@ -234,15 +231,50 @@ public class StyleSetter {
     }
 
     /**
-     * Set cell border style.
+     * Set cell border element.
+     *
+     * @param side Border side where element is set.
+     * @param element Border element to set.
+     * @return This style setter.
+     */
+    private StyleSetter borderElement(BorderSide side, BorderElement element) {
+        if (border == null) {
+            border = new Border();
+        }
+        border.setElement(side, element);
+        return this;
+    }
+
+    /**
+     * Apply cell border style on all sides, except diagonal.
      *
      * @param borderStyle Border style. Possible values are defined
      * <a href="https://msdn.microsoft.com/en-us/library/documentformat.openxml.spreadsheet.borderstylevalues(v=office.14).aspx">here</a>.
      * @return This style setter.
      */
     public StyleSetter borderStyle(String borderStyle) {
-        this.borderStyle = borderStyle;
+        if (border == null) {
+            border = new Border();
+        }
+        EnumSet.of(BorderSide.TOP, BorderSide.LEFT, BorderSide.BOTTOM, BorderSide.RIGHT).forEach(side -> {
+            borderElement(side, border.elements.get(side).updateStyle(borderStyle));
+        });
         return this;
+    }
+
+    /**
+     * Apply cell border style on a side.
+     *
+     * @param side Border side where to apply the given style.
+     * @param borderStyle Border style. Possible values are defined
+     * <a href="https://msdn.microsoft.com/en-us/library/documentformat.openxml.spreadsheet.borderstylevalues(v=office.14).aspx">here</a>.
+     * @return This style setter.
+     */
+    public StyleSetter borderStyle(BorderSide side, String borderStyle) {
+        if (border == null) {
+            border = new Border();
+        }
+        return borderElement(side, border.elements.get(side).updateStyle(borderStyle));
     }
 
     /**
@@ -252,8 +284,27 @@ public class StyleSetter {
      * @return This style setter.
      */
     public StyleSetter borderColor(String borderColor) {
-        this.borderColor = borderColor;
+        if (border == null) {
+            border = new Border();
+        }
+        EnumSet.of(BorderSide.TOP, BorderSide.LEFT, BorderSide.BOTTOM, BorderSide.RIGHT).forEach(side -> {
+            borderElement(side, border.elements.get(side).updateColor(borderColor));
+        });
         return this;
+    }
+
+    /**
+     * Set cell border color.
+     *
+     * @param side Border side where to apply the given border color.
+     * @param borderColor RGB border color.
+     * @return This style setter.
+     */
+    public StyleSetter borderColor(BorderSide side, String borderColor) {
+        if (border == null) {
+            border = new Border();
+        }
+        return borderElement(side, border.elements.get(side).updateColor(borderColor));
     }
 
     /**
@@ -289,11 +340,8 @@ public class StyleSetter {
         } else {
             fill = Fill.fromColor(fillColor);
         }
-        Border border;
-        if (borderStyle == null && borderColor == null) {
+        if (border == null) {
             border = Border.NONE;
-        } else {
-            border = Border.fromStyleAndColor(borderStyle, borderColor);
         }
 
         // Compute a map giving new styles for current styles
