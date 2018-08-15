@@ -89,6 +89,9 @@ class Style {
      */
     void write(Writer w) throws IOException {
         w.append("<xf numFmtId=\"").append(valueFormatting).append("\" fontId=\"").append(font).append("\" fillId=\"").append(fill).append("\" borderId=\"").append(border).append("\" xfId=\"0\"");
+        if (border != 0) {
+            w.append(" applyBorder=\"1\"");
+        }
         if (alignment == null) {
             w.append("/>");
         } else {

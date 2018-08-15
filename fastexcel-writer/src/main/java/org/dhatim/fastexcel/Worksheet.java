@@ -230,7 +230,7 @@ public class Worksheet {
      */
     private void writeCols(Writer w, int nbCols) throws IOException {
         // Adjust column widths
-        w.append("<cols>");
+        boolean started = false;
         for (int c = 0; c < nbCols; ++c) {
             double maxWidth = 0;
             for (int r = 0; r < rows.size(); ++r) {
@@ -242,10 +242,16 @@ public class Worksheet {
                 }
             }
             if (maxWidth > 0) {
+                if (!started) {
+                    w.append("<cols>");
+                    started = true;
+                }
                 w.append("<col min=\"").append(c + 1).append("\" max=\"").append(c + 1).append("\" width=\"").append(Math.min(255.0, maxWidth)).append("\" customWidth=\"true\" bestFit=\"true\"/>");
             }
         }
-        w.append("</cols>");
+        if (started) {
+            w.append("</cols>");
+        }
     }
 
     /**

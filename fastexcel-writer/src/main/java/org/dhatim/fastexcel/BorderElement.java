@@ -51,6 +51,26 @@ class BorderElement {
         this.rgbColor = rgbColor;
     }
 
+    /**
+     * Return a new border element with an updated style.
+     *
+     * @param style Updated style.
+     * @return New border element.
+     */
+    BorderElement updateStyle(String style) {
+        return new BorderElement(style, this.rgbColor);
+    }
+
+    /**
+     * Return a new border element with an updated RGB border color.
+     *
+     * @param rgbColor Updated RGB border color.
+     * @return New border element.
+     */
+    BorderElement updateColor(String rgbColor) {
+        return new BorderElement(this.style, rgbColor);
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(style, rgbColor);

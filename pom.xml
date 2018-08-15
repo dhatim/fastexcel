@@ -34,20 +34,22 @@
             <organizationUrl>http://dhatim.com/</organizationUrl>
         </developer>
     </developers>
-    
+
     <scm>
         <connection>scm:git:git@github.com:dhatim/fastexcel.git</connection>
         <developerConnection>scm:git:git@github.com:dhatim/fastexcel.git</developerConnection>
         <url>git@github.com:dhatim/fastexcel.git</url>
     </scm>
-    
+
     <properties>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
         <sonar.projectVersion>${env.BUILD_NUMBER}</sonar.projectVersion>
         <sonar.login>${env.SONAR_AUTH_TOKEN}</sonar.login>
         <sonar.github.repository>dhatim/fastexcel</sonar.github.repository>
         <sonar.github.oauth>${env.SONAR_GITHUB_OAUTH}</sonar.github.oauth>
     </properties>
-    
+
     <build>
         <plugins>
             <plugin>
@@ -94,7 +96,7 @@
             </plugin>
         </plugins>
     </build>
-    
+
     <profiles>
         <profile>
             <id>release</id>
@@ -137,5 +139,4 @@
             </build>
         </profile>
     </profiles>
-
 </project>
