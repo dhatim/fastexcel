@@ -34,13 +34,13 @@
             <organizationUrl>http://dhatim.com/</organizationUrl>
         </developer>
     </developers>
-    
+
     <scm>
         <connection>scm:git:git@github.com:dhatim/fastexcel.git</connection>
         <developerConnection>scm:git:git@github.com:dhatim/fastexcel.git</developerConnection>
         <url>git@github.com:dhatim/fastexcel.git</url>
     </scm>
-    
+
     <properties>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -49,9 +49,28 @@
         <sonar.github.repository>dhatim/fastexcel</sonar.github.repository>
         <sonar.github.oauth>${env.SONAR_GITHUB_OAUTH}</sonar.github.oauth>
     </properties>
-    
+
     <build>
         <plugins>
+            <plugin>	
+                <groupId>org.apache.maven.plugins</groupId>	
+                <artifactId>maven-toolchains-plugin</artifactId>	
+                <version>1.1</version>	
+                <configuration>	
+                    <toolchains>	
+                        <jdk>	
+                            <version>1.8</version>	
+                        </jdk>	
+                    </toolchains>	
+                </configuration>	
+                <executions>	
+                    <execution>	
+                        <goals>	
+                            <goal>toolchain</goal>	
+                        </goals>	
+                    </execution>	
+                </executions>	
+            </plugin>
             <plugin>
                 <groupId>org.eluder.coveralls</groupId>
                 <artifactId>coveralls-maven-plugin</artifactId>
@@ -77,7 +96,7 @@
             </plugin>
         </plugins>
     </build>
-    
+
     <profiles>
         <profile>
             <id>release</id>
