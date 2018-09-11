@@ -56,6 +56,10 @@ public class Worksheet {
      */
     private final List<AlternateShading> alternateShadingRanges = new ArrayList<>();
     /**
+     * List of rows to hide
+     */
+    private final Set<Integer> hiddenRows = new HashSet<>();
+    /**
      * Is this worksheet construction completed?
      */
     private boolean finished;
@@ -141,6 +145,17 @@ public class Worksheet {
      */
     void shadeAlternateRows(Range range, Fill fill) {
         alternateShadingRanges.add(new AlternateShading(range, getWorkbook().cacheAlternateShadingFillColor(fill)));
+    }
+
+    /**
+     * Hide the given row.
+     *
+     * @param row Zero-based row number
+     * @param isHidden Whether or not this row is hidden
+     */
+    void hideRow(int row, boolean isHidden) {
+        if (isHidden) hiddenRows.add(row);
+        else hiddenRows.remove(row);
     }
 
     /**
@@ -234,8 +249,8 @@ public class Worksheet {
         for (int c = 0; c < nbCols; ++c) {
             double maxWidth = 0;
             for (int r = 0; r < rows.size(); ++r) {
-                // Exclude merged cells from computation
-                Object o = isCellInMergedRanges(r, c) ? null : value(r, c);
+                // Exclude merged cells from computation && hidden rows
+                Object o = hiddenRows.contains(r) || isCellInMergedRanges(r, c) ? null : value(r, c);
                 if (o != null && !(o instanceof Formula)) {
                     int length = o.toString().length();
                     maxWidth = Math.max(maxWidth, (int) ((length * 7 + 10) / 7.0 * 256) / 256.0);
@@ -276,7 +291,7 @@ public class Worksheet {
             for (int r = 0; r < rows.size(); ++r) {
                 Cell[] row = rows.get(r);
                 if (row != null) {
-                    writeRow(w, r, row);
+                    writeRow(w, r, hiddenRows.contains(r), row);
                 }
             }
             w.append("</sheetData>");
@@ -303,11 +318,12 @@ public class Worksheet {
      *
      * @param w Output writer.
      * @param r Zero-based row number.
+     * @param isHidden Whether or not this row is hidden
      * @param row Cells in the row.
      * @throws IOException If an I/O error occurs.
      */
-    private static void writeRow(Writer w, int r, Cell... row) throws IOException {
-        w.append("<row r=\"").append(r + 1).append("\">");
+    private static void writeRow(Writer w, int r, boolean isHidden, Cell... row) throws IOException {
+        w.append("<row r=\"").append(r + 1).append("\" hidden=\"").append(String.valueOf(isHidden)).append("\">");
         for (int c = 0; c < row.length; ++c) {
             if (row[c] != null) {
                 row[c].write(w, r, c);

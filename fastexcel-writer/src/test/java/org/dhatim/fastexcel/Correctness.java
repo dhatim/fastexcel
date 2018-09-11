@@ -193,6 +193,7 @@ public class Correctness {
         byte[] data = writeWorkbook(wb -> {
             Worksheet ws = wb.newWorksheet(sheetName);
             int i = 1;
+            ws.hideRow(i, true);
             ws.value(i, i++, stringValue);
             ws.value(i, i++, dateValue);
             ws.value(i, i++, localDateTimeValue);
@@ -217,6 +218,7 @@ public class Correctness {
         Comparable<XSSFRow> row = (Comparable) xws.getRow(0);
         assertThat(row).isNull();
         int i = 1;
+        assertThat(xws.getRow(i).getZeroHeight()).isTrue();
         assertThat(xws.getRow(i).getCell(i++).getStringCellValue()).isEqualTo(stringValue);
         assertThat(xws.getRow(i).getCell(i++).getDateCellValue()).isEqualTo(dateValue);
         // Check zoned timestamps have the same textual representation as the Dates extracted from the workbook
