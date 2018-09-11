@@ -157,7 +157,7 @@ public class Worksheet {
      * @param row Zero-based row number
      * @param isHidden Whether or not this row is hidden
      */
-    void hideRow(int row, boolean isHidden) {
+    public void hideRow(int row, boolean isHidden) {
         if (isHidden) hiddenRows.add(row);
         else hiddenRows.remove(row);
     }
@@ -176,7 +176,7 @@ public class Worksheet {
      * @param c     Zero-based column number
      * @param width The width of the column in character widths
      */
-    void width(int c, double width) {
+    public void width(int c, double width) {
         if (width > MAX_COL_WIDTH) {
             throw new IllegalArgumentException();
         }
