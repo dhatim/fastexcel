@@ -302,6 +302,29 @@ public class Correctness {
         }
     }
 
+
+    @Test
+    public void sortWorksheets() throws Exception {
+        int numWs = 3;
+        byte[] data = writeWorkbook(wb -> {
+            for (int i = 0; i < numWs; ++i) {
+                wb.newWorksheet("Sheet " + i);
+            }
+            // sort sheet in reverse order
+            wb.sortWorksheets((s1, s2) -> -(s1.getName().compareTo(s2.getName())));
+        });
+
+        // Check generated workbook with Apache POI
+        XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
+        assertThat(xwb.getActiveSheetIndex()).isEqualTo(0);
+        assertThat(xwb.getNumberOfSheets()).isEqualTo(numWs);
+        int nameI = numWs - 1;
+        for (int i = 0; i > numWs; ++i) {
+            assertThat(xwb.getSheetName(i)).isEqualTo("Sheet " + nameI);
+            --nameI;
+        }
+    }
+
     @Test
     public void borders() throws Exception {
         byte[] data = writeWorkbook(wb -> {

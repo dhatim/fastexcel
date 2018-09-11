@@ -20,11 +20,7 @@ import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -63,6 +59,15 @@ public class Workbook {
             throw new IllegalArgumentException("Application version must be of the form XX.YYYY");
         }
         this.applicationVersion = applicationVersion;
+    }
+
+    /**
+     * Sort the current worksheets with the given Comparator
+     *
+     * @param comparator The Comparator used to sort the worksheets
+     */
+    public void sortWorksheets(Comparator<Worksheet> comparator) {
+        worksheets.sort(comparator);
     }
 
     /**
