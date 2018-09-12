@@ -52,6 +52,10 @@ public class Worksheet {
      */
     private final Set<Range> mergedRanges = new HashSet<>();
     /**
+     * List of DataValidations for this worksheet
+     */
+    private final List<DataValidation> dataValidations = new ArrayList<>();
+    /**
      * List of ranges where shading to alternate rows is defined.
      */
     private final List<AlternateShading> alternateShadingRanges = new ArrayList<>();
@@ -141,6 +145,10 @@ public class Worksheet {
      */
     void shadeAlternateRows(Range range, Fill fill) {
         alternateShadingRanges.add(new AlternateShading(range, getWorkbook().cacheAlternateShadingFillColor(fill)));
+    }
+
+    public void addValidation(DataValidation validation) {
+        dataValidations.add(validation);
     }
 
     /**
@@ -286,6 +294,13 @@ public class Worksheet {
                     w.append("<mergeCell ref=\"").append(r.toString()).append("\"/>");
                 }
                 w.append("</mergeCells>");
+            }
+            if (!dataValidations.isEmpty()) {
+                w.append("<dataValidations count=\"").append(dataValidations.size()).append("\">");
+                for (DataValidation v: dataValidations) {
+                    v.write(w);
+                }
+                w.append("</dataValidations>");
             }
             for (AlternateShading a : alternateShadingRanges) {
                 a.write(w);

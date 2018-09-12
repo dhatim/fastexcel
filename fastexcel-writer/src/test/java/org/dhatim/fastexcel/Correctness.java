@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -33,14 +32,21 @@ import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
+
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.DataValidationConstraint;
 import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFDataValidation;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.Test;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.STDataValidationErrorStyle;
 
 public class Correctness {
 
@@ -317,7 +323,7 @@ public class Correctness {
             }
         });
 
-        try ( OutputStream os = Files.newOutputStream(Paths.get("C:\\Users\\oched_000\\Desktop\\borders.xlsx"))) {
+        try (OutputStream os = Files.newOutputStream(Paths.get("C:\\Users\\oched_000\\Desktop\\borders.xlsx"))) {
             os.write(data);
         }
 
@@ -394,6 +400,60 @@ public class Correctness {
             assertThat(xws.getRow(2).getCell(col).getCellStyle().getBorderBottomEnum()).isEqualTo(BorderStyle.THIN);
             assertThat(xws.getRow(2).getCell(col).getCellStyle().getBorderRightEnum()).isEqualTo(BorderStyle.NONE);
         }
+    }
+
+    @Test
+    public void listValidations() throws Exception {
+
+        String errMsg = "Error Message";
+        String errTitle = "Error Title";
+
+        byte[] data = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Worksheet 1");
+
+            Worksheet listWs = wb.newWorksheet("Lists");
+            listWs.value(0, 0, "val1");
+            listWs.value(1, 0, "val2");
+
+            Range validationListRange = listWs.range(0, 0, 1, 0);
+            Range validationRange = ws.range(0, 0, 100, 0);
+
+            ListDataValidation listDataValidation = DataValidation.list(validationRange, validationListRange);
+            listDataValidation
+                    .allowBlank(false)
+                    .error(errMsg)
+                    .errorTitle(errTitle)
+                    .errorStyle(DataValidationErrorStyle.WARNING)
+                    .showErrorMessage(true);
+
+            ws.addValidation(listDataValidation);
+        });
+
+        // Check generated workbook with Apache POI
+        XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
+        assertThat(xwb.getNumberOfSheets()).isEqualTo(2);
+        XSSFSheet xws = xwb.getSheetAt(0);
+
+        assertThat(xws.getDataValidations().size()).isEqualTo(1);
+
+        XSSFDataValidation dataValidation = xws.getDataValidations().get(0);
+
+        assertThat(dataValidation.getEmptyCellAllowed()).isFalse();
+        assertThat(dataValidation.getErrorBoxText()).isEqualTo(errMsg);
+        assertThat(dataValidation.getErrorBoxTitle()).isEqualTo(errTitle);
+        assertThat(dataValidation.getErrorStyle()).isEqualTo(STDataValidationErrorStyle.INT_WARNING);
+        assertThat(dataValidation.getShowErrorBox()).isTrue();
+        assertThat(dataValidation.getSuppressDropDownArrow()).isTrue();
+        assertThat(dataValidation.getRegions().getCellRangeAddresses().length).isEqualTo(1);
+
+        CellRangeAddress cellRangeAddress = dataValidation.getRegions().getCellRangeAddress(0);
+        assertThat(cellRangeAddress.getFirstColumn()).isEqualTo(0);
+        assertThat(cellRangeAddress.getLastColumn()).isEqualTo(0);
+        assertThat(cellRangeAddress.getFirstRow()).isEqualTo(0);
+        assertThat(cellRangeAddress.getLastRow()).isEqualTo(100);
+
+        DataValidationConstraint validationConstraint = dataValidation.getValidationConstraint();
+        assertThat(validationConstraint.getFormula1().toLowerCase()).isEqualToIgnoringCase("Lists!A1:A2");
     }
 
 }
