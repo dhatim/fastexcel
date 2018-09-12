@@ -323,10 +323,6 @@ public class Correctness {
             }
         });
 
-        try (OutputStream os = Files.newOutputStream(Paths.get("C:\\Users\\oched_000\\Desktop\\borders.xlsx"))) {
-            os.write(data);
-        }
-
         // Check generated workbook with Apache POI
         XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
         assertThat(xwb.getActiveSheetIndex()).isEqualTo(0);
