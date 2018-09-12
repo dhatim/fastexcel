@@ -147,7 +147,7 @@ public class Worksheet {
         alternateShadingRanges.add(new AlternateShading(range, getWorkbook().cacheAlternateShadingFillColor(fill)));
     }
 
-    public void addValidation(DataValidation validation) {
+    void addValidation(DataValidation validation) {
         dataValidations.add(validation);
     }
 

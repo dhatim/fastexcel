@@ -424,8 +424,6 @@ public class Correctness {
                     .errorTitle(errTitle)
                     .errorStyle(DataValidationErrorStyle.WARNING)
                     .showErrorMessage(true);
-
-            ws.addValidation(listDataValidation);
         });
 
         // Check generated workbook with Apache POI

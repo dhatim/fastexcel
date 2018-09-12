@@ -194,7 +194,9 @@ public class Range {
      * @param listRange The Range of the list this validation references
      */
     public ListDataValidation validateWithList(Range listRange) {
-        return new ListDataValidation(this, listRange);
+        ListDataValidation listDataValidation = new ListDataValidation(this, listRange);
+        worksheet.addValidation(listDataValidation);
+        return listDataValidation;
     }
 
     /**
