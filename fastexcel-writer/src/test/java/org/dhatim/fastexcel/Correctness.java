@@ -415,10 +415,9 @@ public class Correctness {
             listWs.value(0, 0, "val1");
             listWs.value(1, 0, "val2");
 
-            Range validationListRange = listWs.range(0, 0, 1, 0);
-            Range validationRange = ws.range(0, 0, 100, 0);
+            Range listRange = listWs.range(0, 0, 1, 0);
 
-            ListDataValidation listDataValidation = DataValidation.list(validationRange, validationListRange);
+            ListDataValidation listDataValidation = ws.range(0, 0, 100, 0).validateWithList(listRange);
             listDataValidation
                     .allowBlank(false)
                     .error(errMsg)

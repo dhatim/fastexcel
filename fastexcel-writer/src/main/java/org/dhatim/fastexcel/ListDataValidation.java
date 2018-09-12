@@ -12,7 +12,7 @@ public class ListDataValidation implements DataValidation {
 
     private boolean allowBlank = true;
     private boolean showDropdown = true;
-    private DataValidationErrorStyle errorStyle;
+    private DataValidationErrorStyle errorStyle = DataValidationErrorStyle.INFORMATION;
     private boolean showErrorMessage = false;
     private String errorTitle;
     private String error;
