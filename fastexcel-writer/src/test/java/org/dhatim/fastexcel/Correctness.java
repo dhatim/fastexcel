@@ -191,7 +191,7 @@ public class Correctness {
             Worksheet ws = wb.newWorksheet(sheetName);
             ws.width(0, 2);
             int i = 1;
-            ws.hideRow(i, true);
+            ws.hideRow(i);
             ws.value(i, i++, stringValue);
             ws.value(i, i++, dateValue);
             ws.value(i, i++, localDateTimeValue);

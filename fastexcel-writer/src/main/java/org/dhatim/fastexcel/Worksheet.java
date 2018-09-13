@@ -155,11 +155,18 @@ public class Worksheet {
      * Hide the given row.
      *
      * @param row Zero-based row number
-     * @param isHidden Whether or not this row is hidden
      */
-    public void hideRow(int row, boolean isHidden) {
-        if (isHidden) hiddenRows.add(row);
-        else hiddenRows.remove(row);
+    public void hideRow(int row) {
+        hiddenRows.add(row);
+    }
+
+    /**
+     * Show the given row.
+     *
+     * @param row Zero-based row number
+     */
+    public void showRow(int row) {
+        hiddenRows.remove(row);
     }
 
     /**
@@ -354,7 +361,9 @@ public class Worksheet {
      * @throws IOException If an I/O error occurs.
      */
     private static void writeRow(Writer w, int r, boolean isHidden, Cell... row) throws IOException {
-        w.append("<row r=\"").append(r + 1).append("\" hidden=\"").append(String.valueOf(isHidden)).append("\">");
+        w.append("<row r=\"").append(r + 1);
+        if (isHidden) w.append("\" hidden=\"").append(String.valueOf(isHidden));
+        w.append("\">");
         for (int c = 0; c < row.length; ++c) {
             if (row[c] != null) {
                 row[c].write(w, r, c);
