@@ -15,10 +15,7 @@
  */
 package org.dhatim.fastexcel;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -198,7 +195,9 @@ public class Correctness {
         BigDecimal bigDecimalValue = BigDecimal.TEN;
         byte[] data = writeWorkbook(wb -> {
             Worksheet ws = wb.newWorksheet(sheetName);
+            ws.width(0, 2);
             int i = 1;
+            ws.hideRow(i);
             ws.value(i, i++, stringValue);
             ws.value(i, i++, dateValue);
             ws.value(i, i++, localDateTimeValue);
@@ -223,6 +222,9 @@ public class Correctness {
         Comparable<XSSFRow> row = (Comparable) xws.getRow(0);
         assertThat(row).isNull();
         int i = 1;
+        // poi column width is in 1/256 characters
+        assertThat(xws.getColumnWidth(0) / 256).isEqualTo(2);
+        assertThat(xws.getRow(i).getZeroHeight()).isTrue();
         assertThat(xws.getRow(i).getCell(i++).getStringCellValue()).isEqualTo(stringValue);
         assertThat(xws.getRow(i).getCell(i++).getDateCellValue()).isEqualTo(dateValue);
         // Check zoned timestamps have the same textual representation as the Dates extracted from the workbook

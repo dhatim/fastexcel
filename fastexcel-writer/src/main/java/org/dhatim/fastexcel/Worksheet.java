@@ -19,12 +19,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * A worksheet is a set of cells.
@@ -40,6 +35,11 @@ public class Worksheet {
      * Maximum number of columns in Excel.
      */
     public static final int MAX_COLS = 16_384;
+
+    /**
+     * Maximum column width in Excel.
+     */
+    public static final int MAX_COL_WIDTH = 255;
 
     private final Workbook workbook;
     private final String name;
@@ -59,6 +59,14 @@ public class Worksheet {
      * List of ranges where shading to alternate rows is defined.
      */
     private final List<AlternateShading> alternateShadingRanges = new ArrayList<>();
+    /**
+     * List of rows to hide
+     */
+    private final Set<Integer> hiddenRows = new HashSet<>();
+    /**
+     * Map of columns and they're widths
+     */
+    private final Map<Integer, Double> colWidths = new HashMap<>();
     /**
      * Is this worksheet construction completed?
      */
@@ -152,6 +160,45 @@ public class Worksheet {
     }
 
     /**
+     * Hide the given row.
+     *
+     * @param row Zero-based row number
+     */
+    public void hideRow(int row) {
+        hiddenRows.add(row);
+    }
+
+    /**
+     * Show the given row.
+     *
+     * @param row Zero-based row number
+     */
+    public void showRow(int row) {
+        hiddenRows.remove(row);
+    }
+
+    /**
+     * Specify the width for the given column. Will autoSize by default.
+     * <p>
+     * The maximum column width in excel is 255. The colum width in
+     * excel is the number of characters that can be displayed with the
+     * standard font (first font in the workbook).
+     * <p>
+     * Note: The xml spec specifies additional padding for each cell
+     * (Section 3.3.1.12 of the OOXML spec) which will result in slightly
+     * less characters being displayed then what is given here.
+     *
+     * @param c     Zero-based column number
+     * @param width The width of the column in character widths
+     */
+    public void width(int c, double width) {
+        if (width > MAX_COL_WIDTH) {
+            throw new IllegalArgumentException();
+        }
+        colWidths.put(c, width);
+    }
+
+    /**
      * Set the cell value at the given coordinates.
      *
      * @param r Zero-based row number.
@@ -241,12 +288,18 @@ public class Worksheet {
         boolean started = false;
         for (int c = 0; c < nbCols; ++c) {
             double maxWidth = 0;
-            for (int r = 0; r < rows.size(); ++r) {
-                // Exclude merged cells from computation
-                Object o = isCellInMergedRanges(r, c) ? null : value(r, c);
-                if (o != null && !(o instanceof Formula)) {
-                    int length = o.toString().length();
-                    maxWidth = Math.max(maxWidth, (int) ((length * 7 + 10) / 7.0 * 256) / 256.0);
+            boolean bestFit = true;
+            if (colWidths.containsKey(c)) {
+                bestFit = false;
+                maxWidth = colWidths.get(c);
+            } else {
+                for (int r = 0; r < rows.size(); ++r) {
+                    // Exclude merged cells from computation && hidden rows
+                    Object o = hiddenRows.contains(r) || isCellInMergedRanges(r, c) ? null : value(r, c);
+                    if (o != null && !(o instanceof Formula)) {
+                        int length = o.toString().length();
+                        maxWidth = Math.max(maxWidth, (int) ((length * 7 + 10) / 7.0 * 256) / 256.0);
+                    }
                 }
             }
             if (maxWidth > 0) {
@@ -254,7 +307,7 @@ public class Worksheet {
                     w.append("<cols>");
                     started = true;
                 }
-                w.append("<col min=\"").append(c + 1).append("\" max=\"").append(c + 1).append("\" width=\"").append(Math.min(255.0, maxWidth)).append("\" customWidth=\"true\" bestFit=\"true\"/>");
+                w.append("<col min=\"").append(c + 1).append("\" max=\"").append(c + 1).append("\" width=\"").append(Math.min(MAX_COL_WIDTH, maxWidth)).append("\" customWidth=\"true\" bestFit=\"").append(String.valueOf(bestFit)).append("\"/>");
             }
         }
         if (started) {
@@ -284,7 +337,7 @@ public class Worksheet {
             for (int r = 0; r < rows.size(); ++r) {
                 Cell[] row = rows.get(r);
                 if (row != null) {
-                    writeRow(w, r, row);
+                    writeRow(w, r, hiddenRows.contains(r), row);
                 }
             }
             w.append("</sheetData>");
@@ -318,11 +371,14 @@ public class Worksheet {
      *
      * @param w Output writer.
      * @param r Zero-based row number.
+     * @param isHidden Whether or not this row is hidden
      * @param row Cells in the row.
      * @throws IOException If an I/O error occurs.
      */
-    private static void writeRow(Writer w, int r, Cell... row) throws IOException {
-        w.append("<row r=\"").append(r + 1).append("\">");
+    private static void writeRow(Writer w, int r, boolean isHidden, Cell... row) throws IOException {
+        w.append("<row r=\"").append(r + 1);
+        if (isHidden) w.append("\" hidden=\"").append(String.valueOf(isHidden));
+        w.append("\">");
         for (int c = 0; c < row.length; ++c) {
             if (row[c] != null) {
                 row[c].write(w, r, c);
