@@ -15,10 +15,7 @@
  */
 package org.dhatim.fastexcel;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Definition of a range of cells.
@@ -189,6 +186,17 @@ public class Range {
      */
     void shadeAlternateRows(Fill fill) {
         worksheet.shadeAlternateRows(this, fill);
+    }
+
+    /**
+     * Construct a new ListDataValidation
+     *
+     * @param listRange The Range of the list this validation references
+     */
+    public ListDataValidation validateWithList(Range listRange) {
+        ListDataValidation listDataValidation = new ListDataValidation(this, listRange);
+        worksheet.addValidation(listDataValidation);
+        return listDataValidation;
     }
 
     /**
