@@ -17,8 +17,6 @@ package org.dhatim.fastexcel;
 
 import java.io.*;
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -32,6 +30,7 @@ import java.util.function.Consumer;
 
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.DataValidation.ErrorStyle;
 import org.apache.poi.ss.usermodel.DataValidationConstraint;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -43,7 +42,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.STDataValidationErrorStyle;
 
 public class Correctness {
 
@@ -459,7 +457,7 @@ public class Correctness {
         assertThat(dataValidation.getEmptyCellAllowed()).isFalse();
         assertThat(dataValidation.getErrorBoxText()).isEqualTo(errMsg);
         assertThat(dataValidation.getErrorBoxTitle()).isEqualTo(errTitle);
-        assertThat(dataValidation.getErrorStyle()).isEqualTo(STDataValidationErrorStyle.INT_WARNING);
+        assertThat(dataValidation.getErrorStyle()).isEqualTo(ErrorStyle.WARNING);
         assertThat(dataValidation.getShowErrorBox()).isTrue();
         assertThat(dataValidation.getSuppressDropDownArrow()).isTrue();
         assertThat(dataValidation.getRegions().getCellRangeAddresses().length).isEqualTo(1);
