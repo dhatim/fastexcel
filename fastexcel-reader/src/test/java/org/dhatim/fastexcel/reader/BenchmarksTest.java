@@ -20,13 +20,14 @@ import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.apache.poi.util.SAXHelper;
 import org.apache.poi.xssf.eventusermodel.ReadOnlySharedStringsTable;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.poi.xssf.eventusermodel.XSSFSheetXMLHandler;
@@ -114,16 +115,18 @@ public class BenchmarksTest {
     }
 
     private void processSheet(StylesTable styles, ReadOnlySharedStringsTable strings,
-                              XSSFSheetXMLHandler.SheetContentsHandler sheetHandler, InputStream sheetInputStream) throws IOException, SAXException {
+            XSSFSheetXMLHandler.SheetContentsHandler sheetHandler, InputStream sheetInputStream) throws IOException, SAXException {
         DataFormatter formatter = new DataFormatter();
         InputSource sheetSource = new InputSource(sheetInputStream);
+        SAXParserFactory saxFactory = SAXParserFactory.newInstance();
         try {
-            XMLReader sheetParser = SAXHelper.newXMLReader();
+            SAXParser saxParser = saxFactory.newSAXParser();
+            XMLReader sheetParser = saxParser.getXMLReader();
             ContentHandler handler = new XSSFSheetXMLHandler(
                     styles, null, strings, sheetHandler, formatter, false);
             sheetParser.setContentHandler(handler);
             sheetParser.parse(sheetSource);
-        } catch(ParserConfigurationException e) {
+        } catch (ParserConfigurationException e) {
             throw new IllegalStateException("SAX parser appears to be broken - " + e.getMessage());
         }
     }
