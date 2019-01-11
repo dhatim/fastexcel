@@ -73,6 +73,11 @@ public class Worksheet {
     private boolean finished;
 
     /**
+     * The visibility state of this sheet.
+     */
+    private VisibilityState visibilityState;
+
+    /**
      * Constructor.
      *
      * @param workbook Parent workbook.
@@ -157,6 +162,19 @@ public class Worksheet {
 
     void addValidation(DataValidation validation) {
         dataValidations.add(validation);
+    }
+
+    /**
+     * Sets the visibility state of the sheet
+     * <p>
+     * This is done by setting the {@code state} attribute in the workbook.xml.
+     */
+    public void setVisibilityState(VisibilityState visibilityState) {
+        this.visibilityState = visibilityState;
+    }
+
+    public VisibilityState getVisibilityState() {
+        return visibilityState;
     }
 
     /**
