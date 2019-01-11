@@ -40,6 +40,8 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -470,6 +472,30 @@ public class Correctness {
 
         DataValidationConstraint validationConstraint = dataValidation.getValidationConstraint();
         assertThat(validationConstraint.getFormula1().toLowerCase()).isEqualToIgnoringCase("Lists!A1:A2");
+    }
+
+    @Test
+    public void canHideColumns() throws Exception {
+
+        byte[] data = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Worksheet 1");
+            ws.hideColumn(1);
+            ws.hideColumn(3);
+
+            ws.value(0, 1, "val1");
+            ws.value(0, 2, "val2");
+            ws.value(0, 3, "val3");
+            ws.value(0, 4, "val4");
+        });
+
+        // Check generated workbook with Apache POI
+        XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
+        XSSFSheet xws = xwb.getSheetAt(0);
+
+        assertTrue("Column 1 should be hidden", xws.isColumnHidden(1));
+        assertFalse("Column 2 should be visible", xws.isColumnHidden(2));
+        assertTrue("Column 3 should be hidden", xws.isColumnHidden(3));
+        assertFalse("Column 4 should be visible", xws.isColumnHidden(4));
     }
 
 }
