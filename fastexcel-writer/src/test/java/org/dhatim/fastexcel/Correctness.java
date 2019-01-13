@@ -490,12 +490,10 @@ public class Correctness {
 
         // Check generated workbook with Apache POI
         XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
-        XSSFSheet xws = xwb.getSheetAt(0);
-
-        assertTrue("Column 1 should be hidden", xws.isColumnHidden(1));
-        assertFalse("Column 2 should be visible", xws.isColumnHidden(2));
-        assertTrue("Column 3 should be hidden", xws.isColumnHidden(3));
-        assertFalse("Column 4 should be visible", xws.isColumnHidden(4));
+        assertThat(xwb.getSheetVisibility(0)).isEqualTo(SheetVisibility.VISIBLE);
+        assertThat(xwb.getSheetVisibility(1)).isEqualTo(SheetVisibility.HIDDEN);
+        assertThat(xwb.getSheetVisibility(2)).isEqualTo(SheetVisibility.VERY_HIDDEN);
+        assertThat(xwb.getSheetVisibility(3)).isEqualTo(SheetVisibility.VISIBLE);
     }
 
     public void canHideColumns() throws Exception {
