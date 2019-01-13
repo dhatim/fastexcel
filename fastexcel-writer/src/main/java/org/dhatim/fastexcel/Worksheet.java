@@ -63,6 +63,12 @@ public class Worksheet {
      * List of rows to hide
      */
     private final Set<Integer> hiddenRows = new HashSet<>();
+
+    /**
+     * List of columns to hide
+     */
+    private final Set<Integer> hiddenColumns = new HashSet<>();
+
     /**
      * Map of columns and they're widths
      */
@@ -196,6 +202,24 @@ public class Worksheet {
     }
 
     /**
+     * Hide the given column.
+     *
+     * @param column Zero-based column number
+     */
+    public void hideColumn(int column) {
+        hiddenColumns.add(column);
+    }
+
+    /**
+     * Show the given column.
+     *
+     * @param column Zero-based column number
+     */
+    public void showColumn(int column) {
+        hiddenColumns.remove(column);
+    }
+
+    /**
      * Specify the width for the given column. Will autoSize by default.
      * <p>
      * The maximum column width in excel is 255. The colum width in
@@ -325,12 +349,35 @@ public class Worksheet {
                     w.append("<cols>");
                     started = true;
                 }
-                w.append("<col min=\"").append(c + 1).append("\" max=\"").append(c + 1).append("\" width=\"").append(Math.min(MAX_COL_WIDTH, maxWidth)).append("\" customWidth=\"true\" bestFit=\"").append(String.valueOf(bestFit)).append("\"/>");
+                writeCol(w, c, maxWidth, bestFit, hiddenColumns.contains(c));
             }
         }
         if (started) {
             w.append("</cols>");
         }
+    }
+
+    /**
+     * Write a column as an XML element.
+     *
+     * @param w Output writer.
+     * @param columnIndex Zero-based column number.
+     * @param maxWidth The maximum width
+     * @param bestFit Whether or not this column should be optimized for fit
+     * @param isHidden Whether or not this row is hidden
+     * @throws IOException If an I/O error occurs.
+     */
+    private static void writeCol(Writer w, int columnIndex, double maxWidth, boolean bestFit, boolean isHidden) throws IOException {
+        final int col = columnIndex + 1;
+        w.append("<col min=\"").append(col).append("\" max=\"").append(col).append("\" width=\"")
+                .append(Math.min(MAX_COL_WIDTH, maxWidth)).append("\" customWidth=\"true\" bestFit=\"")
+                .append(String.valueOf(bestFit));
+
+        if (isHidden) {
+            w.append("\" hidden=\"true");
+        }
+
+        w.append("\"/>");
     }
 
     /**
@@ -395,7 +442,9 @@ public class Worksheet {
      */
     private static void writeRow(Writer w, int r, boolean isHidden, Cell... row) throws IOException {
         w.append("<row r=\"").append(r + 1);
-        if (isHidden) w.append("\" hidden=\"").append(String.valueOf(isHidden));
+        if (isHidden) {
+            w.append("\" hidden=\"true");
+        }
         w.append("\">");
         for (int c = 0; c < row.length; ++c) {
             if (row[c] != null) {

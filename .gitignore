@@ -14,3 +14,7 @@ hs_err_pid*
 # JMH report file
 jmh.csv
 */target
+
+# IntelliJ IDEA
+.idea
+*.iml
