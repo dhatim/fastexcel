@@ -33,6 +33,7 @@ import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.DataValidation.ErrorStyle;
 import org.apache.poi.ss.usermodel.DataValidationConstraint;
 import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.SheetVisibility;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFDataValidation;
 import org.apache.poi.xssf.usermodel.XSSFRow;
@@ -475,6 +476,26 @@ public class Correctness {
     }
 
     @Test
+    public void canHideSheet() throws IOException {
+
+        byte[] data = writeWorkbook(wb -> {
+            wb.newWorksheet("Worksheet 1");
+            Worksheet ws = wb.newWorksheet("Worksheet 2");
+            ws.setVisibilityState(VisibilityState.HIDDEN);
+            ws = wb.newWorksheet("Worksheet 3");
+            ws.setVisibilityState(VisibilityState.VERY_HIDDEN);
+            ws = wb.newWorksheet("Worksheet 4");
+            ws.setVisibilityState(VisibilityState.VISIBLE);
+        });
+
+        // Check generated workbook with Apache POI
+        XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
+        assertThat(xwb.getSheetVisibility(0)).isEqualTo(SheetVisibility.VISIBLE);
+        assertThat(xwb.getSheetVisibility(1)).isEqualTo(SheetVisibility.HIDDEN);
+        assertThat(xwb.getSheetVisibility(2)).isEqualTo(SheetVisibility.VERY_HIDDEN);
+        assertThat(xwb.getSheetVisibility(3)).isEqualTo(SheetVisibility.VISIBLE);
+    }
+
     public void canHideColumns() throws Exception {
 
         byte[] data = writeWorkbook(wb -> {
