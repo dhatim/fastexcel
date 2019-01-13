@@ -33,6 +33,7 @@ import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.DataValidation.ErrorStyle;
 import org.apache.poi.ss.usermodel.DataValidationConstraint;
 import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.SheetVisibility;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFDataValidation;
 import org.apache.poi.xssf.usermodel.XSSFRow;
@@ -40,6 +41,8 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -470,6 +473,50 @@ public class Correctness {
 
         DataValidationConstraint validationConstraint = dataValidation.getValidationConstraint();
         assertThat(validationConstraint.getFormula1().toLowerCase()).isEqualToIgnoringCase("Lists!A1:A2");
+    }
+
+    @Test
+    public void canHideSheet() throws IOException {
+
+        byte[] data = writeWorkbook(wb -> {
+            wb.newWorksheet("Worksheet 1");
+            Worksheet ws = wb.newWorksheet("Worksheet 2");
+            ws.setVisibilityState(VisibilityState.HIDDEN);
+            ws = wb.newWorksheet("Worksheet 3");
+            ws.setVisibilityState(VisibilityState.VERY_HIDDEN);
+            ws = wb.newWorksheet("Worksheet 4");
+            ws.setVisibilityState(VisibilityState.VISIBLE);
+        });
+
+        // Check generated workbook with Apache POI
+        XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
+        assertThat(xwb.getSheetVisibility(0)).isEqualTo(SheetVisibility.VISIBLE);
+        assertThat(xwb.getSheetVisibility(1)).isEqualTo(SheetVisibility.HIDDEN);
+        assertThat(xwb.getSheetVisibility(2)).isEqualTo(SheetVisibility.VERY_HIDDEN);
+        assertThat(xwb.getSheetVisibility(3)).isEqualTo(SheetVisibility.VISIBLE);
+    }
+
+    public void canHideColumns() throws Exception {
+
+        byte[] data = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Worksheet 1");
+            ws.hideColumn(1);
+            ws.hideColumn(3);
+
+            ws.value(0, 1, "val1");
+            ws.value(0, 2, "val2");
+            ws.value(0, 3, "val3");
+            ws.value(0, 4, "val4");
+        });
+
+        // Check generated workbook with Apache POI
+        XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
+        XSSFSheet xws = xwb.getSheetAt(0);
+
+        assertTrue("Column 1 should be hidden", xws.isColumnHidden(1));
+        assertFalse("Column 2 should be visible", xws.isColumnHidden(2));
+        assertTrue("Column 3 should be hidden", xws.isColumnHidden(3));
+        assertFalse("Column 4 should be visible", xws.isColumnHidden(4));
     }
 
 }

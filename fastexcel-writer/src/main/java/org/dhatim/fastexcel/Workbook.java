@@ -93,13 +93,9 @@ public class Workbook {
         writeFile("docProps/app.xml", w -> w.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Properties xmlns=\"http://schemas.openxmlformats.org/officeDocument/2006/extended-properties\"><Application>").appendEscaped(applicationName).append("</Application>").append(applicationVersion == null ? "" : ("<AppVersion>" + applicationVersion + "</AppVersion>")).append("</Properties>"));
         writeFile("docProps/core.xml", w -> w.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?><cp:coreProperties xmlns:cp=\"http://schemas.openxmlformats.org/package/2006/metadata/core-properties\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:dcterms=\"http://purl.org/dc/terms/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><dcterms:created xsi:type=\"dcterms:W3CDTF\">").append(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)).append("Z</dcterms:created><dc:creator>").appendEscaped(applicationName).append("</dc:creator></cp:coreProperties>"));
         writeFile("_rels/.rels", w -> w.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties\" Target=\"docProps/app.xml\"/><Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties\" Target=\"docProps/core.xml\"/><Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"xl/workbook.xml\"/></Relationships>"));
-        writeFile("xl/workbook.xml", w -> {
-            w.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?><workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\"><workbookPr date1904=\"false\"/><bookViews><workbookView activeTab=\"0\"/></bookViews><sheets>");
-            for (Worksheet ws : worksheets) {
-                w.append("<sheet name=\"").appendEscaped(ws.getName()).append("\" r:id=\"rId").append(getIndex(ws) + 2).append("\" sheetId=\"").append(getIndex(ws)).append("\"/>");
-            }
-            w.append("</sheets></workbook>");
-        });
+
+        writeWorkbookFile();
+
         writeFile("xl/_rels/workbook.xml.rels", w -> {
             w.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"rId1\" Target=\"sharedStrings.xml\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings\"/><Relationship Id=\"rId2\" Target=\"styles.xml\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\"/>");
             for (Worksheet ws : worksheets) {
@@ -110,6 +106,46 @@ public class Workbook {
         writeFile("xl/sharedStrings.xml", stringCache::write);
         writeFile("xl/styles.xml", styleCache::write);
         this.os.finish();
+    }
+
+    /**
+     * Writes the {@code xl/workbook.xml} file to the zip.
+     * @throws IOException If an I/O error occurs.
+     */
+    private void writeWorkbookFile() throws IOException {
+        writeFile("xl/workbook.xml", w -> {
+            w.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                    "<workbook " +
+                            "xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" " +
+                            "xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">" +
+                    "<workbookPr date1904=\"false\"/>" +
+                        "<bookViews>" +
+                            "<workbookView activeTab=\"0\"/>" +
+                        "</bookViews>" +
+                        "<sheets>");
+
+            for (Worksheet ws : worksheets) {
+                writeWorkbookSheet(w, ws);
+            }
+            w.append("</sheets></workbook>");
+        });
+    }
+
+    /**
+     * Writes a {@code sheet} tag to the writer.
+     * @param w The writer to write to
+     * @param ws The WorkSheet that is resembled by the {@code sheet} tag.
+     * @throws IOException If an I/O error occurs.
+     */
+    private void writeWorkbookSheet(Writer w, Worksheet ws) throws IOException {
+        w.append("<sheet name=\"").appendEscaped(ws.getName()).append("\" r:id=\"rId").append(getIndex(ws) + 2)
+                .append("\" sheetId=\"").append(getIndex(ws));
+
+        if (ws.getVisibilityState() != null) {
+            w.append("\" state=\"").append(ws.getVisibilityState().getName());
+        }
+
+        w.append("\"/>");
     }
 
     /**
