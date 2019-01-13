@@ -40,6 +40,9 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.dhatim.fastexcel.SheetProtectionOption.DELETE_ROWS;
+import static org.dhatim.fastexcel.SheetProtectionOption.OBJECTS;
+import static org.dhatim.fastexcel.SheetProtectionOption.SHEET;
 
 import org.junit.Test;
 
@@ -472,4 +475,69 @@ public class Correctness {
         assertThat(validationConstraint.getFormula1().toLowerCase()).isEqualToIgnoringCase("Lists!A1:A2");
     }
 
+    @Test
+    public void shouldSetAllDefaultSheetProtectionOptions() throws IOException {
+
+        byte[] data = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Worksheet 1");
+            ws.protect("HorriblePassword");
+        });
+
+        // Check generated workbook with Apache POI
+        XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
+        XSSFSheet xws = xwb.getSheetAt(0);
+
+        // Only the defaults are locked.
+        assertThat(xws.isAutoFilterLocked()).isTrue();
+        assertThat(xws.isDeleteColumnsLocked()).isTrue();
+        assertThat(xws.isDeleteRowsLocked()).isTrue();
+        assertThat(xws.isFormatCellsLocked()).isTrue();
+        assertThat(xws.isFormatColumnsLocked()).isTrue();
+        assertThat(xws.isFormatRowsLocked()).isTrue();
+        assertThat(xws.isInsertColumnsLocked()).isTrue();
+        assertThat(xws.isInsertHyperlinksLocked()).isTrue();
+        assertThat(xws.isInsertRowsLocked()).isTrue();
+        assertThat(xws.isPivotTablesLocked()).isTrue();
+        assertThat(xws.isSortLocked()).isTrue();
+        assertThat(xws.isSheetLocked()).isTrue();
+
+        // The rest is not locked
+        assertThat(xws.isObjectsLocked()).isFalse();
+        assertThat(xws.isScenariosLocked()).isFalse();
+        assertThat(xws.isSelectLockedCellsLocked()).isFalse();
+        assertThat(xws.isSelectUnlockedCellsLocked()).isFalse();
+    }
+
+    @Test
+    public void shouldSetSpecificSheetProtectionOptions() throws IOException {
+
+        byte[] data = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Worksheet 1");
+            ws.protect("HorriblePassword", SHEET, DELETE_ROWS, OBJECTS);
+        });
+
+        // Check generated workbook with Apache POI
+        XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
+        XSSFSheet xws = xwb.getSheetAt(0);
+
+        // Three are locked
+        assertThat(xws.isSheetLocked()).isTrue();
+        assertThat(xws.isDeleteRowsLocked()).isTrue();
+        assertThat(xws.isObjectsLocked()).isTrue();
+
+        // The rest is not locked
+        assertThat(xws.isAutoFilterLocked()).isFalse();
+        assertThat(xws.isDeleteColumnsLocked()).isFalse();
+        assertThat(xws.isFormatCellsLocked()).isFalse();
+        assertThat(xws.isFormatColumnsLocked()).isFalse();
+        assertThat(xws.isFormatRowsLocked()).isFalse();
+        assertThat(xws.isInsertColumnsLocked()).isFalse();
+        assertThat(xws.isInsertHyperlinksLocked()).isFalse();
+        assertThat(xws.isInsertRowsLocked()).isFalse();
+        assertThat(xws.isPivotTablesLocked()).isFalse();
+        assertThat(xws.isSortLocked()).isFalse();
+        assertThat(xws.isScenariosLocked()).isFalse();
+        assertThat(xws.isSelectLockedCellsLocked()).isFalse();
+        assertThat(xws.isSelectUnlockedCellsLocked()).isFalse();
+    }
 }

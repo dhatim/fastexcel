@@ -73,6 +73,16 @@ public class Worksheet {
     private boolean finished;
 
     /**
+     * The hashed password that protects this sheet.
+     */
+    private String passwordHash;
+
+    /**
+     * The set of protection options that are applied on the sheet.
+     */
+    private Set<SheetProtectionOption> sheetProtectionOptions;
+
+    /**
      * Constructor.
      *
      * @param workbook Parent workbook.
@@ -175,6 +185,64 @@ public class Worksheet {
      */
     public void showRow(int row) {
         hiddenRows.remove(row);
+    }
+
+    /**
+     * Protects the sheet with a password. This method protects all the default {@link SheetProtectionOption}s and
+     * 'sheet'. (Note that this is not very secure and only meant for discouraging changes.)
+     * @param password The password to use.
+     */
+    public void protect(String password) {
+        protect(password, SheetProtectionOption.DEFAULT_OPTIONS);
+    }
+
+    /**
+     * Protects the sheet with a password. (Note that this is not very secure and only meant for discouraging changes.)
+     * @param password The password to use.
+     * @param options An array of all the {@link SheetProtectionOption}s to protect.
+     */
+    public void protect(String password, SheetProtectionOption... options) {
+        final EnumSet<SheetProtectionOption> optionSet = EnumSet.noneOf(SheetProtectionOption.class);
+        Collections.addAll(optionSet, options);
+        protect(password, optionSet);
+    }
+
+    /**
+     * Protects the sheet with a password. (Note that this is not very secure and only meant for discouraging changes.)
+     * @param password The password to use.
+     * @param options A {@link Set} of all the {@link SheetProtectionOption}s to protect.
+     */
+    public void protect(String password, Set<SheetProtectionOption> options) {
+        if (password == null) {
+            this.sheetProtectionOptions = null;
+            this.passwordHash = null;
+            return;
+        }
+        this.sheetProtectionOptions = options;
+        this.passwordHash = hashPassword(password);
+    }
+
+    /**
+     * Hash the password.
+     * @param password The password to hash.
+     * @return The password hash as a hex string (2 bytes)
+     */
+    private static String hashPassword(String password) {
+        byte[] passwordCharacters = password.getBytes();
+        int hash = 0;
+        if (passwordCharacters.length > 0) {
+            int charIndex = passwordCharacters.length;
+            while (charIndex-- > 0) {
+                hash = ((hash >> 14) & 0x01) | ((hash << 1) & 0x7fff);
+                hash ^= passwordCharacters[charIndex];
+            }
+            // also hash with charcount
+            hash = ((hash >> 14) & 0x01) | ((hash << 1) & 0x7fff);
+            hash ^= passwordCharacters.length;
+            hash ^= (0x8000 | ('N' << 8) | 'K');
+        }
+
+        return Integer.toHexString(hash & 0xffff);
     }
 
     /**
@@ -358,6 +426,17 @@ public class Worksheet {
             for (AlternateShading a : alternateShadingRanges) {
                 a.write(w);
             }
+
+            if (passwordHash != null) {
+                w.append("<sheetProtection password=\"").append(passwordHash).append("\" ");
+                for (SheetProtectionOption option : SheetProtectionOption.values()) {
+                    if (option.getDefaultValue() != sheetProtectionOptions.contains(option)) {
+                        w.append(option.getName()).append("=\"").append(Boolean.toString(!option.getDefaultValue())).append("\" ");
+                    }
+                }
+                w.append("/>");
+            }
+
             w.append("<pageMargins bottom=\"0.75\" footer=\"0.3\" header=\"0.3\" left=\"0.7\" right=\"0.7\" top=\"0.75\"/></worksheet>");
         });
 
