@@ -46,6 +46,11 @@ class Style {
     private final Alignment alignment;
 
     /**
+     * The protection settings.
+     */
+    private final Protection protection;
+
+    /**
      * Constructor.
      *
      * @param original Original style. If not {@code null}, its attributes are
@@ -56,17 +61,18 @@ class Style {
      * @param border Index of cached border. Zero if not set.
      * @param alignment Alignment. {@code null} if not set.
      */
-    Style(Style original, int valueFormatting, int font, int fill, int border, Alignment alignment) {
+    Style(Style original, int valueFormatting, int font, int fill, int border, Alignment alignment, Protection protection) {
         this.valueFormatting = (valueFormatting == 0 && original != null) ? original.valueFormatting : valueFormatting;
         this.font = (font == 0 && original != null) ? original.font : font;
         this.fill = (fill == 0 && original != null) ? original.fill : fill;
         this.border = (border == 0 && original != null) ? original.border : border;
         this.alignment = (alignment == null && original != null) ? original.alignment : alignment;
+        this.protection = (protection == null && original != null) ? original.protection : protection;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(valueFormatting, font, fill, border, alignment);
+        return Objects.hash(valueFormatting, font, fill, border, alignment, protection);
     }
 
     @Override
@@ -74,7 +80,12 @@ class Style {
         boolean result;
         if (obj != null && obj.getClass() == this.getClass()) {
             Style other = (Style) obj;
-            result = Objects.equals(valueFormatting, other.valueFormatting) && Objects.equals(font, other.font) && Objects.equals(fill, other.fill) && Objects.equals(border, other.border) && Objects.equals(alignment, other.alignment);
+            result = Objects.equals(valueFormatting, other.valueFormatting)
+                    && Objects.equals(font, other.font)
+                    && Objects.equals(fill, other.fill)
+                    && Objects.equals(border, other.border)
+                    && Objects.equals(alignment, other.alignment)
+                    && Objects.equals(protection, other.protection);
         } else {
             result = false;
         }
@@ -92,12 +103,19 @@ class Style {
         if (border != 0) {
             w.append(" applyBorder=\"1\"");
         }
-        if (alignment == null) {
+
+        if (alignment == null && protection == null) {
             w.append("/>");
-        } else {
-            w.append('>');
-            alignment.write(w);
-            w.append("</xf>");
+            return;
         }
+
+        w.append('>');
+        if (alignment != null) {
+            alignment.write(w);
+        }
+        if (protection != null) {
+            protection.write(w);
+        }
+        w.append("</xf>");
     }
 }
