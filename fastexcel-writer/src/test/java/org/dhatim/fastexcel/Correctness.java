@@ -525,6 +525,28 @@ public class Correctness {
     }
 
     @Test
+    public void shouldHaveCorrectlyHashedPassword() throws IOException {
+
+        final String password = "HorriblePassword";
+        final String wrongPassword = "ThisIsNotThePassword";
+
+        byte[] data = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Worksheet 1");
+            ws.protect(password);
+        });
+
+        // Check generated workbook with Apache POI
+        XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
+        XSSFSheet xws = xwb.getSheetAt(0);
+
+        // The valid password should be valid
+        assertTrue(xws.validateSheetPassword(password));
+
+        // The wrong password should be invalid
+        assertFalse(xws.validateSheetPassword(wrongPassword));
+    }
+
+    @Test
     public void shouldSetAllDefaultSheetProtectionOptions() throws IOException {
 
         byte[] data = writeWorkbook(wb -> {
