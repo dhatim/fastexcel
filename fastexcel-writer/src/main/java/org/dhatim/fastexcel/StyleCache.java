@@ -17,6 +17,7 @@ package org.dhatim.fastexcel;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -41,7 +42,7 @@ final class StyleCache {
      * Default constructor. Pre-cache Excel-reserved stuff.
      */
     StyleCache() {
-        mergeAndCacheStyle(0, null, Font.DEFAULT, Fill.NONE, Border.NONE, null);
+        mergeAndCacheStyle(0, null, Font.DEFAULT, Fill.NONE, Border.NONE, null, null);
         cacheFill(Fill.GRAY125);
     }
 
@@ -131,9 +132,9 @@ final class StyleCache {
         return cacheStuff(dxfs, f);
     }
 
-    int mergeAndCacheStyle(int currentStyle, String numberingFormat, Font font, Fill fill, Border border, Alignment alignment) {
+    int mergeAndCacheStyle(int currentStyle, String numberingFormat, Font font, Fill fill, Border border, Alignment alignment, Protection protection) {
         Style original = styles.entrySet().stream().filter(e -> e.getValue().equals(currentStyle)).map(Entry::getKey).findFirst().orElse(null);
-        Style s = new Style(original, cacheValueFormatting(numberingFormat), cacheFont(font), cacheFill(fill), cacheBorder(border), alignment);
+        Style s = new Style(original, cacheValueFormatting(numberingFormat), cacheFont(font), cacheFill(fill), cacheBorder(border), alignment, protection);
         return cacheStuff(styles, s);
     }
 
@@ -150,7 +151,7 @@ final class StyleCache {
     private static <T> void writeCache(Writer w, Map<T, Integer> cache, String name, ThrowingConsumer<Entry<T, Integer>> consumer) throws IOException {
         w.append('<').append(name).append(" count=\"").append(cache.size()).append("\">");
         List<Entry<T, Integer>> entries = new ArrayList<>(cache.entrySet());
-        entries.sort((e1, e2) -> Integer.compare(e1.getValue(), e2.getValue()));
+        entries.sort(Comparator.comparingInt(Entry::getValue));
         for (Entry<T, Integer> e : entries) {
             consumer.accept(e);
         }

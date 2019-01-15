@@ -185,8 +185,8 @@ public class Workbook {
      * @param alignment Alignment attributes.
      * @return Cached style index.
      */
-    int mergeAndCacheStyle(int currentStyle, String numberingFormat, Font font, Fill fill, Border border, Alignment alignment) {
-        return styleCache.mergeAndCacheStyle(currentStyle, numberingFormat, font, fill, border, alignment);
+    int mergeAndCacheStyle(int currentStyle, String numberingFormat, Font font, Fill fill, Border border, Alignment alignment, Protection protection) {
+        return styleCache.mergeAndCacheStyle(currentStyle, numberingFormat, font, fill, border, alignment, protection);
     }
 
     /**

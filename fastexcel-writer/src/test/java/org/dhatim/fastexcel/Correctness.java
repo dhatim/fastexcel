@@ -500,6 +500,7 @@ public class Correctness {
         assertThat(xwb.getSheetVisibility(3)).isEqualTo(SheetVisibility.VISIBLE);
     }
 
+    @Test
     public void canHideColumns() throws Exception {
 
         byte[] data = writeWorkbook(wb -> {
@@ -609,5 +610,49 @@ public class Correctness {
         assertThat(xws.isScenariosLocked()).isFalse();
         assertThat(xws.isSelectLockedCellsLocked()).isFalse();
         assertThat(xws.isSelectUnlockedCellsLocked()).isFalse();
+    }
+
+    @Test
+    public void canProtectCells() throws Exception {
+
+        byte[] data = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Worksheet 1");
+
+            // Protect the sheet
+            ws.protect("HorriblePassword");
+
+            ws.value(0, 1, "val1");
+            ws.style(0, 1)
+                    .protectionOption(ProtectionOption.LOCKED, true).set();
+
+            ws.value(0, 2, "val2");
+            ws.style(0, 2)
+                    .protectionOption(ProtectionOption.HIDDEN, true).set();
+
+            ws.value(0, 3, "val3");
+            ws.style(0, 3)
+                    .protectionOption(ProtectionOption.LOCKED, false).set();
+
+            ws.value(0, 4, "val4");
+            ws.style(0, 4)
+                    .protectionOption(ProtectionOption.LOCKED, false)
+                    .protectionOption(ProtectionOption.HIDDEN, false).set();
+        });
+
+        // Check generated workbook with Apache POI
+        XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
+        XSSFSheet xws = xwb.getSheetAt(0);
+
+        assertFalse("Cell (0, 1) should NOT be hidden", xws.getRow(0).getCell(1).getCellStyle().getHidden());
+        assertTrue("Cell (0, 1) should be locked", xws.getRow(0).getCell(1).getCellStyle().getLocked());
+
+        assertTrue("Cell (0, 2) should be locked (by default)", xws.getRow(0).getCell(2).getCellStyle().getLocked());
+        assertTrue("Cell (0, 2) should be hidden", xws.getRow(0).getCell(2).getCellStyle().getHidden());
+
+        assertFalse("Cell (0, 3) should NOT be hidden", xws.getRow(0).getCell(3).getCellStyle().getHidden());
+        assertFalse("Cell (0, 3) should NOT be locked", xws.getRow(0).getCell(3).getCellStyle().getLocked());
+
+        assertFalse("Cell (0, 4) should NOT be locked", xws.getRow(0).getCell(4).getCellStyle().getLocked());
+        assertFalse("Cell (0, 4) should NOT be hidden", xws.getRow(0).getCell(4).getCellStyle().getHidden());
     }
 }

@@ -16,6 +16,7 @@
 package org.dhatim.fastexcel;
 
 import java.math.BigDecimal;
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
@@ -85,6 +86,11 @@ public class StyleSetter {
      * Border.
      */
     private Border border;
+
+    /**
+     * Protection options.
+     */
+    private Map<ProtectionOption, Boolean> protectionOptions;
 
     /**
      * Constructor.
@@ -308,6 +314,21 @@ public class StyleSetter {
     }
 
     /**
+     * Sets the value for a protection option.
+     *
+     * @param option The option to set
+     * @param value The value to set for the given option.
+     * @return This style setter.
+     */
+    public StyleSetter protectionOption(ProtectionOption option, Boolean value) {
+        if (protectionOptions == null) {
+            protectionOptions = new EnumMap<>(ProtectionOption.class);
+        }
+        protectionOptions.put(option, value);
+        return this;
+    }
+
+    /**
      * Merge cells in this style setter's range.
      *
      * @return This style setter.
@@ -344,9 +365,16 @@ public class StyleSetter {
             border = Border.NONE;
         }
 
+        Protection protection;
+        if (protectionOptions != null) {
+            protection = new Protection(protectionOptions);
+        } else {
+            protection = null;
+        }
+
         // Compute a map giving new styles for current styles
         Set<Integer> currentStyles = range.getStyles();
-        Map<Integer, Integer> newStyles = currentStyles.stream().collect(Collectors.toMap(Function.identity(), s -> range.getWorksheet().getWorkbook().mergeAndCacheStyle(s, valueFormatting, font, fill, border, alignment)));
+        Map<Integer, Integer> newStyles = currentStyles.stream().collect(Collectors.toMap(Function.identity(), s -> range.getWorksheet().getWorkbook().mergeAndCacheStyle(s, valueFormatting, font, fill, border, alignment, protection)));
 
         // Apply styles to range
         range.applyStyle(newStyles);
