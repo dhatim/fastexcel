@@ -52,7 +52,7 @@ class Cell {
                 w.append(" s=\"").append(style).append('\"');
             }
             if (value != null && !(value instanceof Formula)) {
-                w.append(" t=\"").append((value instanceof CachedString) ? 's' : 'n').append('\"');
+                w.append(" t=\"").append((value instanceof CachedString) ? 's' : (value instanceof Boolean ? 'b' : 'n')).append('\"');
             }
             w.append(">");
             if (value instanceof Formula) {
@@ -67,6 +67,8 @@ class Cell {
                     w.append((long) value);
                 } else if (value instanceof Double) {
                     w.append((double) value);
+                } else if (value instanceof Boolean) {
+                    w.append(((Boolean) value).booleanValue() ? '1' : '0');
                 } else {
                     w.append(value.toString());
                 }
@@ -81,8 +83,8 @@ class Cell {
      *
      * @param wb Parent workbook.
      * @param v Cell value. Supported types are
-     * {@link String}, {@link Date}, {@link LocalDate}, {@link LocalDateTime}, {@link ZonedDateTime}
-     * and {@link Number} implementations. Note Excel timestamps do not carry
+     * {@link String}, {@link Date}, {@link LocalDate}, {@link LocalDateTime}, {@link ZonedDateTime},
+     * {@link Number} and {@link Boolean} implementations. Note Excel timestamps do not carry
      * any timezone information; {@link Date} values are converted to an Excel
      * serial number with the system timezone. If you need a specific timezone,
      * prefer passing a {@link ZonedDateTime}.
@@ -90,7 +92,7 @@ class Cell {
     void setValue(Workbook wb, Object v) {
         if (v instanceof String) {
             value = wb.cacheString((String) v);
-        } else if (v == null || v instanceof Number) {
+        } else if (v == null || v instanceof Number || v instanceof Boolean) {
             value = v;
         } else if (v instanceof Date) {
             value = TimestampUtil.convertDate((Date) v);

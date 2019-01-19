@@ -314,8 +314,8 @@ public class Worksheet {
      * @param r Zero-based row number.
      * @param c Zero-based column number.
      * @param value Cell value. Supported types are
-     * {@link String}, {@link Date}, {@link LocalDate}, {@link LocalDateTime}, {@link ZonedDateTime}
-     * and {@link Number} implementations. Note Excel timestamps do not carry
+     * {@link String}, {@link Date}, {@link LocalDate}, {@link LocalDateTime}, {@link ZonedDateTime},
+     * {@link Number} and {@link Boolean} implementations. Note Excel timestamps do not carry
      * any timezone information; {@link Date} values are converted to an Excel
      * serial number with the system timezone. If you need a specific timezone,
      * prefer passing a {@link ZonedDateTime}.
