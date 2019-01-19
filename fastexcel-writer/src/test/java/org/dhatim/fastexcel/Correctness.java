@@ -15,6 +15,19 @@
  */
 package org.dhatim.fastexcel;
 
+import org.apache.commons.io.output.NullOutputStream;
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.DataValidation.ErrorStyle;
+import org.apache.poi.ss.usermodel.DataValidationConstraint;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.SheetVisibility;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFDataValidation;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.junit.Test;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -30,23 +43,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
-import org.apache.commons.io.output.NullOutputStream;
-import org.apache.poi.ss.usermodel.BorderStyle;
-import org.apache.poi.ss.usermodel.DataValidation.ErrorStyle;
-import org.apache.poi.ss.usermodel.DataValidationConstraint;
-import org.apache.poi.ss.usermodel.IndexedColors;
-import org.apache.poi.ss.usermodel.SheetVisibility;
-import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.xssf.usermodel.XSSFDataValidation;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.junit.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.dhatim.fastexcel.SheetProtectionOption.DELETE_ROWS;
-import static org.dhatim.fastexcel.SheetProtectionOption.OBJECTS;
-import static org.dhatim.fastexcel.SheetProtectionOption.SHEET;
+import static org.dhatim.fastexcel.SheetProtectionOption.*;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -211,6 +209,8 @@ public class Correctness {
             ws.value(i, i++, intValue);
             ws.value(i, i++, longValue);
             ws.value(i, i++, bigDecimalValue);
+            ws.value(i, i++, Boolean.TRUE);
+            ws.value(i, i++, Boolean.FALSE);
             try {
                 ws.finish();
             } catch (IOException ex) {
@@ -240,6 +240,8 @@ public class Correctness {
         assertThat(xws.getRow(i).getCell(i++).getNumericCellValue()).isEqualTo(intValue);
         assertThat(xws.getRow(i).getCell(i++).getNumericCellValue()).isEqualTo(longValue);
         assertThat(new BigDecimal(xws.getRow(i).getCell(i++).getRawValue())).isEqualTo(bigDecimalValue);
+        assertThat(xws.getRow(i).getCell(i++).getBooleanCellValue()).isTrue();
+        assertThat(xws.getRow(i).getCell(i++).getBooleanCellValue()).isFalse();
     }
 
     @Test
