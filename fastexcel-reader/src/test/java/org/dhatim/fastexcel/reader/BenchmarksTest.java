@@ -15,19 +15,13 @@
  */
 package org.dhatim.fastexcel.reader;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import com.monitorjbl.xlsx.StreamingReader;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.eventusermodel.ReadOnlySharedStringsTable;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.poi.xssf.eventusermodel.XSSFSheetXMLHandler;
@@ -46,9 +40,26 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class BenchmarksTest {
 
+    private static final long RESULT = 2147385345;
+
     private static class SheetContentHandler implements XSSFSheetXMLHandler.SheetContentsHandler {
+
+        private long result = 0;
 
         @Override
         public void startRow(int rowNum) {
@@ -62,7 +73,10 @@ public class BenchmarksTest {
 
         @Override
         public void cell(String cellReference, String formattedValue, XSSFComment comment) {
-            //reading
+            CellReference ref = new CellReference(cellReference);
+            if (ref.getRow() > 0 && ref.getCol() == 0) {
+                result += Double.parseDouble(formattedValue);
+            }
         }
 
         @Override
@@ -74,29 +88,32 @@ public class BenchmarksTest {
     private static final String FILE = "/xlsx/calendar_stress_test.xlsx";
 
     @Benchmark
-    public void apachePoi() throws IOException, InvalidFormatException {
+    public long apachePoi() throws IOException {
         try (Workbook wb = WorkbookFactory.create(openResource(FILE))) {
             org.apache.poi.ss.usermodel.Sheet sheet = wb.getSheetAt(0);
-            sheet.forEach(r -> {
-                r.getCell(0);
-            });
+            long sum = StreamSupport.stream(
+                    Spliterators.spliteratorUnknownSize(sheet.rowIterator(), Spliterator.ORDERED),
+                    false
+            ).skip(1).mapToLong(r -> (long) r.getCell(0).getNumericCellValue()).sum();
+            assertEquals(RESULT, sum);
+            return sum;
         }
     }
 
     @Benchmark
-    public void fastExcelReader() throws IOException {
+    public long fastExcelReader() throws IOException {
         try (InputStream is = openResource(FILE); ReadableWorkbook wb = new ReadableWorkbook(is)) {
             Sheet sheet = wb.getFirstSheet();
             try (Stream<Row> rows = sheet.openStream()) {
-                rows.forEach(r -> {
-                    Cell cell = r.getCell(0);
-                });
+                long sum = rows.skip(1).mapToLong(r -> r.getCell(0).asNumber().longValue()).sum();
+                assertEquals(RESULT, sum);
+                return sum;
             }
         }
     }
 
     @Benchmark
-    public void streamingApachePoi() throws IOException, OpenXML4JException, SAXException {
+    public int streamingApachePoi() throws IOException, OpenXML4JException, SAXException {
         try (OPCPackage pkg = OPCPackage.open(openResource(FILE))) {
             ReadOnlySharedStringsTable strings = new ReadOnlySharedStringsTable(pkg);
             XSSFReader reader = new XSSFReader(pkg);
@@ -106,19 +123,23 @@ public class BenchmarksTest {
             while (iterator.hasNext()) {
                 try (InputStream sheetStream = iterator.next()) {
                     if (sheetIndex == 0) {
-                        processSheet(styles, strings, new SheetContentHandler(), sheetStream);
+                        SheetContentHandler sheetHandler = new SheetContentHandler();
+                        processSheet(styles, strings, sheetHandler, sheetStream);
+                        assertEquals(RESULT, sheetHandler.result);
                     }
                 }
                 sheetIndex++;
             }
+            return sheetIndex;
         }
     }
 
     private void processSheet(StylesTable styles, ReadOnlySharedStringsTable strings,
-            XSSFSheetXMLHandler.SheetContentsHandler sheetHandler, InputStream sheetInputStream) throws IOException, SAXException {
+                              XSSFSheetXMLHandler.SheetContentsHandler sheetHandler, InputStream sheetInputStream) throws IOException, SAXException {
         DataFormatter formatter = new DataFormatter();
         InputSource sheetSource = new InputSource(sheetInputStream);
         SAXParserFactory saxFactory = SAXParserFactory.newInstance();
+        saxFactory.setNamespaceAware(true);
         try {
             SAXParser saxParser = saxFactory.newSAXParser();
             XMLReader sheetParser = saxParser.getXMLReader();
@@ -131,16 +152,35 @@ public class BenchmarksTest {
         }
     }
 
+
+    @Benchmark
+    public long monitorjbl() throws IOException {
+        long sum = 0;
+        try (InputStream is = openResource(FILE);
+             org.apache.poi.ss.usermodel.Workbook workbook = StreamingReader.builder().open(is)) {
+            for (org.apache.poi.ss.usermodel.Sheet sheet : workbook) {
+                for (org.apache.poi.ss.usermodel.Row r : sheet) {
+                    if (r.getRowNum() == 0) {
+                        continue;
+                    }
+                    sum += r.getCell(0).getNumericCellValue();
+                }
+            }
+        }
+        assertEquals(RESULT, sum);
+        return sum;
+    }
+
     @Test
     public void benchmarks() throws RunnerException {
         String foo = BenchmarksTest.class.getName() + "\\..*";
         Options options = new OptionsBuilder().include(foo)
                 .mode(Mode.SingleShotTime)
-                .warmupIterations(0)
+                .warmupIterations(1)
                 .warmupBatchSize(1)
                 .measurementIterations(1)
                 .threads(1)
-                .forks(0)
+                .forks(1)
                 .timeUnit(TimeUnit.MILLISECONDS)
                 .shouldFailOnError(true)
                 .resultFormat(ResultFormatType.CSV)
