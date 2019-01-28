@@ -129,6 +129,7 @@ The reader part of fastexcel is a streaming alternative of [Apache POI](https://
 ## Benchmarks
 
 In this simple benchmark test, we read a workbook of 65536 lines. We see that Apache Poi (non-streaming) is about 10x times slower than fastexcel read. The streaming API of Apache POI is about 2x times slower.
+In between there a more developer friendly wrapper around Apache Poi called [Excel Streaming Reader (xlsx-streamer)](https://github.com/monitorjbl/excel-streaming-reader).
 
 ![Reading time](doc/reading_time.png)
 
