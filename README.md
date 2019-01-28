@@ -35,13 +35,13 @@ Note heap memory usage is measured just before flushing the workbook to the outp
 
 ## Prerequisites
 
-- Java 8. Build with Maven.
+- Java 8+. Build with Maven.
 - Include the following dependency in your POM:
 ```xml
 <dependency>
     <groupId>org.dhatim</groupId>
     <artifactId>fastexcel</artifactId>
-    <version>0.9.3</version>
+    <version>0.9.12</version>
 </dependency>
 ```
 
