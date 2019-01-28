@@ -135,13 +135,13 @@ In between there a more developer friendly wrapper around Apache Poi called [Exc
 
 ## Prerequisites
 
-- Java 8. Build with Maven.
+- Java 8+. Build with Maven.
 - Include the following dependency in your POM:
 ```xml
 <dependency>
     <groupId>org.dhatim</groupId>
     <artifactId>fastexcel-reader</artifactId>
-    <version>0.9.3</version>
+    <version>0.9.12</version>
 </dependency>
 ```
 
