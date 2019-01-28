@@ -16,6 +16,7 @@
 package org.dhatim.fastexcel.reader;
 
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -46,9 +47,20 @@ public class ReadableWorkbook implements Closeable {
     private boolean date1904;
     private final List<Sheet> sheets = new ArrayList<>();
 
+    public ReadableWorkbook(File inputFile) throws IOException {
+        this(open(inputFile));
+    }
+
+    /**
+     * Note: when working with huge sheets (e.g. 500_000 rows) use {@link #ReadableWorkbook(File)}
+     */
     public ReadableWorkbook(InputStream inputStream) throws IOException {
+        this(open(inputStream));
+    }
+
+    private ReadableWorkbook(OPCPackage pkg) throws IOException {
         try {
-            pkg = OPCPackage.open(inputStream);
+            this.pkg = pkg;
             reader = new XSSFReader(pkg);
             sst = reader.getSharedStringsTable();
         } catch (NotOfficeXmlFileException | OpenXML4JException e) {
@@ -156,7 +168,7 @@ public class ReadableWorkbook implements Closeable {
         if ((offsetA + length > a.length) || (offsetB + length > b.length)) {
             return false;
         }
-        for (int i=0; i<length; i++) {
+        for (int i = 0; i < length; i++) {
             if (a[offsetA + i] != b[offsetB + i]) {
                 return false;
             }
@@ -172,6 +184,22 @@ public class ReadableWorkbook implements Closeable {
                 throw new UncheckedIOException(e);
             }
         };
+    }
+
+    private static OPCPackage open(File file){
+        try {
+            return OPCPackage.open(file);
+        } catch (InvalidFormatException e) {
+            throw new ExcelReaderException(e);
+        }
+    }
+
+    private static OPCPackage open(InputStream in) throws IOException {
+        try {
+            return OPCPackage.open(in);
+        } catch (InvalidFormatException e) {
+            throw new ExcelReaderException(e);
+        }
     }
 
 }
