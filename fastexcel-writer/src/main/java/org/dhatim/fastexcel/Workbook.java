@@ -157,11 +157,19 @@ public class Workbook {
      */
     void writeFile(String name, ThrowingConsumer<Writer> consumer) throws IOException {
         synchronized (os) {
-            os.putNextEntry(new ZipEntry(name));
+            beginFile(name);
             consumer.accept(writer);
-            writer.flush();
-            os.closeEntry();
+            endFile();
         }
+    }
+
+    Writer beginFile(String name) throws IOException {
+        os.putNextEntry(new ZipEntry(name));
+        return writer;
+    }
+    void endFile() throws IOException {
+        writer.flush();
+        os.closeEntry();
     }
 
     /**
