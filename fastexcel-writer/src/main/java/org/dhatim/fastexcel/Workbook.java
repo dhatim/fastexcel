@@ -61,6 +61,10 @@ public class Workbook {
         this.applicationVersion = applicationVersion;
     }
 
+    public void setCompressionLevel(int level) {
+        this.os.setLevel(level);
+    }
+
     /**
      * Sort the current worksheets with the given Comparator
      *
