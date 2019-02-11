@@ -31,6 +31,7 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.exceptions.NotOfficeXmlFileException;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.openxml4j.opc.PackageAccess;
 import org.apache.poi.poifs.common.POIFSConstants;
 import org.apache.poi.poifs.storage.HeaderBlockConstants;
 import org.apache.poi.util.LittleEndian;
@@ -188,7 +189,7 @@ public class ReadableWorkbook implements Closeable {
 
     private static OPCPackage open(File file){
         try {
-            return OPCPackage.open(file);
+            return OPCPackage.open(file, PackageAccess.READ);
         } catch (InvalidFormatException e) {
             throw new ExcelReaderException(e);
         }
