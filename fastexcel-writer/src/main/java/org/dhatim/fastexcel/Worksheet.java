@@ -517,7 +517,13 @@ public class Worksheet {
     /**
      * Write all the rows currently in memory to the workbook's output stream.
      * Call this method periodically when working with huge data sets.
-     * After calling flush, all the rows created so far become inaccessible.
+     * After calling {@link #flush()}, all the rows created so far become inaccessible.<br/>
+     * Notes:<br/>
+     * <ul>
+     * <li>All columns must be defined before calling this method:
+     * do not add or merge columns after calling {@link #flush()}.</li>
+     * <li>When a {@link Worksheet} is flushed, no other worksheet can be flushed until {@link #finish()} is called.</li>
+     * </ul>
      *
      * @throws IOException If an I/O error occurs.
      */
