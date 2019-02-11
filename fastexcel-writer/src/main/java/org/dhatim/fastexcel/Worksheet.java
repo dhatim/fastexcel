@@ -517,8 +517,8 @@ public class Worksheet {
     /**
      * Write all the rows currently in memory to the workbook's output stream.
      * Call this method periodically when working with huge data sets.
-     * After calling {@link #flush()}, all the rows created so far become inaccessible.<br/>
-     * Notes:<br/>
+     * After calling {@link #flush()}, all the rows created so far become inaccessible.<br>
+     * Notes:<br>
      * <ul>
      * <li>All columns must be defined before calling this method:
      * do not add or merge columns after calling {@link #flush()}.</li>
