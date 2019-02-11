@@ -70,6 +70,10 @@ class SimpleXmlReader implements Closeable {
         return reader.getAttributeValue(null, name);
     }
 
+    public String getAttribute(String namespace, String name) {
+        return reader.getAttributeValue(namespace, name);
+    }
+
     public Optional<String> getOptionalAttribute(String name) {
         return Optional.ofNullable(reader.getAttributeValue(null, name));
     }

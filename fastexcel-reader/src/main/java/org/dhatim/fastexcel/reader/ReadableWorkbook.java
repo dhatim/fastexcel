@@ -117,7 +117,7 @@ public class ReadableWorkbook implements Closeable {
 
     private void createSheet(SimpleXmlReader r) {
         String name = r.getAttribute("name");
-        String id = r.getAttribute("id");
+        String id = r.getAttribute("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id");
         int index = sheets.size();
         sheets.add(new Sheet(this, index, id, name));
     }
