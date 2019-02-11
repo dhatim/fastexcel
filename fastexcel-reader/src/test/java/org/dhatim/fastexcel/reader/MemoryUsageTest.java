@@ -1,13 +1,18 @@
 package org.dhatim.fastexcel.reader;
 
+import org.apache.poi.openxml4j.util.ZipSecureFileWorkaround;
 import org.apache.poi.xssf.streaming.SXSSFCell;
 import org.apache.poi.xssf.streaming.SXSSFRow;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -15,8 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MemoryUsageTest {
     private static final Logger LOG = Logger.getLogger(MemoryUsageTest.class.getName());
-    private static final int ROWS = 500_000;
-    private static final int COLS = 100;
+    private static final int ROWS = 600_000;
+    private static final int COLS = 200;
     private static File testFile = new File("target/memtest" + ROWS + "x" + COLS + ".xlsx");
 
     @BeforeAll
@@ -28,7 +33,7 @@ public class MemoryUsageTest {
         try (SXSSFWorkbook wb = new SXSSFWorkbook()) {
             SXSSFSheet sheet = wb.createSheet();
             for (int r = 0; r < ROWS; r++) {
-                printProgress(r);
+                printProgress("writing", r);
                 SXSSFRow row = sheet.createRow(r);
                 for (int c = 0; c < COLS; c++) {
                     SXSSFCell cell = row.createCell(c);
@@ -43,13 +48,18 @@ public class MemoryUsageTest {
         LOG.info("Size: " + testFile.length());
     }
 
+    @BeforeEach
+    public void disableZipBombDetection() {
+        ZipSecureFileWorkaround.disableZipBombDetection();
+    }
+
     @Test
     public void read() throws Exception {
         try (ReadableWorkbook wb = new ReadableWorkbook(testFile)) {
             org.dhatim.fastexcel.reader.Sheet sheet = wb.getFirstSheet();
             try (Stream<org.dhatim.fastexcel.reader.Row> rows = sheet.openStream()) {
                 rows.forEach(r -> {
-                    printProgress(r.getRowNum() - 1);
+                    printProgress("reading", r.getRowNum() - 1);
                     for (int c = 0; c < r.getCellCount(); c++) {
                         assertEquals(
                                 valueFor(r.getRowNum() - 1, c),
@@ -62,9 +72,9 @@ public class MemoryUsageTest {
         }
     }
 
-    private static void printProgress(int r) {
+    private static void printProgress(String prefix, int r) {
         if (r % (ROWS / 100) == 0) {
-            LOG.info((100 * r / ROWS) + "%");
+            LOG.info(prefix+": "+(100 * r / ROWS) + "%");
         }
     }
 
