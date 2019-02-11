@@ -176,9 +176,9 @@ public class BenchmarksTest {
         String foo = BenchmarksTest.class.getName() + "\\..*";
         Options options = new OptionsBuilder().include(foo)
                 .mode(Mode.SingleShotTime)
-                .warmupIterations(1)
+                .warmupIterations(3)
                 .warmupBatchSize(1)
-                .measurementIterations(1)
+                .measurementIterations(5)
                 .threads(1)
                 .forks(1)
                 .timeUnit(TimeUnit.MILLISECONDS)
