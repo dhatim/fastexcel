@@ -1,6 +1,8 @@
 package org.dhatim.fastexcel;
 
 import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.openxml4j.opc.PackageAccess;
+import org.apache.poi.openxml4j.util.ZipSecureFileGateway;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.eventusermodel.ReadOnlySharedStringsTable;
@@ -8,6 +10,7 @@ import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.poi.xssf.eventusermodel.XSSFSheetXMLHandler;
 import org.apache.poi.xssf.model.StylesTable;
 import org.apache.poi.xssf.usermodel.XSSFComment;
+import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
@@ -26,9 +29,9 @@ import static org.junit.Assert.assertEquals;
 
 public class MemoryUsageTest {
     private static final Logger LOG = Logger.getLogger(MemoryUsageTest.class.getName());
-    private static final int ROWS = 500_000;
-    private static final int COLS = 100;
-    private static final int SHEETS = 2;
+    private static final int ROWS = 600_000;
+    private static final int COLS = 200;
+    private static final int SHEETS = 1;
     private static final File FILE = new File("target/memtest" + ROWS + "x" + COLS + ".xlsx");
 
     private class SheetContentHandler implements XSSFSheetXMLHandler.SheetContentsHandler {
@@ -43,7 +46,7 @@ public class MemoryUsageTest {
 
         @Override
         public void startRow(int rowNum) {
-            printProgress("validating", sheetIndex * ROWS + rowNum, SHEETS * ROWS);
+            printProgress("validating poi", sheetIndex * ROWS + rowNum, SHEETS * ROWS);
         }
 
         @Override
@@ -59,16 +62,21 @@ public class MemoryUsageTest {
         }
     }
 
+    @Before
+    public void disableZipBombDetection() {
+        ZipSecureFileGateway.disableZipBombDetection();
+    }
+
     @Test
     public void run() throws Exception {
         try (OutputStream out = new FileOutputStream(FILE)) {
             generate(out);
         }
-        validate();
+        validateWithPOI();
     }
 
-    private void validate() throws Exception {
-        try (OPCPackage pkg = OPCPackage.open(FILE)) {
+    private void validateWithPOI() throws Exception {
+        try (OPCPackage pkg = OPCPackage.open(FILE, PackageAccess.READ)) {
             ReadOnlySharedStringsTable strings = new ReadOnlySharedStringsTable(pkg);
             XSSFReader reader = new XSSFReader(pkg);
             StylesTable styles = reader.getStylesTable();
