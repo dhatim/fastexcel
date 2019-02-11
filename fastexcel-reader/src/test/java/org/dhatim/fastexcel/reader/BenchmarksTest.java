@@ -15,7 +15,6 @@
  */
 package org.dhatim.fastexcel.reader;
 
-import com.ctc.wstx.stax.WstxInputFactory;
 import com.monitorjbl.xlsx.StreamingReader;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
@@ -102,19 +101,7 @@ public class BenchmarksTest {
     }
 
     @Benchmark
-    public long fastExcelReaderJdkStax() throws IOException {
-        System.setProperty("javax.xml.stream.XMLInputFactory", "com.sun.xml.internal.stream.XMLInputFactoryImpl");
-        return runFastExcelReader();
-    }
-
-    @Benchmark
-    public long fastExcelReaderWoodStox() throws IOException {
-        System.setProperty("javax.xml.stream.XMLInputFactory", WstxInputFactory.class.getName());
-        return runFastExcelReader();
-    }
-
-
-    private long runFastExcelReader() throws IOException {
+    public long fastExcelReader() throws IOException {
         try (InputStream is = openResource(FILE); ReadableWorkbook wb = new ReadableWorkbook(is)) {
             Sheet sheet = wb.getFirstSheet();
             try (Stream<Row> rows = sheet.openStream()) {
