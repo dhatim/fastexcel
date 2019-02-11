@@ -45,6 +45,7 @@ public class Worksheet {
     private final String name;
     /**
      * List of rows. A row is an array of cells.
+     * Flushed rows are null.
      */
     private final List<Cell[]> rows = new ArrayList<>();
     /**
@@ -93,6 +94,14 @@ public class Worksheet {
      */
     private Set<SheetProtectionOption> sheetProtectionOptions;
 
+    private Writer writer;
+
+    /**
+     * Number of rows written to {@link #writer}.
+     * Those rows are set to null in {@link #rows}
+     */
+    private int flushedRows = 0;
+
     /**
      * Constructor.
      *
@@ -134,6 +143,7 @@ public class Worksheet {
         if (r < 0 || r >= MAX_ROWS || c < 0 || c >= MAX_COLS) {
             throw new IllegalArgumentException();
         }
+        flushedCheck(r);
 
         // Add null for missing rows.
         while (r >= rows.size()) {
@@ -155,6 +165,12 @@ public class Worksheet {
             row[c] = new Cell();
         }
         return row[c];
+    }
+
+    private void flushedCheck(int r) {
+        if(r < flushedRows){
+            throw new IllegalStateException("Row " + r + " already flushed from memory.");
+        }
     }
 
     /**
@@ -332,6 +348,7 @@ public class Worksheet {
      * @return Cell value (or {@link Formula}).
      */
     public Object value(int r, int c) {
+        flushedCheck(r);
         Cell[] row = r < rows.size() ? rows.get(r) : null;
         Cell cell = row == null || c >= row.length ? null : row[c];
         return cell == null ? null : cell.getValue();
@@ -459,55 +476,77 @@ public class Worksheet {
         if (finished) {
             return;
         }
-        int index = workbook.getIndex(this);
-        workbook.writeFile("xl/worksheets/sheet" + Integer.toString(index) + ".xml", w -> {
-            w.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?><worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><dimension ref=\"A1\"/><sheetViews><sheetView workbookViewId=\"0\"/></sheetViews><sheetFormatPr defaultRowHeight=\"15.0\"/>");
-            int nbCols = rows.stream().filter(r -> r != null).map(r -> r.length).reduce(0, Math::max);
-            if (nbCols > 0) {
-                writeCols(w, nbCols);
+        flush();
+        writer.append("</sheetData>");
+        if (!mergedRanges.isEmpty()) {
+            writer.append("<mergeCells>");
+            for (Range r : mergedRanges) {
+                writer.append("<mergeCell ref=\"").append(r.toString()).append("\"/>");
             }
-            w.append("<sheetData>");
-            for (int r = 0; r < rows.size(); ++r) {
-                Cell[] row = rows.get(r);
-                if (row != null) {
-                    writeRow(w, r, hiddenRows.contains(r), row);
-                }
+            writer.append("</mergeCells>");
+        }
+        if (!dataValidations.isEmpty()) {
+            writer.append("<dataValidations count=\"").append(dataValidations.size()).append("\">");
+            for (DataValidation v: dataValidations) {
+                v.write(writer);
             }
-            w.append("</sheetData>");
-            if (!mergedRanges.isEmpty()) {
-                w.append("<mergeCells>");
-                for (Range r : mergedRanges) {
-                    w.append("<mergeCell ref=\"").append(r.toString()).append("\"/>");
-                }
-                w.append("</mergeCells>");
-            }
-            if (!dataValidations.isEmpty()) {
-                w.append("<dataValidations count=\"").append(dataValidations.size()).append("\">");
-                for (DataValidation v: dataValidations) {
-                    v.write(w);
-                }
-                w.append("</dataValidations>");
-            }
-            for (AlternateShading a : alternateShadingRanges) {
-                a.write(w);
-            }
+            writer.append("</dataValidations>");
+        }
+        for (AlternateShading a : alternateShadingRanges) {
+            a.write(writer);
+        }
 
-            if (passwordHash != null) {
-                w.append("<sheetProtection password=\"").append(passwordHash).append("\" ");
-                for (SheetProtectionOption option : SheetProtectionOption.values()) {
-                    if (option.getDefaultValue() != sheetProtectionOptions.contains(option)) {
-                        w.append(option.getName()).append("=\"").append(Boolean.toString(!option.getDefaultValue())).append("\" ");
-                    }
+        if (passwordHash != null) {
+            writer.append("<sheetProtection password=\"").append(passwordHash).append("\" ");
+            for (SheetProtectionOption option : SheetProtectionOption.values()) {
+                if (option.getDefaultValue() != sheetProtectionOptions.contains(option)) {
+                    writer.append(option.getName()).append("=\"").append(Boolean.toString(!option.getDefaultValue())).append("\" ");
                 }
-                w.append("/>");
             }
+            writer.append("/>");
+        }
 
-            w.append("<pageMargins bottom=\"0.75\" footer=\"0.3\" header=\"0.3\" left=\"0.7\" right=\"0.7\" top=\"0.75\"/></worksheet>");
-        });
+        writer.append("<pageMargins bottom=\"0.75\" footer=\"0.3\" header=\"0.3\" left=\"0.7\" right=\"0.7\" top=\"0.75\"/></worksheet>");
+        workbook.endFile();
 
         // Free memory; we no longer need this data
         rows.clear();
         finished = true;
+    }
+
+    /**
+     * Write all the rows currently in memory to the workbook's output stream.
+     * Call this method periodically when working with huge data sets.
+     * After calling {@link #flush()}, all the rows created so far become inaccessible.<br/>
+     * Notes:<br/>
+     * <ul>
+     * <li>All columns must be defined before calling this method:
+     * do not add or merge columns after calling {@link #flush()}.</li>
+     * <li>When a {@link Worksheet} is flushed, no other worksheet can be flushed until {@link #finish()} is called.</li>
+     * </ul>
+     *
+     * @throws IOException If an I/O error occurs.
+     */
+    public void flush() throws IOException {
+        if(writer == null) {
+            int index = workbook.getIndex(this);
+            writer = workbook.beginFile("xl/worksheets/sheet" + index + ".xml");
+            writer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?><worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><dimension ref=\"A1\"/><sheetViews><sheetView workbookViewId=\"0\"/></sheetViews><sheetFormatPr defaultRowHeight=\"15.0\"/>");
+            int nbCols = rows.stream().filter(r -> r != null).map(r -> r.length).reduce(0, Math::max);
+            if (nbCols > 0) {
+                writeCols(writer, nbCols);
+            }
+            writer.append("<sheetData>");
+        }
+        for (int r = flushedRows; r < rows.size(); ++r) {
+            Cell[] row = rows.get(r);
+            if (row != null) {
+                writeRow(writer, r, hiddenRows.contains(r), row);
+            }
+            rows.set(r, null); // free flushed row data
+        }
+        flushedRows = rows.size() - 1;
+        writer.flush();
     }
 
     /**
