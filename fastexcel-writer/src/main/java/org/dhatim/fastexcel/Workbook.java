@@ -15,15 +15,15 @@
  */
 package org.dhatim.fastexcel;
 
+import com.github.rzymek.opczip.OpcOutputStream;
+
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 /**
  * A {@link Workbook} contains one or more {@link Worksheet} objects.
@@ -35,7 +35,7 @@ public class Workbook {
     private final List<Worksheet> worksheets = new ArrayList<>();
     private final StringCache stringCache = new StringCache();
     private final StyleCache styleCache = new StyleCache();
-    private final ZipOutputStream os;
+    private final OpcOutputStream os;
     private final Writer writer;
 
     /**
@@ -50,7 +50,7 @@ public class Workbook {
      * page</a> for details.
      */
     public Workbook(OutputStream os, String applicationName, String applicationVersion) {
-        this.os = new ZipOutputStream(os, Charset.forName("UTF-8"));
+        this.os = new OpcOutputStream(os);
         /* Tests showed that:
          * The default (-1) is level 6
          * Level 4 gives best size and very good time
