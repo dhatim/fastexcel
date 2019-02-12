@@ -27,13 +27,18 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
+
+import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.exceptions.NotOfficeXmlFileException;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.openxml4j.opc.PackageAccess;
+import org.apache.poi.openxml4j.util.ZipFileZipEntrySource;
 import org.apache.poi.poifs.common.POIFSConstants;
 import org.apache.poi.poifs.storage.HeaderBlockConstants;
+import org.apache.poi.util.IOUtils;
 import org.apache.poi.util.LittleEndian;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.poi.xssf.model.SharedStringsTable;
@@ -53,7 +58,8 @@ public class ReadableWorkbook implements Closeable {
     }
 
     /**
-     * Note: when working with huge sheets (e.g. 500_000 rows) use {@link #ReadableWorkbook(File)}
+     * Note: will load the whole xlsx file into memory,
+     * (but will not uncompress it in memory)
      */
     public ReadableWorkbook(InputStream inputStream) throws IOException {
         this(open(inputStream));
@@ -197,7 +203,9 @@ public class ReadableWorkbook implements Closeable {
 
     private static OPCPackage open(InputStream in) throws IOException {
         try {
-            return OPCPackage.open(in);
+            byte[] compressedBytes = IOUtils.toByteArray(in);
+            ZipFile zipFile = new ZipFile(new SeekableInMemoryByteChannel(compressedBytes));
+            return OPCPackage.open(new ZipFileZipEntrySource(zipFile));
         } catch (InvalidFormatException e) {
             throw new ExcelReaderException(e);
         }
