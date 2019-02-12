@@ -51,6 +51,13 @@ public class Workbook {
      */
     public Workbook(OutputStream os, String applicationName, String applicationVersion) {
         this.os = new ZipOutputStream(os, Charset.forName("UTF-8"));
+        /* Tests showed that:
+         * The default (-1) is level 6
+         * Level 4 gives best size and very good time
+         * Level 2 gives best time and very good size
+         * see https://github.com/dhatim/fastexcel/pull/65
+         */
+        setCompressionLevel(4);
         this.writer = new Writer(this.os);
         this.applicationName = Objects.requireNonNull(applicationName);
 
@@ -61,6 +68,13 @@ public class Workbook {
         this.applicationVersion = applicationVersion;
     }
 
+    /**
+     * Sets the compression level of the xlsx.
+     * An xlsx file is a standard zip archive consisting of xml files.
+     * Default compression is 4.
+     *
+     * @param level the compression level (0-9)
+     */
     public void setCompressionLevel(int level) {
         this.os.setLevel(level);
     }
