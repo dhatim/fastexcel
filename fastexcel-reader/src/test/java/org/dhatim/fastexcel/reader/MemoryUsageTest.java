@@ -6,13 +6,9 @@ import org.apache.poi.xssf.streaming.SXSSFRow;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -20,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MemoryUsageTest {
     private static final Logger LOG = Logger.getLogger(MemoryUsageTest.class.getName());
-    private static final int ROWS = 600_000;
+    private static final int ROWS = 600_001;
     private static final int COLS = 200;
     private static File testFile = new File("target/memtest" + ROWS + "x" + COLS + ".xlsx");
 
@@ -48,33 +44,42 @@ public class MemoryUsageTest {
         LOG.info("Size: " + testFile.length());
     }
 
-    @BeforeEach
-    public void disableZipBombDetection() {
+    @Test
+    public void readFile() throws Exception {
         ZipSecureFileWorkaround.disableZipBombDetection();
+        try (ReadableWorkbook wb = new ReadableWorkbook(testFile)) {
+            fastexcelReader(wb);
+        }
     }
 
     @Test
-    public void read() throws Exception {
-        try (ReadableWorkbook wb = new ReadableWorkbook(testFile)) {
-            org.dhatim.fastexcel.reader.Sheet sheet = wb.getFirstSheet();
-            try (Stream<org.dhatim.fastexcel.reader.Row> rows = sheet.openStream()) {
-                rows.forEach(r -> {
-                    printProgress("reading", r.getRowNum() - 1);
-                    for (int c = 0; c < r.getCellCount(); c++) {
-                        assertEquals(
-                                valueFor(r.getRowNum() - 1, c),
-                                r.getCell(c).asNumber().doubleValue(),
-                                1e-5);
+    public void readInputStream() throws Exception {
+        try (InputStream in = new FileInputStream(testFile);
+             ReadableWorkbook wb = new ReadableWorkbook(in)
+        ) {
+            fastexcelReader(wb);
+        }
+    }
 
-                    }
-                });
-            }
+    private void fastexcelReader(ReadableWorkbook wb) throws IOException {
+        Sheet sheet = wb.getFirstSheet();
+        try (Stream<Row> rows = sheet.openStream()) {
+            rows.forEach(r -> {
+                printProgress("reading", r.getRowNum() - 1);
+                for (int c = 0; c < r.getCellCount(); c++) {
+                    assertEquals(
+                            valueFor(r.getRowNum() - 1, c),
+                            r.getCell(c).asNumber().doubleValue(),
+                            1e-5);
+
+                }
+            });
         }
     }
 
     private static void printProgress(String prefix, int r) {
         if (r % (ROWS / 100) == 0) {
-            LOG.info(prefix+": "+(100 * r / ROWS) + "%");
+            LOG.info(prefix + ": " + (100 * r / ROWS) + "%");
         }
     }
 
