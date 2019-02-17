@@ -1,19 +1,19 @@
 package org.dhatim.fastexcel;
+
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.DataValidation.ErrorStyle;
 import org.apache.poi.ss.usermodel.DataValidationConstraint;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.SheetVisibility;
 import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.xssf.usermodel.XSSFDataValidation;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.usermodel.*;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -23,12 +23,12 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.dhatim.fastexcel.Correctness.writeWorkbook;
 import static org.dhatim.fastexcel.SheetProtectionOption.*;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class PoiCompatibility {
 
@@ -508,4 +508,32 @@ public class PoiCompatibility {
         assertFalse("Cell (0, 4) should NOT be hidden", xws.getRow(0).getCell(4).getCellStyle().getHidden());
     }
 
+    @Test
+    public void comments() throws IOException {
+        final String commentText01 = "this is a comment <&>";
+        final String commentText32 = "another comment";
+        byte[] data = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Worksheet 1");
+            ws.value(0, 1, "cell value");
+            ws.comment(0, 1, commentText01);
+            ws.comment(3, 2, commentText32);
+        });
+
+        // Check generated workbook with Apache POI
+        XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
+        XSSFSheet xws = xwb.getSheetAt(0);
+        assertEquals(
+                "B1: this is a comment <&>\n" +
+                        "C4: another comment",
+                xws.getCellComments().entrySet().stream()
+                        .map(e -> e.getKey() + ": " + e.getValue().getString())
+                        .collect(Collectors.joining("\n"))
+        );
+        XSSFComment cellComment = xws.getRow(0).getCell(1).getCellComment();
+        assertNotNull("Comment should NOT be null", cellComment);
+        assertEquals(
+                commentText01,
+                String.valueOf(cellComment.getString())
+        );
+    }
 }
