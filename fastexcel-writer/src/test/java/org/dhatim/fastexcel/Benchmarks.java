@@ -49,43 +49,9 @@ public class Benchmarks {
     }
 
     @Benchmark
-    public Object fastExcel() throws Exception {
-        return fastExcel(Deflater.DEFAULT_COMPRESSION);
-    }
-
-    @Benchmark
-    public Object fastExcelFastCompression() throws Exception {
-        return fastExcel(Deflater.BEST_SPEED);
-    }
-
-    @Benchmark
-    public Object fastExcelCompression4() throws Exception {
-        return fastExcel(4);
-    }
-
-
-    @Test
-    public void pickCompressionLevel() throws IOException {
-        for (int i = 0; i < 5; i++) {
-            int[] results = new int[Deflater.BEST_COMPRESSION];
-            for (int level = 0; level < results.length; level++) {
-                long start = System.currentTimeMillis();
-                int size = fastExcel(level);
-                long end = System.currentTimeMillis();
-                System.out.println(level + "; " + size + "; " + (end - start));
-            }
-            long start = System.currentTimeMillis();
-            int size = fastExcel(Deflater.DEFAULT_COMPRESSION);
-            long end = System.currentTimeMillis();
-            System.out.println(Deflater.DEFAULT_COMPRESSION+ "; " + size + "; " + (end - start));
-            System.out.println();
-        }
-    }
-
-    private int fastExcel(int compression) throws IOException {
+    public Object fastExcel() throws IOException {
         CountingOutputStream count = new CountingOutputStream(new NullOutputStream());
         Workbook wb = new Workbook(count, "Perf", "1.0");
-        wb.setCompressionLevel(compression);
         Worksheet ws = wb.newWorksheet("Sheet 1");
         for (int r = 0; r < NB_ROWS; ++r) {
             ws.value(r, 0, r);
