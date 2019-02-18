@@ -101,10 +101,22 @@ public class Workbook {
         for (Worksheet ws : worksheets) {
             ws.finish();
         }
+
+        writeComments();
+
         writeFile("[Content_Types].xml", w -> {
-            w.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"><Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/><Default Extension=\"xml\" ContentType=\"application/xml\"/><Override PartName=\"/xl/sharedStrings.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml\"/><Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/><Override PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/>");
+            w.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"><Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/><Default Extension=\"xml\" ContentType=\"application/xml\"/>");
+            if(hasComments()){
+                w.append("<Default ContentType=\"application/vnd.openxmlformats-officedocument.vmlDrawing\" Extension=\"vml\"/>");
+            }
+            w.append("<Override PartName=\"/xl/sharedStrings.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml\"/><Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/><Override PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/>");
             for (Worksheet ws : worksheets) {
-                w.append("<Override PartName=\"/xl/worksheets/sheet").append(getIndex(ws)).append(".xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>");
+                int index = getIndex(ws);
+                w.append("<Override PartName=\"/xl/worksheets/sheet").append(index).append(".xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>");
+                if(!ws.comments.isEmpty()) {
+                    w.append("<Override ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.comments+xml\" PartName=\"/xl/comments").append(index).append(".xml\"/>");
+                    w.append("<Override ContentType=\"application/vnd.openxmlformats-officedocument.drawing+xml\" PartName=\"/xl/drawings/drawing").append(index).append(".xml\"/>");
+                }
             }
             w.append("<Override PartName=\"/docProps/core.xml\" ContentType=\"application/vnd.openxmlformats-package.core-properties+xml\"/><Override PartName=\"/docProps/app.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.extended-properties+xml\"/></Types>");
         });
@@ -124,6 +136,40 @@ public class Workbook {
         writeFile("xl/sharedStrings.xml", stringCache::write);
         writeFile("xl/styles.xml", styleCache::write);
         this.os.finish();
+    }
+
+    /**
+     * @return true when any sheet has any comments
+     */
+    private boolean hasComments() {
+        for (Worksheet ws : worksheets) {
+            if (!ws.comments.isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void writeComments() throws IOException {
+        for (Worksheet ws : worksheets) {
+            if (ws.comments.isEmpty()) {
+                continue;
+            }
+            int index = getIndex(ws);
+            writeFile("xl/comments" + index + ".xml", ws.comments::writeComments);
+            writeFile("xl/drawings/vmlDrawing" + index + ".vml", ws.comments::writeVmlDrawing);
+            writeFile("xl/drawings/drawing" + index + ".xml", ws.comments::writeDrawing);
+
+            writeFile("xl/worksheets/_rels/sheet" + index + ".xml.rels", w -> {
+                w.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>");
+                w.append("<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">");
+                w.append("<Relationship Id=\"d\" Target=\"../drawings/drawing" + index + ".xml\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing\"/>");
+                w.append("<Relationship Id=\"c\" Target=\"../comments" + index + ".xml\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments\"/>");
+                w.append("<Relationship Id=\"v\" Target=\"../drawings/vmlDrawing" + index + ".vml\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/vmlDrawing\"/>");
+                w.append("</Relationships>");
+            });
+
+        }
     }
 
     /**

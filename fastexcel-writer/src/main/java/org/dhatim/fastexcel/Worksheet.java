@@ -74,6 +74,9 @@ public class Worksheet {
      * Map of columns and they're widths
      */
     private final Map<Integer, Double> colWidths = new HashMap<>();
+
+    final Comments comments = new Comments();
+
     /**
      * Is this worksheet construction completed?
      */
@@ -506,7 +509,12 @@ public class Worksheet {
             writer.append("/>");
         }
 
-        writer.append("<pageMargins bottom=\"0.75\" footer=\"0.3\" header=\"0.3\" left=\"0.7\" right=\"0.7\" top=\"0.75\"/></worksheet>");
+        writer.append("<pageMargins bottom=\"0.75\" footer=\"0.3\" header=\"0.3\" left=\"0.7\" right=\"0.7\" top=\"0.75\"/>");
+        if(!comments.isEmpty()) {
+            writer.append("<drawing r:id=\"d\"/>");
+            writer.append("<legacyDrawing r:id=\"v\"/>");
+        }
+        writer.append("</worksheet>");
         workbook.endFile();
 
         // Free memory; we no longer need this data
@@ -531,7 +539,10 @@ public class Worksheet {
         if(writer == null) {
             int index = workbook.getIndex(this);
             writer = workbook.beginFile("xl/worksheets/sheet" + index + ".xml");
-            writer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?><worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><dimension ref=\"A1\"/><sheetViews><sheetView workbookViewId=\"0\"/></sheetViews><sheetFormatPr defaultRowHeight=\"15.0\"/>");
+            writer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+            writer.append("<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">");
+            writer.append("<dimension ref=\"A1\"/>");
+            writer.append("<sheetViews><sheetView workbookViewId=\"0\"/></sheetViews><sheetFormatPr defaultRowHeight=\"15.0\"/>");
             int nbCols = rows.stream().filter(r -> r != null).map(r -> r.length).reduce(0, Math::max);
             if (nbCols > 0) {
                 writeCols(writer, nbCols);
@@ -570,5 +581,18 @@ public class Worksheet {
             }
         }
         w.append("</row>");
+    }
+
+    /**
+     * Assign a note/comment to a cell.
+     * The comment popup will be twice the size of the cell and will be initially hidden.
+     * <p>
+     * Comments are stored in memory till call to {@link #finish()} - calling {@link #flush()} does not write them to output stream.
+     * @param r Zero-based row number.
+     * @param c Zero-based column number.
+     * @param comment Note text
+     */
+    public void comment(int r, int c, String comment) {
+        comments.set(r, c, comment);
     }
 }
