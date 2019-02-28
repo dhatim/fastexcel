@@ -123,7 +123,7 @@ public class ListDataValidation implements DataValidation {
                 .append("\"><formula1>")
                 .append(listRange.getWorksheet().getName())
                 .append("!")
-                .append(listRange.toString())
+                .append(listRange.toAbsoluteString())
                 .append("</formula1></dataValidation>");
     }
 }
