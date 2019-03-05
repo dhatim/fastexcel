@@ -152,6 +152,17 @@ public class Range {
     }
 
     /**
+     * Get an absolute reference to this Range.
+     *
+     * ex: $A$1:$A$5
+     *
+     * @return
+     */
+    public String toAbsoluteString() {
+        return '$' + colToString(left) + '$' + Integer.toString(top + 1) + ":$" + colToString(right) + '$' + Integer.toString(bottom + 1);
+    }
+
+    /**
      * Get a new style setter for this range.
      *
      * @return Newly created style setter.
