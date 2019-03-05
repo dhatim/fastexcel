@@ -16,7 +16,7 @@
         <dependency>
             <groupId>com.github.rzymek</groupId>
             <artifactId>opczip</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
