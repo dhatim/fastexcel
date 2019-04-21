@@ -136,7 +136,7 @@ class RowSpliterator implements Spliterator<Row> {
                 switch (type) {
                     case "b":
                         definedType = CellType.BOOLEAN;
-                        parser = s -> s.charAt(0) != 0;
+                        parser = RowSpliterator::parseBoolean;
                         break;
                     case "e":
                         definedType = CellType.ERROR;
@@ -218,6 +218,16 @@ class RowSpliterator implements Spliterator<Row> {
             return new BigDecimal(s);
         } catch (NumberFormatException e) {
             throw new ExcelReaderException("Cannot parse number : " + s, e);
+        }
+    }
+
+    private static Boolean parseBoolean(String s) {
+        if ("0".equals(s)) {
+            return Boolean.FALSE;
+        } else if ("1".equals(s)) {
+            return Boolean.TRUE;
+        } else {
+            throw new ExcelReaderException("Invalid boolean cell value: '" + s + "'. Expecting '0' or '1'.");
         }
     }
 
