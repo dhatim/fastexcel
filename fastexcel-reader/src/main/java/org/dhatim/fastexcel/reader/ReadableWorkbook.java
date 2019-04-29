@@ -75,6 +75,7 @@ public class ReadableWorkbook implements Closeable {
         }
         factory = XMLInputFactory.newInstance();
         // To prevent XML External Entity (XXE) attacks
+        factory.setProperty(XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
         factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
 
         try (SimpleXmlReader workbookReader = new SimpleXmlReader(factory, reader.getWorkbookData())) {
