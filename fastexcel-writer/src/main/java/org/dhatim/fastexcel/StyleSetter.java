@@ -58,6 +58,10 @@ public class StyleSetter {
      * Italic flag.
      */
     private boolean italic;
+	/**
+     * Underlined flag.
+     */
+    private boolean underlined;
     /**
      * Font name.
      */
@@ -197,6 +201,16 @@ public class StyleSetter {
      */
     public StyleSetter italic() {
         this.italic = true;
+        return this;
+    }
+	
+	/**
+     * Use underlined text.
+     *
+     * @return This style setter.
+     */
+    public StyleSetter underlined() {
+        this.underlined = true;
         return this;
     }
 
@@ -350,8 +364,8 @@ public class StyleSetter {
             alignment = null;
         }
         Font font;
-        if (bold || italic || fontColor != null || fontName != null || fontSize != null) {
-            font = Font.build(bold, italic, fontName, fontSize, fontColor);
+        if (bold || italic || underlined || fontColor != null || fontName != null || fontSize != null) {
+            font = Font.build(bold, italic, underlined, fontName, fontSize, fontColor);
         } else {
             font = Font.DEFAULT;
         }
