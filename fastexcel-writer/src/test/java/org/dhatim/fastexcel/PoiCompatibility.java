@@ -196,7 +196,7 @@ public class PoiCompatibility {
         String sheetName = "Worksheet 1";
         String bold = "Bold";
         String italic = "Italic";
-        String underlinded = "Underlined";
+        String underlined = "Underlined";
         String bold_italic = "Bold_italic";
         String bold_underlined = "Bold_underlined";
         String italic_underlinded = "Italic_underlined";
