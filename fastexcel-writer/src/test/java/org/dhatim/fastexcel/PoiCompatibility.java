@@ -229,16 +229,16 @@ public class PoiCompatibility {
         XSSFSheet xws = xwb.getSheet(sheetName);
         assertTrue(xws.getRow(0).getCell(0).getCellStyle().getFont().getBold());
         assertTrue(xws.getRow(0).getCell(1).getCellStyle().getFont().getItalic());
-        assertEquals(xws.getRow(0).getCell(2).getCellStyle().getFont().getUnderline(), FontUnderline.SINGLE);
+        assertEquals(FontUnderline.valueOf(xws.getRow(0).getCell(2).getCellStyle().getFont().getUnderline()), FontUnderline.SINGLE);
         assertTrue(xws.getRow(0).getCell(3).getCellStyle().getFont().getBold());
         assertTrue(xws.getRow(0).getCell(3).getCellStyle().getFont().getItalic());
         assertTrue(xws.getRow(0).getCell(4).getCellStyle().getFont().getBold());
-        assertEquals(xws.getRow(0).getCell(4).getCellStyle().getFont().getUnderline(), FontUnderline.SINGLE);
+        assertEquals(FontUnderline.valueOf(xws.getRow(0).getCell(4).getCellStyle().getFont().getUnderline()), FontUnderline.SINGLE);
         assertTrue(xws.getRow(0).getCell(5).getCellStyle().getFont().getItalic());
-        assertEquals(xws.getRow(0).getCell(5).getCellStyle().getFont().getUnderline(), FontUnderline.SINGLE);
+        assertEquals(FontUnderline.valueOf(xws.getRow(0).getCell(5).getCellStyle().getFont().getUnderline()), FontUnderline.SINGLE);
         assertTrue(xws.getRow(0).getCell(6).getCellStyle().getFont().getBold());
         assertTrue(xws.getRow(0).getCell(6).getCellStyle().getFont().getItalic());
-        assertEquals(xws.getRow(0).getCell(6).getCellStyle().getFont().getUnderline(), FontUnderline.SINGLE);
+        assertEquals(FontUnderline.valueOf(xws.getRow(0).getCell(6).getCellStyle().getFont().getUnderline()), FontUnderline.SINGLE);
     }
 
     @Test
