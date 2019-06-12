@@ -3,6 +3,7 @@ package org.dhatim.fastexcel;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.DataValidation.ErrorStyle;
 import org.apache.poi.ss.usermodel.DataValidationConstraint;
+import org.apache.poi.ss.usermodel.FontUnderline;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.SheetVisibility;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -188,6 +189,56 @@ public class PoiCompatibility {
             assertThat(xwb.getSheetName(i)).isEqualTo("Sheet " + nameI);
             --nameI;
         }
+    }
+    
+    @Test
+    public void font() throws Exception {
+        String sheetName = "Worksheet 1";
+        String bold = "Bold";
+        String italic = "Italic";
+        String underlined = "Underlined";
+        String bold_italic = "Bold_italic";
+        String bold_underlined = "Bold_underlined";
+        String italic_underlinded = "Italic_underlined";
+        String all_three = "All_three";
+        byte[] data = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet(sheetName);
+            ws.value(0, 0, bold);
+            ws.style(0, 0).bold().set();
+            ws.value(0, 1, italic);
+            ws.style(0, 1).italic().set();
+            ws.value(0, 2, underlined);
+            ws.style(0, 2).underlined().set();
+            ws.value(0, 3, bold_italic);
+            ws.style(0, 3).bold().italic().set();
+            ws.value(0, 4, bold_underlined);
+            ws.style(0, 4).bold().underlined().set();
+            ws.value(0, 5, italic_underlinded);
+            ws.style(0, 5).italic().underlined().set();
+            ws.value(0, 6, all_three);
+            ws.style(0, 6).bold().italic().underlined().set();
+            try {
+                ws.finish();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+
+        // Check generated workbook with Apache POI
+        XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
+        XSSFSheet xws = xwb.getSheet(sheetName);
+        assertTrue(xws.getRow(0).getCell(0).getCellStyle().getFont().getBold());
+        assertTrue(xws.getRow(0).getCell(1).getCellStyle().getFont().getItalic());
+        assertEquals(FontUnderline.valueOf(xws.getRow(0).getCell(2).getCellStyle().getFont().getUnderline()), FontUnderline.SINGLE);
+        assertTrue(xws.getRow(0).getCell(3).getCellStyle().getFont().getBold());
+        assertTrue(xws.getRow(0).getCell(3).getCellStyle().getFont().getItalic());
+        assertTrue(xws.getRow(0).getCell(4).getCellStyle().getFont().getBold());
+        assertEquals(FontUnderline.valueOf(xws.getRow(0).getCell(4).getCellStyle().getFont().getUnderline()), FontUnderline.SINGLE);
+        assertTrue(xws.getRow(0).getCell(5).getCellStyle().getFont().getItalic());
+        assertEquals(FontUnderline.valueOf(xws.getRow(0).getCell(5).getCellStyle().getFont().getUnderline()), FontUnderline.SINGLE);
+        assertTrue(xws.getRow(0).getCell(6).getCellStyle().getFont().getBold());
+        assertTrue(xws.getRow(0).getCell(6).getCellStyle().getFont().getItalic());
+        assertEquals(FontUnderline.valueOf(xws.getRow(0).getCell(6).getCellStyle().getFont().getUnderline()), FontUnderline.SINGLE);
     }
 
     @Test
