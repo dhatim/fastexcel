@@ -71,10 +71,7 @@ public final class CellAddress implements Comparable<CellAddress> {
             return r;
         }
         r = col - other.col;
-        if (r != 0) {
-            return r;
-        }
-        return 0;
+        return r;
     }
 
     @Override
