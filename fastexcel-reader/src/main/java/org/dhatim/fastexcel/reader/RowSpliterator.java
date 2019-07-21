@@ -77,6 +77,7 @@ class RowSpliterator implements Spliterator<Row> {
         }
     }
 
+
     private Row next() throws XMLStreamException {
         if (!"row".equals(r.getLocalName())) {
             throw new NoSuchElementException();
@@ -92,15 +93,13 @@ class RowSpliterator implements Spliterator<Row> {
 
             Cell cell = parseCell();
             CellAddress addr = cell.getAddress();
-            if (addr.getColumn() >= cells.size()) {
-                setSize(cells, addr.getColumn() + 1);
-            }
+            ensureSize(cells, addr.getColumn() + 1);
 
             cells.set(addr.getColumn(), cell);
             physicalCellCount++;
         }
         rowCapacity = Math.max(rowCapacity, cells.size());
-        return new Row(rowIndex, physicalCellCount, cells.toArray(new Cell[cells.size()]));
+        return new Row(rowIndex, physicalCellCount, cells.toArray(new Cell[0]));
     }
 
     private Cell parseCell() throws XMLStreamException {
@@ -201,6 +200,9 @@ class RowSpliterator implements Spliterator<Row> {
                 return CellType.NUMBER;
             case "str":
                 return CellType.FORMULA;
+            case "s":
+            case "inlineStr":
+                return CellType.STRING;
         }
         throw new IllegalStateException("Unknown cell type : " + type);
     }
@@ -236,19 +238,13 @@ class RowSpliterator implements Spliterator<Row> {
         }
     }
 
-    private static void setSize(ArrayList<?> list, int newSize) {
+    private static void ensureSize(ArrayList<?> list, int newSize) {
         if (list.size() == newSize) {
             return;
         }
-        if (list.size() < newSize) {
-            int toAdd = newSize - list.size();
-            for (int i = 0; i < toAdd; i++) {
-                list.add(null);
-            }
-        } else {
-            for (int i = list.size() - 1; i > newSize; i--) {
-                list.remove(i);
-            }
+        int toAdd = newSize - list.size();
+        for (int i = 0; i < toAdd; i++) {
+            list.add(null);
         }
     }
 
