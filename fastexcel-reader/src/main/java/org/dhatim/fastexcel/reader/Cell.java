@@ -19,9 +19,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 
 public class Cell {
 
@@ -34,7 +31,7 @@ public class Cell {
     private final CellAddress address;
     private final String rawValue;
 
-    public Cell(ReadableWorkbook workbook, CellType type, Object value, CellAddress address, String formula, String rawValue) {
+    Cell(ReadableWorkbook workbook, CellType type, Object value, CellAddress address, String formula, String rawValue) {
         this.workbook = workbook;
         this.type = type;
         this.value = value;

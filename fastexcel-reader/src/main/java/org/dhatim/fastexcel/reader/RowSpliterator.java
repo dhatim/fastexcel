@@ -83,7 +83,7 @@ class RowSpliterator implements Spliterator<Row> {
             throw new NoSuchElementException();
         }
         int rowIndex = r.getIntAttribute("r");
-        ArrayList<Cell> cells = new ArrayList<>(rowCapacity);
+        List<Cell> cells = new ArrayList<>(rowCapacity);
         int physicalCellCount = 0;
 
         while (r.goTo(() -> r.isStartElement("c") || r.isEndElement("row"))) {
@@ -99,7 +99,7 @@ class RowSpliterator implements Spliterator<Row> {
             physicalCellCount++;
         }
         rowCapacity = Math.max(rowCapacity, cells.size());
-        return new Row(rowIndex, physicalCellCount, cells.toArray(new Cell[0]));
+        return new Row(rowIndex, physicalCellCount, cells);
     }
 
     private Cell parseCell() throws XMLStreamException {
@@ -238,7 +238,7 @@ class RowSpliterator implements Spliterator<Row> {
         }
     }
 
-    private static void ensureSize(ArrayList<?> list, int newSize) {
+    private static void ensureSize(List<?> list, int newSize) {
         if (list.size() == newSize) {
             return;
         }

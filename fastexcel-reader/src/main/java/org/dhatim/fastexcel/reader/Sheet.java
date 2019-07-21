@@ -27,7 +27,7 @@ public class Sheet {
     private final String id;
     private final String name;
 
-    public Sheet(ReadableWorkbook workbook, int index, String id, String name) {
+    Sheet(ReadableWorkbook workbook, int index, String id, String name) {
         this.workbook = workbook;
         this.index = index;
         this.id = id;
