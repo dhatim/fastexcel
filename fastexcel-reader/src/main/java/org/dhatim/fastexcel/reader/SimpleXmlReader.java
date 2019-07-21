@@ -95,28 +95,17 @@ class SimpleXmlReader implements Closeable {
     public String getValueUntilEndElement(String elementName) throws XMLStreamException {
         StringBuilder sb = new StringBuilder();
         int childElement = 1;
-        loop:
         while (reader.hasNext()) {
             int type = reader.next();
-            switch (type) {
-                case XMLStreamReader.CDATA:
-                case XMLStreamReader.CHARACTERS:
-                case XMLStreamReader.SPACE:
-                    sb.append(reader.getText());
+            if (type == XMLStreamReader.CDATA || type == XMLStreamReader.CHARACTERS || type == XMLStreamReader.SPACE) {
+                sb.append(reader.getText());
+            } else if (type == XMLStreamReader.START_ELEMENT) {
+                childElement++;
+            } else if (type == XMLStreamReader.END_ELEMENT) {
+                childElement--;
+                if (elementName.equals(reader.getLocalName()) && childElement == 0) {
                     break;
-                case XMLStreamReader.START_ELEMENT:
-                    childElement++;
-                    break;
-                case XMLStreamReader.END_ELEMENT:
-                    childElement--;
-                    if (elementName.equals(reader.getLocalName()) && childElement == 0) {
-                        break loop;
-                    }
-                    break;
-                case XMLStreamReader.COMMENT:
-                default:
-                    // Pass it
-                    break;
+                }
             }
         }
         return sb.toString();
