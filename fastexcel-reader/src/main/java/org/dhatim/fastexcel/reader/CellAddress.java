@@ -27,6 +27,11 @@ public final class CellAddress implements Comparable<CellAddress> {
     private final int row;
     private final int col;
 
+    /**
+     * Represents a cell address inside a sheet
+     * @param row zero-based row index
+     * @param column zero-based column index
+     */
     public CellAddress(int row, int column) {
         this.row = row;
         this.col = column;

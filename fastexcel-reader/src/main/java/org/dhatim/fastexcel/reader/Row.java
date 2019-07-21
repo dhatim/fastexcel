@@ -36,6 +36,12 @@ public class Row implements Iterable<Cell> {
         this.cells = cells.clone();
     }
 
+    /**
+     * Returns a cell in this row by column index;
+     * @param index - zero-based column index
+     * @return Cell value
+     * @throws IndexOutOfBoundsException if index is invalid
+     */
     public Cell getCell(int index) {
         if (index < 0 || index >= cells.length) {
             throw new IndexOutOfBoundsException("row-index: " + rowNum + ", index: " + index + ", count: " + cells.length);

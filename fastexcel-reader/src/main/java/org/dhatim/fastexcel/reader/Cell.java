@@ -59,6 +59,10 @@ public class Cell {
         return value;
     }
 
+    /**
+     * Return the xml value of the cell as it appears in the sheet format.
+     * @return
+     */
     public String getRawValue() {
         return rawValue;
     }
@@ -72,6 +76,11 @@ public class Cell {
         return (BigDecimal) value;
     }
 
+    /**
+     * Returns a date-time interpretation of a numerical cell.
+     * @return LocalDateTime or null if the cell is empty
+     * @throws ExcelReaderException is the cell if not of numerical type or empty
+     */
     public LocalDateTime asDate() {
         if (type == CellType.NUMBER) {
             return convertToDate(Double.parseDouble(rawValue));
@@ -106,6 +115,11 @@ public class Cell {
         return (Boolean) value;
     }
 
+    /**
+     * @return value of a string cell.
+     * @throws ExcelReaderException when the cell is not of string type
+     * @see #getText()
+     */
     public String asString() {
         requireType(CellType.STRING);
         return value == null ? "" : (String) value;
@@ -117,10 +131,17 @@ public class Cell {
         }
     }
 
+    /**
+     * @return string representation of the cell's value
+     * @see #asString()
+     */
     public String getText() {
         return value == null ? "" : value.toString();
     }
 
+    /**
+     * Returns a string representation of this component for debug purposes.
+     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
