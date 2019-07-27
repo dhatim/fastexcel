@@ -151,14 +151,20 @@ public class ReadableWorkbook implements Closeable {
 
     public static boolean isOOXMLZipHeader(byte[] bytes) {
         requireLength(bytes, POIFSConstants.OOXML_FILE_HEADER.length);
-        return Arrays.equals(bytes, POIFSConstants.OOXML_FILE_HEADER);
+        return Arrays.equals(
+                Arrays.copyOf(bytes, POIFSConstants.OOXML_FILE_HEADER.length),
+                POIFSConstants.OOXML_FILE_HEADER
+        );
     }
 
     public static boolean isOLE2Header(byte[] bytes) {
         requireLength(bytes, 8);
         byte[] ole2Header = new byte[8];
         LittleEndian.putLong(ole2Header, 0, HeaderBlockConstants._signature);
-        return Arrays.equals(bytes, ole2Header);
+        return Arrays.equals(
+                Arrays.copyOf(bytes, ole2Header.length),
+                ole2Header
+        );
     }
 
     private static void requireLength(byte[] bytes, int requiredLength) {
@@ -177,7 +183,7 @@ public class ReadableWorkbook implements Closeable {
         };
     }
 
-    private static OPCPackage open(File file){
+    private static OPCPackage open(File file) {
         try {
             return OPCPackage.open(file, PackageAccess.READ);
         } catch (InvalidFormatException e) {
