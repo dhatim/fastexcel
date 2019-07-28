@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -150,38 +151,26 @@ public class ReadableWorkbook implements Closeable {
 
     public static boolean isOOXMLZipHeader(byte[] bytes) {
         requireLength(bytes, POIFSConstants.OOXML_FILE_HEADER.length);
-        return arrayEquals(bytes, 0, POIFSConstants.OOXML_FILE_HEADER, 0, POIFSConstants.OOXML_FILE_HEADER.length);
+        return Arrays.equals(
+                Arrays.copyOf(bytes, POIFSConstants.OOXML_FILE_HEADER.length),
+                POIFSConstants.OOXML_FILE_HEADER
+        );
     }
 
     public static boolean isOLE2Header(byte[] bytes) {
         requireLength(bytes, 8);
         byte[] ole2Header = new byte[8];
         LittleEndian.putLong(ole2Header, 0, HeaderBlockConstants._signature);
-        return arrayEquals(bytes, 0, ole2Header, 0, ole2Header.length);
+        return Arrays.equals(
+                Arrays.copyOf(bytes, ole2Header.length),
+                ole2Header
+        );
     }
 
     private static void requireLength(byte[] bytes, int requiredLength) {
         if (bytes.length < requiredLength) {
             throw new IllegalArgumentException("Insufficient header bytes");
         }
-    }
-
-    private static boolean arrayEquals(byte[] a, int offsetA, byte[] b, int offsetB, int length) {
-        if (a == b) {
-            return true;
-        }
-        if (a == null || b == null) {
-            return false;
-        }
-        if ((offsetA + length > a.length) || (offsetB + length > b.length)) {
-            return false;
-        }
-        for (int i = 0; i < length; i++) {
-            if (a[offsetA + i] != b[offsetB + i]) {
-                return false;
-            }
-        }
-        return true;
     }
 
     private static Runnable asUncheckedRunnable(Closeable c) {
@@ -194,7 +183,7 @@ public class ReadableWorkbook implements Closeable {
         };
     }
 
-    private static OPCPackage open(File file){
+    private static OPCPackage open(File file) {
         try {
             return OPCPackage.open(file, PackageAccess.READ);
         } catch (InvalidFormatException e) {

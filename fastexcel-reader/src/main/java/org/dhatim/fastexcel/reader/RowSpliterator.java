@@ -15,20 +15,15 @@
  */
 package org.dhatim.fastexcel.reader;
 
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Spliterator;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import javax.xml.stream.XMLStreamException;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTRst;
+
+import javax.xml.stream.XMLStreamException;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 class RowSpliterator implements Spliterator<Row> {
 
@@ -82,126 +77,108 @@ class RowSpliterator implements Spliterator<Row> {
         }
     }
 
+
     private Row next() throws XMLStreamException {
         if (!"row".equals(r.getLocalName())) {
             throw new NoSuchElementException();
         }
         int rowIndex = r.getIntAttribute("r");
-        ArrayList<Cell> cells = new ArrayList<>(rowCapacity);
+        List<Cell> cells = new ArrayList<>(rowCapacity);
         int physicalCellCount = 0;
 
         while (r.goTo(() -> r.isStartElement("c") || r.isEndElement("row"))) {
             if ("row".equals(r.getLocalName())) {
                 break;
             }
-            String cellRef = r.getAttribute("r");
-            CellAddress addr = new CellAddress(cellRef);
-            String type = r.getOptionalAttribute("t").orElse("n");
 
-            Object value;
-            CellType cellType;
-            String formula;
-            String rawValue;
-            if ("inlineStr".equals(type)) {
-                Object v = null;
-                String f = null;
-                String rv = null;
-                while (r.goTo(() -> r.isStartElement("is") || r.isEndElement("c") || r.isStartElement("f"))) {
-                    if ("is".equals(r.getLocalName())) {
-                        rv = r.getValueUntilEndElement("is");
-                        XSSFRichTextString rtss = new XSSFRichTextString(rv);
-                        v = rtss.toString();
-                    } else if ("f".equals(r.getLocalName())) {
-                        f = r.getValueUntilEndElement("f");
-                    } else {
-                        break;
-                    }
-                }
-                value = v;
-                formula = f;
-                cellType = f == null ? CellType.STRING : CellType.FORMULA;
-                rawValue = rv;
-            } else if ("s".equals(type)) {
-                r.goTo("v");
-                int index = Integer.parseInt(r.getValueUntilEndElement("v"));
-                CTRst ctrst = workbook.getSharedStringsTable().getEntryAt(index);
-                XSSFRichTextString rtss = new XSSFRichTextString(ctrst);
-                value = rtss.toString();
-                cellType = CellType.STRING;
-                formula = null;
-                rawValue = ctrst.xmlText();
-            } else {
-                Function<String, ?> parser;
-                CellType definedType;
-                switch (type) {
-                    case "b":
-                        definedType = CellType.BOOLEAN;
-                        parser = RowSpliterator::parseBoolean;
-                        break;
-                    case "e":
-                        definedType = CellType.ERROR;
-                        parser = Function.identity();
-                        break;
-                    case "n":
-                        definedType = CellType.NUMBER;
-                        parser = RowSpliterator::parseNumber;
-                        break;
-                    case "str":
-                        definedType = CellType.FORMULA;
-                        parser = Function.identity();
-                        break;
-                    default:
-                        throw new IllegalStateException("Unknown cell type : " + type);
-                }
+            Cell cell = parseCell();
+            CellAddress addr = cell.getAddress();
+            ensureSize(cells, addr.getColumn() + 1);
 
-                Object v = null;
-                String f = null;
-                String rv = null;
-                while (r.goTo(() -> r.isStartElement("v") || r.isEndElement("c") || r.isStartElement("f"))) {
-                    if ("v".equals(r.getLocalName())) {
-                        rv = r.getValueUntilEndElement("v");
-                        v = "".equals(rv) ? null : parser.apply(rv);
-                    } else if ("f".equals(r.getLocalName())) {
-                        String ref = r.getAttribute("ref");
-                        String t = r.getAttribute("t");
-                        f = r.getValueUntilEndElement("f");
-                        if ("array".equals(t) && ref != null) {
-                            CellRangeAddress range = CellRangeAddress.valueOf(ref);
-                            sharedFormula.put(range, f);
-                        }
-                    } else {
-                        break;
-                    }
-                }
-
-                if (f == null) {
-                    f = getSharedFormula(addr).orElse(null);
-                }
-
-                if (f == null && definedType == CellType.NUMBER && v == null) {
-                    cellType = CellType.EMPTY;
-                    formula = null;
-                    value = null;
-                    rawValue = rv;
-                } else {
-                    cellType = f == null ? definedType : CellType.FORMULA;
-                    formula = f;
-                    value = v;
-                    rawValue = rv;
-                }
-
-            }
-
-            if (addr.getColumn() >= cells.size()) {
-                setSize(cells, addr.getColumn() + 1);
-            }
-
-            Cell cell = new Cell(workbook, cellType, value, addr, formula, rawValue);
             cells.set(addr.getColumn(), cell);
             physicalCellCount++;
         }
         rowCapacity = Math.max(rowCapacity, cells.size());
-        return new Row(rowIndex, physicalCellCount, cells.toArray(new Cell[cells.size()]));
+        return new Row(rowIndex, physicalCellCount, cells);
+    }
+
+    private Cell parseCell() throws XMLStreamException {
+        String cellRef = r.getAttribute("r");
+        CellAddress addr = new CellAddress(cellRef);
+        String type = r.getOptionalAttribute("t").orElse("n");
+        if ("inlineStr".equals(type)) {
+            return parseInlineStr(addr);
+        } else if ("s".equals(type)) {
+            return parseString(addr);
+        } else {
+            return parseOther(addr, type);
+        }
+    }
+
+    private Cell parseOther(CellAddress addr, String type) throws XMLStreamException {
+        CellType definedType = parseType(type);
+        Function<String, ?> parser = getParserForType(definedType);
+
+        Object value = null;
+        String formula = null;
+        String rawValue = null;
+        while (r.goTo(() -> r.isStartElement("v") || r.isEndElement("c") || r.isStartElement("f"))) {
+            if ("v".equals(r.getLocalName())) {
+                rawValue = r.getValueUntilEndElement("v");
+                value = "".equals(rawValue) ? null : parser.apply(rawValue);
+            } else if ("f".equals(r.getLocalName())) {
+                String ref = r.getAttribute("ref");
+                String t = r.getAttribute("t");
+                formula = r.getValueUntilEndElement("f");
+                if ("array".equals(t) && ref != null) {
+                    CellRangeAddress range = CellRangeAddress.valueOf(ref);
+                    sharedFormula.put(range, formula);
+                }
+            } else {
+                break;
+            }
+        }
+
+        if (formula == null) {
+            formula = getSharedFormula(addr).orElse(null);
+        }
+
+        if (formula == null && value == null && definedType == CellType.NUMBER) {
+            return new Cell(workbook, CellType.EMPTY, null, addr, null, rawValue);
+        } else {
+            CellType cellType = (formula != null) ? CellType.FORMULA : definedType;
+            return new Cell(workbook, cellType, value, addr, formula, rawValue);
+        }
+    }
+
+    private Cell parseString(CellAddress addr) throws XMLStreamException {
+        r.goTo("v");
+        int index = Integer.parseInt(r.getValueUntilEndElement("v"));
+        CTRst ctrst = workbook.getSharedStringsTable().getEntryAt(index);
+        XSSFRichTextString rtss = new XSSFRichTextString(ctrst);
+        Object value = rtss.toString();
+        String formula = null;
+        String rawValue = ctrst.xmlText();
+        return new Cell(workbook, CellType.STRING, value, addr, formula, rawValue);
+    }
+
+    private Cell parseInlineStr(CellAddress addr) throws XMLStreamException {
+        Object value = null;
+        String formula = null;
+        String rawValue = null;
+        while (r.goTo(() -> r.isStartElement("is") || r.isEndElement("c") || r.isStartElement("f"))) {
+            if ("is".equals(r.getLocalName())) {
+                rawValue = r.getValueUntilEndElement("is");
+                XSSFRichTextString rtss = new XSSFRichTextString(rawValue);
+                value = rtss.toString();
+            } else if ("f".equals(r.getLocalName())) {
+                formula = r.getValueUntilEndElement("f");
+            } else {
+                break;
+            }
+        }
+        CellType cellType = formula == null ? CellType.STRING : CellType.FORMULA;
+        return new Cell(workbook, cellType, value, addr, formula, rawValue);
     }
 
     private Optional<String> getSharedFormula(CellAddress addr) {
@@ -211,6 +188,36 @@ class RowSpliterator implements Spliterator<Row> {
             }
         }
         return Optional.empty();
+    }
+
+    private CellType parseType(String type) {
+        switch (type) {
+            case "b":
+                return CellType.BOOLEAN;
+            case "e":
+                return CellType.ERROR;
+            case "n":
+                return CellType.NUMBER;
+            case "str":
+                return CellType.FORMULA;
+            case "s":
+            case "inlineStr":
+                return CellType.STRING;
+        }
+        throw new IllegalStateException("Unknown cell type : " + type);
+    }
+
+    private Function<String, ?> getParserForType(CellType type) {
+        switch (type) {
+            case BOOLEAN:
+                return RowSpliterator::parseBoolean;
+            case NUMBER:
+                return RowSpliterator::parseNumber;
+            case FORMULA:
+            case ERROR:
+                return Function.identity();
+        }
+        throw new IllegalStateException("No parser defined for type " + type);
     }
 
     private static BigDecimal parseNumber(String s) {
@@ -231,18 +238,13 @@ class RowSpliterator implements Spliterator<Row> {
         }
     }
 
-    private static void setSize(List<?> list, int newSize) {
-        if (list.size() != newSize) {
-            if (list.size() < newSize) {
-                int toAdd = newSize - list.size();
-                for (int i=0; i<toAdd; i++) {
-                    list.add(null);
-                }
-            } else {
-                for (int i=list.size() - 1; i > newSize; i--) {
-                    list.remove(i);
-                }
-            }
+    private static void ensureSize(List<?> list, int newSize) {
+        if (list.size() == newSize) {
+            return;
+        }
+        int toAdd = newSize - list.size();
+        for (int i = 0; i < toAdd; i++) {
+            list.add(null);
         }
     }
 

@@ -17,30 +17,29 @@ package org.dhatim.fastexcel.reader;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class Row implements Iterable<Cell> {
 
     private final int rowNum;
-    private final Cell[] cells;
+    private final List<Cell> cells;
     private final int physicalCellCount;
 
-    public Row(int rowNum, int physicalCellCount, Cell[] cells) {
+    Row(int rowNum, int physicalCellCount, List<Cell> cells) {
         this.rowNum = rowNum;
         this.physicalCellCount = physicalCellCount;
-        this.cells = cells.clone();
+        this.cells = cells;
     }
 
+    /**
+     * Returns a cell in this row by column index;
+     * @param index - zero-based column index
+     * @return Cell value
+     * @throws IndexOutOfBoundsException if index is invalid
+     */
     public Cell getCell(int index) {
-        if (index < 0 || index >= cells.length) {
-            throw new IndexOutOfBoundsException("row-index: " + rowNum + ", index: " + index + ", count: " + cells.length);
-        }
-        return cells[index];
+        return cells.get(index);
     }
 
     public Cell getCell(CellAddress address) {
@@ -51,11 +50,11 @@ public class Row implements Iterable<Cell> {
     }
 
     public List<Cell> getCells(int beginIndex, int endIndex) {
-        return Arrays.asList(Arrays.copyOfRange(cells, beginIndex, endIndex));
+        return cells.subList(beginIndex, endIndex);
     }
 
     public Optional<Cell> getOptionalCell(int index) {
-        return index < 0 || index >= cells.length ? Optional.empty() : Optional.ofNullable(cells[index]);
+        return index < 0 || index >= cells.size() ? Optional.empty() : Optional.ofNullable(cells.get(index));
     }
 
     public Optional<Cell> getFirstNonEmptyCell() {
@@ -63,11 +62,11 @@ public class Row implements Iterable<Cell> {
     }
 
     public int getCellCount() {
-        return cells.length;
+        return cells.size();
     }
 
     public boolean hasCell(int index) {
-        return index >= 0 && index < cells.length && cells[index] != null;
+        return index >= 0 && index < cells.size() && cells.get(index) != null;
     }
 
     /**
@@ -84,16 +83,16 @@ public class Row implements Iterable<Cell> {
 
     @Override
     public String toString() {
-        return "Row " + rowNum + ' ' + Arrays.toString(cells);
+        return "Row " + rowNum + ' ' + cells;
     }
 
     @Override
     public Iterator<Cell> iterator() {
-        return Arrays.asList(cells).iterator();
+        return cells.iterator();
     }
 
     public Stream<Cell> stream() {
-        return Arrays.stream(cells);
+        return cells.stream();
     }
 
     public Optional<String> getCellAsString(int cellIndex) {
