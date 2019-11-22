@@ -41,14 +41,16 @@ import org.apache.poi.poifs.common.POIFSConstants;
 import org.apache.poi.poifs.storage.HeaderBlockConstants;
 import org.apache.poi.util.IOUtils;
 import org.apache.poi.util.LittleEndian;
+import org.apache.poi.xssf.eventusermodel.ReadOnlySharedStringsTable;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
-import org.apache.poi.xssf.model.SharedStringsTable;
+import org.apache.poi.xssf.model.SharedStrings;
+import org.xml.sax.SAXException;
 
 public class ReadableWorkbook implements Closeable {
 
     private final OPCPackage pkg;
     private final XSSFReader reader;
-    private final SharedStringsTable sst;
+    private final SharedStrings sst;
     private final XMLInputFactory factory;
 
     private boolean date1904;
@@ -70,8 +72,8 @@ public class ReadableWorkbook implements Closeable {
         try {
             this.pkg = pkg;
             reader = new XSSFReader(pkg);
-            sst = reader.getSharedStringsTable();
-        } catch (NotOfficeXmlFileException | OpenXML4JException e) {
+            sst = new ReadOnlySharedStringsTable(pkg, false);
+        } catch (NotOfficeXmlFileException | OpenXML4JException | SAXException e) {
             throw new ExcelReaderException(e);
         }
         factory = XMLInputFactory.newInstance();
@@ -145,7 +147,7 @@ public class ReadableWorkbook implements Closeable {
         return factory;
     }
 
-    SharedStringsTable getSharedStringsTable() {
+    SharedStrings getSharedStringsTable() {
         return sst;
     }
 
