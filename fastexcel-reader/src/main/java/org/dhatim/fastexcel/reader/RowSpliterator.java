@@ -15,8 +15,8 @@
  */
 package org.dhatim.fastexcel.reader;
 
+import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTRst;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.InputStream;
@@ -154,11 +154,10 @@ class RowSpliterator implements Spliterator<Row> {
     private Cell parseString(CellAddress addr) throws XMLStreamException {
         r.goTo("v");
         int index = Integer.parseInt(r.getValueUntilEndElement("v"));
-        CTRst ctrst = workbook.getSharedStringsTable().getEntryAt(index);
-        XSSFRichTextString rtss = new XSSFRichTextString(ctrst);
-        Object value = rtss.toString();
+        RichTextString sharedStringValue = workbook.getSharedStringsTable().getItemAt(index);
+        Object value = sharedStringValue.toString();
         String formula = null;
-        String rawValue = ctrst.xmlText();
+        String rawValue = sharedStringValue.toString();
         return new Cell(workbook, CellType.STRING, value, addr, formula, rawValue);
     }
 
