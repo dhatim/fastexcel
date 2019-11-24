@@ -93,6 +93,11 @@ public class Worksheet {
     private String passwordHash;
 
     /**
+     * Range of row where will be inserted auto filter
+     */
+    private Range autoFilterRange = null;
+
+    /**
      * The set of protection options that are applied on the sheet.
      */
     private Set<SheetProtectionOption> sheetProtectionOptions;
@@ -281,6 +286,23 @@ public class Worksheet {
         }
         this.sheetProtectionOptions = options;
         this.passwordHash = hashPassword(password);
+    }
+
+    /**
+     * Adds filter to row
+     * @param rowNumber - row number
+     * @param leftCellNumber Left cell number where filter will be initialized
+     * @param rightCellNumber Right cell number where filter will be initialized
+     */
+    public void setAutoFilter(int rowNumber, int leftCellNumber, int rightCellNumber) {
+        autoFilterRange = new Range(this, rowNumber, leftCellNumber, rowNumber, rightCellNumber);
+    }
+
+    /**
+     * Removes auto filter from sheet. Does nothing if there wasn't any filter
+     */
+    public void removeAutoFilter() {
+        autoFilterRange = null;
     }
 
     /**
@@ -481,6 +503,13 @@ public class Worksheet {
         }
         flush();
         writer.append("</sheetData>");
+
+        if (autoFilterRange != null) {
+            writer.append("<autoFilter ref=\"")
+                    .append(autoFilterRange.toString())
+                    .append("\"/>");
+        }
+
         if (!mergedRanges.isEmpty()) {
             writer.append("<mergeCells>");
             for (Range r : mergedRanges) {
@@ -549,6 +578,7 @@ public class Worksheet {
             }
             writer.append("<sheetData>");
         }
+
         for (int r = flushedRows; r < rows.size(); ++r) {
             Cell[] row = rows.get(r);
             if (row != null) {
@@ -557,6 +587,8 @@ public class Worksheet {
             rows.set(r, null); // free flushed row data
         }
         flushedRows = rows.size() - 1;
+
+
         writer.flush();
     }
 
