@@ -1,11 +1,7 @@
 package org.dhatim.fastexcel;
 
-import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.usermodel.DataValidation.ErrorStyle;
-import org.apache.poi.ss.usermodel.DataValidationConstraint;
-import org.apache.poi.ss.usermodel.FontUnderline;
-import org.apache.poi.ss.usermodel.IndexedColors;
-import org.apache.poi.ss.usermodel.SheetVisibility;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.*;
 import org.junit.Test;
@@ -13,8 +9,6 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -25,6 +19,7 @@ import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.dhatim.fastexcel.Correctness.writeWorkbook;
@@ -184,13 +179,10 @@ public class PoiCompatibility {
         XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
         assertThat(xwb.getActiveSheetIndex()).isEqualTo(0);
         assertThat(xwb.getNumberOfSheets()).isEqualTo(numWs);
-        int nameI = numWs - 1;
-        for (int i = 0; i > numWs; ++i) {
-            assertThat(xwb.getSheetName(i)).isEqualTo("Sheet " + nameI);
-            --nameI;
-        }
+        assertThat(IntStream.range(0, numWs).mapToObj(i -> xwb.getSheetName(i)))
+                .containsExactly("Sheet 2", "Sheet 1", "Sheet 0");
     }
-    
+
     @Test
     public void font() throws Exception {
         String sheetName = "Worksheet 1";
