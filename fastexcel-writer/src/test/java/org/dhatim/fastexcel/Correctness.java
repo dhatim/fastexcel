@@ -35,7 +35,7 @@ public class Correctness {
     }
 
     @Test
-    public void colToName() throws Exception {
+    public void colToName() {
         assertThat(Range.colToString(26)).isEqualTo("AA");
         assertThat(Range.colToString(702)).isEqualTo("AAA");
         assertThat(Range.colToString(Worksheet.MAX_COLS - 1)).isEqualTo("XFD");
@@ -48,18 +48,18 @@ public class Correctness {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void badVersion() throws Exception {
-        Workbook dummy = new Workbook(new NullOutputStream(), "Test", "1.0.1");
+    public void badVersion() {
+        new Workbook(new NullOutputStream(), "Test", "1.0.1");
     }
 
     @Test
     public void singleEmptyWorksheet() throws Exception {
-        byte[] data = writeWorkbook(wb -> wb.newWorksheet("Worksheet 1"));
+        writeWorkbook(wb -> wb.newWorksheet("Worksheet 1"));
     }
 
     @Test
     public void worksheetWithNameLongerThan31Chars() throws Exception {
-        byte[] data = writeWorkbook(wb -> {
+        writeWorkbook(wb -> {
             Worksheet ws = wb.newWorksheet("01234567890123456789012345678901");
             assertThat(ws.getName()).isEqualTo("0123456789012345678901234567890");
         });
@@ -82,42 +82,42 @@ public class Correctness {
 
     @Test
     public void checkMaxRows() throws Exception {
-        byte[] data = writeWorkbook(wb -> wb.newWorksheet("Worksheet 1").value(Worksheet.MAX_ROWS - 1, 0, "test"));
+        writeWorkbook(wb -> wb.newWorksheet("Worksheet 1").value(Worksheet.MAX_ROWS - 1, 0, "test"));
     }
 
     @Test
     public void checkMaxCols() throws Exception {
-        byte[] data = writeWorkbook(wb -> wb.newWorksheet("Worksheet 1").value(0, Worksheet.MAX_COLS - 1, "test"));
+        writeWorkbook(wb -> wb.newWorksheet("Worksheet 1").value(0, Worksheet.MAX_COLS - 1, "test"));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void exceedMaxRows() throws Exception {
-        byte[] data = writeWorkbook(wb -> wb.newWorksheet("Worksheet 1").value(Worksheet.MAX_ROWS, 0, "test"));
+        writeWorkbook(wb -> wb.newWorksheet("Worksheet 1").value(Worksheet.MAX_ROWS, 0, "test"));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void negativeRow() throws Exception {
-        byte[] data = writeWorkbook(wb -> wb.newWorksheet("Worksheet 1").value(-1, 0, "test"));
+        writeWorkbook(wb -> wb.newWorksheet("Worksheet 1").value(-1, 0, "test"));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void exceedMaxCols() throws Exception {
-        byte[] data = writeWorkbook(wb -> wb.newWorksheet("Worksheet 1").value(0, Worksheet.MAX_COLS, "test"));
+        writeWorkbook(wb -> wb.newWorksheet("Worksheet 1").value(0, Worksheet.MAX_COLS, "test"));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void negativeCol() throws Exception {
-        byte[] data = writeWorkbook(wb -> wb.newWorksheet("Worksheet 1").value(0, -1, "test"));
+        writeWorkbook(wb -> wb.newWorksheet("Worksheet 1").value(0, -1, "test"));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void notSupportedTypeCell() throws Exception {
-        byte[] data = writeWorkbook(wb -> wb.newWorksheet("Worksheet 1").value(0, 0, new Object()));
+        writeWorkbook(wb -> wb.newWorksheet("Worksheet 1").value(0, 0, new Object()));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void invalidRange() throws Exception {
-        byte[] data = writeWorkbook(wb -> {
+        writeWorkbook(wb -> {
             Worksheet ws = wb.newWorksheet("Worksheet 1");
             ws.range(-1, -1, Worksheet.MAX_COLS, Worksheet.MAX_ROWS);
         });
@@ -125,7 +125,7 @@ public class Correctness {
 
     @Test
     public void reorderedRange() throws Exception {
-        byte[] data = writeWorkbook(wb -> {
+        writeWorkbook(wb -> {
             Worksheet ws = wb.newWorksheet("Worksheet 1");
             int top = 0;
             int left = 1;
@@ -147,7 +147,7 @@ public class Correctness {
 
     @Test
     public void mergedRanges() throws Exception {
-        byte[] data = writeWorkbook(wb -> {
+        writeWorkbook(wb -> {
             Worksheet ws = wb.newWorksheet("Worksheet 1");
             ws.value(0, 0, "One");
             ws.value(0, 1, "Two");

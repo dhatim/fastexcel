@@ -63,10 +63,10 @@ public class Range {
         if (left < 0 || left >= Worksheet.MAX_COLS || right < 0 || right >= Worksheet.MAX_COLS) {
             throw new IllegalArgumentException();
         }
-        this.top = top <= bottom ? top : bottom;
-        this.left = left <= right ? left : right;
-        this.bottom = bottom >= top ? bottom : top;
-        this.right = right >= left ? right : left;
+        this.top = Math.min(top, bottom);
+        this.left = Math.min(left, right);
+        this.bottom = Math.max(bottom, top);
+        this.right = Math.max(right, left);
     }
 
     /**
@@ -156,7 +156,7 @@ public class Range {
      *
      * ex: $A$1:$A$5
      *
-     * @return
+     * @return absolute reference
      */
     public String toAbsoluteString() {
         return '$' + colToString(left) + '$' + (top + 1) + ":$" + colToString(right) + '$' + (bottom + 1);

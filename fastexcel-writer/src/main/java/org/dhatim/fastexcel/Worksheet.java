@@ -425,7 +425,7 @@ public class Worksheet {
      * otherwise.
      */
     private boolean isCellInMergedRanges(int r, int c) {
-        return mergedRanges.stream().filter(range -> range.contains(r, c)).findAny().isPresent();
+        return mergedRanges.stream().anyMatch(range -> range.contains(r, c));
     }
 
     /**
@@ -572,7 +572,7 @@ public class Worksheet {
             writer.append("<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">");
             writer.append("<dimension ref=\"A1\"/>");
             writer.append("<sheetViews><sheetView workbookViewId=\"0\"/></sheetViews><sheetFormatPr defaultRowHeight=\"15.0\"/>");
-            int nbCols = rows.stream().filter(r -> r != null).map(r -> r.length).reduce(0, Math::max);
+            int nbCols = rows.stream().filter(Objects::nonNull).map(r -> r.length).reduce(0, Math::max);
             if (nbCols > 0) {
                 writeCols(writer, nbCols);
             }

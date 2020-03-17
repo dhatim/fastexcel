@@ -7,7 +7,7 @@ import java.util.TreeMap;
 
 class Comments {
     private static final String COLOR = "#ffffee";
-    private Map<Ref, String> cache = new TreeMap<>();
+    private final Map<Ref, String> cache = new TreeMap<>();
 
     void set(int r, int c, String comment) {
         cache.put(new Ref(r, c), comment);

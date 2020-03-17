@@ -15,19 +15,19 @@
  */
 package org.dhatim.fastexcel.reader;
 
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.*;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Objects;
+import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
+import java.util.stream.StreamSupport;
+
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFCell;
@@ -75,27 +75,32 @@ public class FastExcelReaderTest {
     private static final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
 
     @Test
-    public void testDates() throws IOException, OpenXML4JException {
-        ArrayList<RowDates> values = new ArrayList<>();
+    public void testDates() throws IOException {
+        assertThat(readUsingFastExcel()).isEqualTo(readUsingPOI());
+    }
 
+    private List<RowDates> readUsingPOI() throws IOException {
+        try (InputStream inputStream = open(EXCEL_DATES); Workbook workbook = WorkbookFactory.create(inputStream)) {
+            return StreamSupport
+                    .stream(workbook.getSheetAt(0).spliterator(), false)
+                    .map(row -> new RowDates(
+                            row.getRowNum() + 1,
+                            toODT(row.getCell(0).getDateCellValue()),
+                            toODT(row.getCell(1).getDateCellValue())
+                    )).collect(toList());
+        }
+    }
+
+    private List<RowDates> readUsingFastExcel() throws IOException {
         try (InputStream inputStream = open(EXCEL_DATES); ReadableWorkbook fworkbook = new ReadableWorkbook(inputStream)) {
             try (Stream<Row> stream = fworkbook.getFirstSheet().openStream()) {
-                stream.forEach(row -> {
-                    values.add(new RowDates(row.getRowNum(), row.getCell(0).asDate().toString(), row.getCell(1).asDate().toString()));
-                });
-            }
-        }
-
-        ArrayList<RowDates> wvalues = new ArrayList<>();
-        try (InputStream inputStream = open(EXCEL_DATES); Workbook workbook = WorkbookFactory.create(inputStream)) {
-            for (org.apache.poi.ss.usermodel.Row row : workbook.getSheetAt(0)) {
-                wvalues.add(new RowDates(row.getRowNum() + 1, toODT(row.getCell(0).getDateCellValue()), toODT(row.getCell(1).getDateCellValue())));
-            }
-        }
-
-        for (int i = 0; i < values.size(); i++) {
-            if (!values.get(i).equals(wvalues.get(i))) {
-                assertThat(values.get(i)).isEqualTo(wvalues.get(i));
+                return stream.map(row ->
+                        new RowDates(
+                                row.getRowNum(),
+                                row.getCell(0).asDate().toString(),
+                                row.getCell(1).asDate().toString()
+                        )
+                ).collect(toList());
             }
         }
     }
@@ -162,7 +167,7 @@ public class FastExcelReaderTest {
                                 assertThat(cell == null).as("cell defined " + i).isEqualTo(expCell == null);
                                 if (cell != null) {
                                     String cellAddr = cell.getAddress().toString();
-                                    assertThat(toCode(cell.getType())).as("cell type code " + cellAddr).isEqualTo(expCell.getCellTypeEnum().getCode());
+                                    assertThat(toPOICellType(cell.getType())).as("cell type code " + cellAddr).isEqualTo(expCell.getCellType());
 
                                     if (cell.getType() == CellType.NUMBER) {
                                         BigDecimal n = cell.asNumber();
@@ -187,20 +192,20 @@ public class FastExcelReaderTest {
         }
     }
 
-    private static int toCode(CellType type) {
+    private static org.apache.poi.ss.usermodel.CellType toPOICellType(CellType type) {
         switch (type) {
             case BOOLEAN:
-                return 4;
+                return org.apache.poi.ss.usermodel.CellType.BOOLEAN;
             case EMPTY:
-                return 3;
+                return org.apache.poi.ss.usermodel.CellType.BLANK;
             case ERROR:
-                return 5;
+                return org.apache.poi.ss.usermodel.CellType.ERROR;
             case FORMULA:
-                return 2;
+                return org.apache.poi.ss.usermodel.CellType.FORMULA;
             case NUMBER:
-                return 0;
+                return org.apache.poi.ss.usermodel.CellType.NUMERIC;
             case STRING:
-                return 1;
+                return org.apache.poi.ss.usermodel.CellType.STRING;
             default:
                 throw new IllegalStateException("unknown type " + type);
 

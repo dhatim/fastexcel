@@ -69,7 +69,7 @@ public final class TimestampUtil {
      * @param zdt Date and timezone values.
      * @return Serial number value.
      */
-    public static Double convertZonedDateTime(ChronoZonedDateTime zdt) {
+    public static Double convertZonedDateTime(ChronoZonedDateTime<?> zdt) {
         return convertDate(Date.from(zdt.toInstant()), zdt.getZone());
     }
 

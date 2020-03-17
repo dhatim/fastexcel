@@ -68,7 +68,6 @@ public class PoiCompatibility {
         assertThat(xwb.getActiveSheetIndex()).isEqualTo(0);
         assertThat(xwb.getNumberOfSheets()).isEqualTo(1);
         XSSFSheet xws = xwb.getSheet(sheetName);
-        @SuppressWarnings("unchecked")
         Comparable<XSSFRow> row = xws.getRow(0);
         assertThat(row).isNull();
         int i = 1;
@@ -179,7 +178,7 @@ public class PoiCompatibility {
         XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
         assertThat(xwb.getActiveSheetIndex()).isEqualTo(0);
         assertThat(xwb.getNumberOfSheets()).isEqualTo(numWs);
-        assertThat(IntStream.range(0, numWs).mapToObj(i -> xwb.getSheetName(i)))
+        assertThat(IntStream.range(0, numWs).mapToObj(xwb::getSheetName))
                 .containsExactly("Sheet 2", "Sheet 1", "Sheet 0");
     }
 

@@ -57,8 +57,7 @@ public class Cell {
     }
 
     /**
-     * Return the xml value of the cell as it appears in the sheet format.
-     * @return
+     * @return xml value of the cell as it appears in the sheet format.
      */
     public String getRawValue() {
         return rawValue;

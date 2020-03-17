@@ -17,7 +17,6 @@ package org.dhatim.fastexcel;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.zip.Deflater;
 
 import org.apache.commons.io.output.CountingOutputStream;
 import org.apache.commons.io.output.NullOutputStream;
@@ -27,7 +26,6 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.junit.Test;
 import org.openjdk.jmh.annotations.Benchmark;
 
 /**

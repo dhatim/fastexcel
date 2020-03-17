@@ -18,7 +18,7 @@ public class MemoryUsageTest {
     private static final Logger LOG = Logger.getLogger(MemoryUsageTest.class.getName());
     private static final int ROWS = 600_001;
     private static final int COLS = 200;
-    private static File testFile = new File("target/memtest" + ROWS + "x" + COLS + ".xlsx");
+    private static final File testFile = new File("target/memtest" + ROWS + "x" + COLS + ".xlsx");
 
     @BeforeAll
     public static void generateBig() throws IOException {

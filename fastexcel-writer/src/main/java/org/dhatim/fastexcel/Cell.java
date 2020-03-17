@@ -68,7 +68,7 @@ class Cell {
                 } else if (value instanceof Double) {
                     w.append((double) value);
                 } else if (value instanceof Boolean) {
-                    w.append(((Boolean) value).booleanValue() ? '1' : '0');
+                    w.append((Boolean) value ? '1' : '0');
                 } else {
                     w.append(value.toString());
                 }
