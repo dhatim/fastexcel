@@ -69,7 +69,7 @@ public class PoiCompatibility {
         assertThat(xwb.getNumberOfSheets()).isEqualTo(1);
         XSSFSheet xws = xwb.getSheet(sheetName);
         @SuppressWarnings("unchecked")
-        Comparable<XSSFRow> row = (Comparable) xws.getRow(0);
+        Comparable<XSSFRow> row = xws.getRow(0);
         assertThat(row).isNull();
         int i = 1;
         // poi column width is in 1/256 characters

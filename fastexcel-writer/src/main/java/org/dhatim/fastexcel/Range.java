@@ -148,7 +148,7 @@ public class Range {
 
     @Override
     public String toString() {
-        return colToString(left) + Integer.toString(top + 1) + ':' + colToString(right) + Integer.toString(bottom + 1);
+        return colToString(left) + (top + 1) + ':' + colToString(right) + (bottom + 1);
     }
 
     /**
@@ -159,7 +159,7 @@ public class Range {
      * @return
      */
     public String toAbsoluteString() {
-        return '$' + colToString(left) + '$' + Integer.toString(top + 1) + ":$" + colToString(right) + '$' + Integer.toString(bottom + 1);
+        return '$' + colToString(left) + '$' + (top + 1) + ":$" + colToString(right) + '$' + (bottom + 1);
     }
 
     /**

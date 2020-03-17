@@ -19,5 +19,5 @@ package org.dhatim.fastexcel;
  * Identifies border sides of a cell.
  */
 public enum BorderSide {
-    TOP, LEFT, BOTTOM, RIGHT, DIAGONAL;
+    TOP, LEFT, BOTTOM, RIGHT, DIAGONAL
 }
