@@ -15,7 +15,7 @@
  */
 package org.dhatim.fastexcel.reader;
 
-import java.util.Locale;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 public final class CellAddress implements Comparable<CellAddress> {
@@ -23,13 +23,15 @@ public final class CellAddress implements Comparable<CellAddress> {
     public static final CellAddress A1 = new CellAddress(0, 0);
 
     private static final char ABSOLUTE_REFERENCE_MARKER = '$';
+    private static final int COL_RADIX = 'Z' - 'A' + 1;
 
     private final int row;
     private final int col;
 
     /**
      * Represents a cell address inside a sheet
-     * @param row zero-based row index
+     *
+     * @param row    zero-based row index
      * @param column zero-based column index
      */
     public CellAddress(int row, int column) {
@@ -38,22 +40,27 @@ public final class CellAddress implements Comparable<CellAddress> {
     }
 
     public CellAddress(String address) {
-        int length = address.length();
-
-        int loc = 0;
-        // step over column name chars until first digit for row number.
-        for (; loc < length; loc++) {
-            char ch = address.charAt(loc);
-            if (Character.isDigit(ch)) {
-                break;
+        final int length = address.length();
+        if (length == 0) {
+            this.row = 0;
+            this.col = 0;
+        } else {
+            int offset = address.charAt(0) == ABSOLUTE_REFERENCE_MARKER ? 1 : 0;
+            int col = 0;
+            for (; offset < length; offset++) {
+                final char c = address.charAt(offset);
+                if (c == ABSOLUTE_REFERENCE_MARKER) {
+                    offset++;
+                    break; //next there must be digits
+                }
+                if (isAsciiDigit(c)) {
+                    break;
+                }
+                col = col * COL_RADIX + toUpperCase(c) - (int) 'A' + 1;
             }
+            this.col = col - 1;
+            this.row = Integer.parseUnsignedInt(address.substring(offset)) - 1;
         }
-
-        String sCol = address.substring(0, loc).toUpperCase(Locale.ROOT);
-        String sRow = address.substring(loc);
-
-        this.row = Integer.parseInt(sRow) - 1;
-        this.col = convertColStringToIndex(sCol);
     }
 
     public int getRow() {
@@ -103,45 +110,49 @@ public final class CellAddress implements Comparable<CellAddress> {
         sb.append(row + 1);
     }
 
-    private static String convertNumToColString(int col) {
+    public static String convertNumToColString(int col) {
         // Excel counts column A as the 1st column, we
         // treat it as the 0th one
         int excelColNum = col + 1;
 
-        StringBuilder colRef = new StringBuilder(2);
+        final int MAX_COL_CHARS = 3;
+        final byte[] colRef = new byte[MAX_COL_CHARS];
         int colRemain = excelColNum;
-
+        int pos = 2;
         while (colRemain > 0) {
-            int thisPart = colRemain % 26;
+            int thisPart = colRemain % COL_RADIX;
             if (thisPart == 0) {
-                thisPart = 26;
+                thisPart = COL_RADIX;
             }
-            colRemain = (colRemain - thisPart) / 26;
+            colRemain = (colRemain - thisPart) / COL_RADIX;
 
-            // The letter A is at 65
-            char colChar = (char) (thisPart + 64);
-            colRef.insert(0, colChar);
+            colRef[pos--] = (byte) (thisPart + (int) 'A' - 1);
         }
-
-        return colRef.toString();
+        pos++;
+        return new String(colRef, pos, (MAX_COL_CHARS - pos), StandardCharsets.ISO_8859_1);
     }
 
-    private static int convertColStringToIndex(String ref) {
-        int retval = 0;
-        char[] refs = ref.toUpperCase(Locale.ROOT).toCharArray();
-        for (int k = 0; k < refs.length; k++) {
-            char thechar = refs[k];
-            if (thechar == ABSOLUTE_REFERENCE_MARKER) {
-                if (k != 0) {
-                    throw new IllegalArgumentException("Bad col ref format '" + ref + "'");
-                }
-                continue;
-            }
 
-            // Character is uppercase letter, find relative value to A
-            retval = (retval * 26) + (thechar - 'A' + 1);
+    private static final boolean isAsciiLowerCase(char c) {
+        return 'a' <= c && c <= 'z';
+    }
+
+    private static final boolean isAsciiUpperCase(char c) {
+        return 'A' <= c && c <= 'Z';
+    }
+
+    private static final boolean isAsciiDigit(char c) {
+        return '0' <= c && c <= '9';
+    }
+
+    private final static char toUpperCase(char c) {
+        if (isAsciiUpperCase(c)) {
+            return c;
         }
-        return retval - 1;
+        if (isAsciiLowerCase(c)) {
+            return (char) (c + ('A' - 'a'));
+        }
+        throw new IllegalArgumentException("Unexpected char: " + c);
     }
 
 }
