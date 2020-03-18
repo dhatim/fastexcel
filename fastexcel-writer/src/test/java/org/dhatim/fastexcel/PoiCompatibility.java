@@ -2,10 +2,7 @@ package org.dhatim.fastexcel;
 
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.DataValidation.ErrorStyle;
-import org.apache.poi.ss.usermodel.DataValidationConstraint;
-import org.apache.poi.ss.usermodel.FontUnderline;
-import org.apache.poi.ss.usermodel.IndexedColors;
-import org.apache.poi.ss.usermodel.SheetVisibility;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.*;
 import org.junit.Test;
@@ -13,8 +10,6 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -27,6 +22,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.dhatim.fastexcel.BorderStyle.THICK;
+import static org.dhatim.fastexcel.BorderStyle.THIN;
 import static org.dhatim.fastexcel.Correctness.writeWorkbook;
 import static org.dhatim.fastexcel.SheetProtectionOption.*;
 import static org.junit.Assert.*;
@@ -74,7 +71,7 @@ public class PoiCompatibility {
         assertThat(xwb.getNumberOfSheets()).isEqualTo(1);
         XSSFSheet xws = xwb.getSheet(sheetName);
         @SuppressWarnings("unchecked")
-        Comparable<XSSFRow> row = (Comparable) xws.getRow(0);
+        Comparable<XSSFRow> row = xws.getRow(0);
         assertThat(row).isNull();
         int i = 1;
         // poi column width is in 1/256 characters
@@ -143,7 +140,7 @@ public class PoiCompatibility {
                     ws.style(numRows + 1, 4).format("yyyy-MM-dd HH:mm:ss").set();
                     ws.formula(numRows + 1, 5, "=AVERAGE(" + ws.range(1, 5, numRows, 5).toString() + ")");
                     ws.style(numRows + 1, 5).format("yyyy-MM-dd").bold().italic().fontColor(Color.RED).fontName("Garamond").fontSize(new BigDecimal("14.5")).horizontalAlignment("center").verticalAlignment("top").wrapText(true).set();
-                    ws.range(1, 0, numRows, numCols - 1).style().borderColor(Color.RED).borderStyle("thick").shadeAlternateRows(Color.RED).set();
+                    ws.range(1, 0, numRows, numCols - 1).style().borderColor(Color.RED).borderStyle(THICK).shadeAlternateRows(Color.RED).set();
                 });
                 cfs[i] = cf;
             }
@@ -245,14 +242,14 @@ public class PoiCompatibility {
     public void borders() throws Exception {
         byte[] data = writeWorkbook(wb -> {
             Worksheet ws = wb.newWorksheet("Worksheet 1");
-            ws.style(1, 1).borderStyle("thin").set();
-            ws.style(1, 2).borderStyle("thick").borderColor(Color.RED).set();
-            ws.style(1, 3).borderStyle(BorderSide.BOTTOM, "thick").borderColor(BorderSide.BOTTOM, Color.RED).set();
-            ws.style(1, 4).borderStyle(BorderSide.TOP, "thin").set();
-            ws.style(1, 5).borderStyle(BorderSide.LEFT, "thin").borderStyle(BorderSide.BOTTOM, "thick").set();
-            ws.style(1, 6).borderStyle(BorderSide.RIGHT, "thin").set();
+            ws.style(1, 1).borderStyle(THIN).set();
+            ws.style(1, 2).borderStyle(THICK).borderColor(Color.RED).set();
+            ws.style(1, 3).borderStyle(BorderSide.BOTTOM, THICK).borderColor(BorderSide.BOTTOM, Color.RED).set();
+            ws.style(1, 4).borderStyle(BorderSide.TOP, THIN).set();
+            ws.style(1, 5).borderStyle(BorderSide.LEFT, THIN).borderStyle(BorderSide.BOTTOM, THICK).set();
+            ws.style(1, 6).borderStyle(BorderSide.RIGHT, THIN).set();
             for (int col = 1; col < 10; ++col) {
-                ws.style(2, col).borderStyle(BorderSide.LEFT, "thin").borderStyle(BorderSide.BOTTOM, "thin").set();
+                ws.style(2, col).borderStyle(BorderSide.LEFT, THIN).borderStyle(BorderSide.BOTTOM, THIN).set();
             }
         });
 
