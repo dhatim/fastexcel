@@ -22,6 +22,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.dhatim.fastexcel.BorderStyle.THICK;
+import static org.dhatim.fastexcel.BorderStyle.THIN;
 import static org.dhatim.fastexcel.Correctness.writeWorkbook;
 import static org.dhatim.fastexcel.SheetProtectionOption.*;
 import static org.junit.Assert.*;
@@ -137,7 +139,7 @@ public class PoiCompatibility {
                     ws.style(numRows + 1, 4).format("yyyy-MM-dd HH:mm:ss").set();
                     ws.formula(numRows + 1, 5, "=AVERAGE(" + ws.range(1, 5, numRows, 5).toString() + ")");
                     ws.style(numRows + 1, 5).format("yyyy-MM-dd").bold().italic().fontColor(Color.RED).fontName("Garamond").fontSize(new BigDecimal("14.5")).horizontalAlignment("center").verticalAlignment("top").wrapText(true).set();
-                    ws.range(1, 0, numRows, numCols - 1).style().borderColor(Color.RED).borderStyle("thick").shadeAlternateRows(Color.RED).set();
+                    ws.range(1, 0, numRows, numCols - 1).style().borderColor(Color.RED).borderStyle(THICK).shadeAlternateRows(Color.RED).set();
                 });
                 cfs[i] = cf;
             }
@@ -236,14 +238,14 @@ public class PoiCompatibility {
     public void borders() throws Exception {
         byte[] data = writeWorkbook(wb -> {
             Worksheet ws = wb.newWorksheet("Worksheet 1");
-            ws.style(1, 1).borderStyle("thin").set();
-            ws.style(1, 2).borderStyle("thick").borderColor(Color.RED).set();
-            ws.style(1, 3).borderStyle(BorderSide.BOTTOM, "thick").borderColor(BorderSide.BOTTOM, Color.RED).set();
-            ws.style(1, 4).borderStyle(BorderSide.TOP, "thin").set();
-            ws.style(1, 5).borderStyle(BorderSide.LEFT, "thin").borderStyle(BorderSide.BOTTOM, "thick").set();
-            ws.style(1, 6).borderStyle(BorderSide.RIGHT, "thin").set();
+            ws.style(1, 1).borderStyle(THIN).set();
+            ws.style(1, 2).borderStyle(THICK).borderColor(Color.RED).set();
+            ws.style(1, 3).borderStyle(BorderSide.BOTTOM, THICK).borderColor(BorderSide.BOTTOM, Color.RED).set();
+            ws.style(1, 4).borderStyle(BorderSide.TOP, THIN).set();
+            ws.style(1, 5).borderStyle(BorderSide.LEFT, THIN).borderStyle(BorderSide.BOTTOM, THICK).set();
+            ws.style(1, 6).borderStyle(BorderSide.RIGHT, THIN).set();
             for (int col = 1; col < 10; ++col) {
-                ws.style(2, col).borderStyle(BorderSide.LEFT, "thin").borderStyle(BorderSide.BOTTOM, "thin").set();
+                ws.style(2, col).borderStyle(BorderSide.LEFT, THIN).borderStyle(BorderSide.BOTTOM, THIN).set();
             }
         });
 

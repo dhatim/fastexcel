@@ -268,6 +268,16 @@ public class StyleSetter {
     /**
      * Apply cell border style on all sides, except diagonal.
      *
+     * @param borderStyle Border style.
+     * @return This style setter.
+     */
+    public StyleSetter borderStyle(BorderStyle borderStyle) {
+        return borderStyle(borderStyle.xmlValue);
+    }
+
+    /**
+     * Apply cell border style on all sides, except diagonal.
+     *
      * @param borderStyle Border style. Possible values are defined
      * <a href="https://msdn.microsoft.com/en-us/library/documentformat.openxml.spreadsheet.borderstylevalues(v=office.14).aspx">here</a>.
      * @return This style setter.
@@ -282,6 +292,16 @@ public class StyleSetter {
         return this;
     }
 
+    /**
+     * Apply cell border style on a side.
+     *
+     * @param side Border side where to apply the given style.
+     * @param borderStyle Border style.
+     * @return This style setter.
+     */
+    public StyleSetter borderStyle(BorderSide side, BorderStyle borderStyle) {
+        return borderStyle(side, borderStyle.xmlValue);
+    }
     /**
      * Apply cell border style on a side.
      *
