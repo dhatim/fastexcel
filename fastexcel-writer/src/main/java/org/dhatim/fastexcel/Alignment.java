@@ -76,7 +76,7 @@ class Alignment {
             w.append(" vertical=\"").append(vertical).append('\"');
         }
         if (wrapText) {
-            w.append(" wrapText=\"").append(Boolean.toString(wrapText)).append('\"');
+            w.append(" wrapText=\"true\"");
         }
         w.append("/>");
     }

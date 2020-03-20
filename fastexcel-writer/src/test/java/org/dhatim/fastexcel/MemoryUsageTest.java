@@ -34,11 +34,11 @@ public class MemoryUsageTest {
     private static final int SHEETS = 1;
     private static final File FILE = new File("target/memtest" + ROWS + "x" + COLS + ".xlsx");
 
-    private class SheetContentHandler implements XSSFSheetXMLHandler.SheetContentsHandler {
-        private NumberFormat FORMAT = new DecimalFormat("0");
+    private static class SheetContentHandler implements XSSFSheetXMLHandler.SheetContentsHandler {
+        private final NumberFormat FORMAT = new DecimalFormat("0");
         public int processedRows = 0;
         public int processedCells = 0;
-        private int sheetIndex;
+        private final int sheetIndex;
 
         public SheetContentHandler(int sheetIndex) {
             this.sheetIndex = sheetIndex;

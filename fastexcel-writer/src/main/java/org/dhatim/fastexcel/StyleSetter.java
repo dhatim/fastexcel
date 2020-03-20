@@ -286,9 +286,9 @@ public class StyleSetter {
         if (border == null) {
             border = new Border();
         }
-        EnumSet.of(BorderSide.TOP, BorderSide.LEFT, BorderSide.BOTTOM, BorderSide.RIGHT).forEach(side -> {
-            borderElement(side, border.elements.get(side).updateStyle(borderStyle));
-        });
+        EnumSet.of(BorderSide.TOP, BorderSide.LEFT, BorderSide.BOTTOM, BorderSide.RIGHT).forEach(side ->
+            borderElement(side, border.elements.get(side).updateStyle(borderStyle))
+        );
         return this;
     }
 
@@ -327,9 +327,9 @@ public class StyleSetter {
         if (border == null) {
             border = new Border();
         }
-        EnumSet.of(BorderSide.TOP, BorderSide.LEFT, BorderSide.BOTTOM, BorderSide.RIGHT).forEach(side -> {
-            borderElement(side, border.elements.get(side).updateColor(borderColor));
-        });
+        EnumSet.of(BorderSide.TOP, BorderSide.LEFT, BorderSide.BOTTOM, BorderSide.RIGHT).forEach(side ->
+            borderElement(side, border.elements.get(side).updateColor(borderColor))
+        );
         return this;
     }
 

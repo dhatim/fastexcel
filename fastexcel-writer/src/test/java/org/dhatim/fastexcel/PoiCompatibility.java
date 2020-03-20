@@ -1,8 +1,7 @@
 package org.dhatim.fastexcel;
 
-import org.apache.poi.ss.usermodel.BorderStyle;
-import org.apache.poi.ss.usermodel.DataValidation.ErrorStyle;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.DataValidation.ErrorStyle;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.*;
 import org.junit.Test;
@@ -20,10 +19,10 @@ import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import static org.apache.poi.ss.usermodel.BorderStyle.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.dhatim.fastexcel.BorderStyle.THICK;
-import static org.dhatim.fastexcel.BorderStyle.THIN;
 import static org.dhatim.fastexcel.Correctness.writeWorkbook;
 import static org.dhatim.fastexcel.SheetProtectionOption.*;
 import static org.junit.Assert.*;
@@ -70,7 +69,6 @@ public class PoiCompatibility {
         assertThat(xwb.getActiveSheetIndex()).isEqualTo(0);
         assertThat(xwb.getNumberOfSheets()).isEqualTo(1);
         XSSFSheet xws = xwb.getSheet(sheetName);
-        @SuppressWarnings("unchecked")
         Comparable<XSSFRow> row = xws.getRow(0);
         assertThat(row).isNull();
         int i = 1;
@@ -140,7 +138,7 @@ public class PoiCompatibility {
                     ws.style(numRows + 1, 4).format("yyyy-MM-dd HH:mm:ss").set();
                     ws.formula(numRows + 1, 5, "=AVERAGE(" + ws.range(1, 5, numRows, 5).toString() + ")");
                     ws.style(numRows + 1, 5).format("yyyy-MM-dd").bold().italic().fontColor(Color.RED).fontName("Garamond").fontSize(new BigDecimal("14.5")).horizontalAlignment("center").verticalAlignment("top").wrapText(true).set();
-                    ws.range(1, 0, numRows, numCols - 1).style().borderColor(Color.RED).borderStyle(THICK).shadeAlternateRows(Color.RED).set();
+                    ws.range(1, 0, numRows, numCols - 1).style().borderColor(Color.RED).borderStyle(BorderStyle.THICK).shadeAlternateRows(Color.RED).set();
                 });
                 cfs[i] = cf;
             }
@@ -181,13 +179,10 @@ public class PoiCompatibility {
         XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
         assertThat(xwb.getActiveSheetIndex()).isEqualTo(0);
         assertThat(xwb.getNumberOfSheets()).isEqualTo(numWs);
-        int nameI = numWs - 1;
-        for (int i = 0; i > numWs; ++i) {
-            assertThat(xwb.getSheetName(i)).isEqualTo("Sheet " + nameI);
-            --nameI;
-        }
+        assertThat(IntStream.range(0, numWs).mapToObj(xwb::getSheetName))
+                .containsExactly("Sheet 2", "Sheet 1", "Sheet 0");
     }
-    
+
     @Test
     public void font() throws Exception {
         String sheetName = "Worksheet 1";
@@ -242,14 +237,14 @@ public class PoiCompatibility {
     public void borders() throws Exception {
         byte[] data = writeWorkbook(wb -> {
             Worksheet ws = wb.newWorksheet("Worksheet 1");
-            ws.style(1, 1).borderStyle(THIN).set();
-            ws.style(1, 2).borderStyle(THICK).borderColor(Color.RED).set();
-            ws.style(1, 3).borderStyle(BorderSide.BOTTOM, THICK).borderColor(BorderSide.BOTTOM, Color.RED).set();
-            ws.style(1, 4).borderStyle(BorderSide.TOP, THIN).set();
-            ws.style(1, 5).borderStyle(BorderSide.LEFT, THIN).borderStyle(BorderSide.BOTTOM, THICK).set();
-            ws.style(1, 6).borderStyle(BorderSide.RIGHT, THIN).set();
+            ws.style(1, 1).borderStyle(BorderStyle.THIN).set();
+            ws.style(1, 2).borderStyle(BorderStyle.THICK).borderColor(Color.RED).set();
+            ws.style(1, 3).borderStyle(BorderSide.BOTTOM, BorderStyle.THICK).borderColor(BorderSide.BOTTOM, Color.RED).set();
+            ws.style(1, 4).borderStyle(BorderSide.TOP, BorderStyle.THIN).set();
+            ws.style(1, 5).borderStyle(BorderSide.LEFT, BorderStyle.THIN).borderStyle(BorderSide.BOTTOM, BorderStyle.THICK).set();
+            ws.style(1, 6).borderStyle(BorderSide.RIGHT, BorderStyle.THIN).set();
             for (int col = 1; col < 10; ++col) {
-                ws.style(2, col).borderStyle(BorderSide.LEFT, THIN).borderStyle(BorderSide.BOTTOM, THIN).set();
+                ws.style(2, col).borderStyle(BorderSide.LEFT, BorderStyle.THIN).borderStyle(BorderSide.BOTTOM, BorderStyle.THIN).set();
             }
         });
 
@@ -264,10 +259,10 @@ public class PoiCompatibility {
         assertThat(xws.getRow(1).getCell(1).getCellStyle().getLeftBorderColor()).isEqualTo(IndexedColors.BLACK.index);
         assertThat(xws.getRow(1).getCell(1).getCellStyle().getBottomBorderColor()).isEqualTo(IndexedColors.BLACK.index);
         assertThat(xws.getRow(1).getCell(1).getCellStyle().getRightBorderColor()).isEqualTo(IndexedColors.BLACK.index);
-        assertThat(xws.getRow(1).getCell(1).getCellStyle().getBorderTopEnum()).isEqualTo(BorderStyle.THIN);
-        assertThat(xws.getRow(1).getCell(1).getCellStyle().getBorderLeftEnum()).isEqualTo(BorderStyle.THIN);
-        assertThat(xws.getRow(1).getCell(1).getCellStyle().getBorderBottomEnum()).isEqualTo(BorderStyle.THIN);
-        assertThat(xws.getRow(1).getCell(1).getCellStyle().getBorderRightEnum()).isEqualTo(BorderStyle.THIN);
+        assertThat(xws.getRow(1).getCell(1).getCellStyle().getBorderTopEnum()).isEqualTo(THIN);
+        assertThat(xws.getRow(1).getCell(1).getCellStyle().getBorderLeftEnum()).isEqualTo(THIN);
+        assertThat(xws.getRow(1).getCell(1).getCellStyle().getBorderBottomEnum()).isEqualTo(THIN);
+        assertThat(xws.getRow(1).getCell(1).getCellStyle().getBorderRightEnum()).isEqualTo(THIN);
 
         byte[] red = new byte[3];
         red[0] = -1;
@@ -275,56 +270,56 @@ public class PoiCompatibility {
         assertThat(xws.getRow(1).getCell(2).getCellStyle().getLeftBorderXSSFColor().getRGB()).isEqualTo(red);
         assertThat(xws.getRow(1).getCell(2).getCellStyle().getBottomBorderXSSFColor().getRGB()).isEqualTo(red);
         assertThat(xws.getRow(1).getCell(2).getCellStyle().getRightBorderXSSFColor().getRGB()).isEqualTo(red);
-        assertThat(xws.getRow(1).getCell(2).getCellStyle().getBorderTopEnum()).isEqualTo(BorderStyle.THICK);
-        assertThat(xws.getRow(1).getCell(2).getCellStyle().getBorderLeftEnum()).isEqualTo(BorderStyle.THICK);
-        assertThat(xws.getRow(1).getCell(2).getCellStyle().getBorderBottomEnum()).isEqualTo(BorderStyle.THICK);
-        assertThat(xws.getRow(1).getCell(2).getCellStyle().getBorderRightEnum()).isEqualTo(BorderStyle.THICK);
+        assertThat(xws.getRow(1).getCell(2).getCellStyle().getBorderTopEnum()).isEqualTo(THICK);
+        assertThat(xws.getRow(1).getCell(2).getCellStyle().getBorderLeftEnum()).isEqualTo(THICK);
+        assertThat(xws.getRow(1).getCell(2).getCellStyle().getBorderBottomEnum()).isEqualTo(THICK);
+        assertThat(xws.getRow(1).getCell(2).getCellStyle().getBorderRightEnum()).isEqualTo(THICK);
 
         assertThat(xws.getRow(1).getCell(3).getCellStyle().getTopBorderXSSFColor()).isNull();
         assertThat(xws.getRow(1).getCell(3).getCellStyle().getLeftBorderXSSFColor()).isNull();
         assertThat(xws.getRow(1).getCell(3).getCellStyle().getBottomBorderXSSFColor().getRGB()).isEqualTo(red);
         assertThat(xws.getRow(1).getCell(3).getCellStyle().getRightBorderXSSFColor()).isNull();
-        assertThat(xws.getRow(1).getCell(3).getCellStyle().getBorderTopEnum()).isEqualTo(BorderStyle.NONE);
-        assertThat(xws.getRow(1).getCell(3).getCellStyle().getBorderLeftEnum()).isEqualTo(BorderStyle.NONE);
-        assertThat(xws.getRow(1).getCell(3).getCellStyle().getBorderBottomEnum()).isEqualTo(BorderStyle.THICK);
-        assertThat(xws.getRow(1).getCell(3).getCellStyle().getBorderRightEnum()).isEqualTo(BorderStyle.NONE);
+        assertThat(xws.getRow(1).getCell(3).getCellStyle().getBorderTopEnum()).isEqualTo(NONE);
+        assertThat(xws.getRow(1).getCell(3).getCellStyle().getBorderLeftEnum()).isEqualTo(NONE);
+        assertThat(xws.getRow(1).getCell(3).getCellStyle().getBorderBottomEnum()).isEqualTo(org.apache.poi.ss.usermodel.BorderStyle.THICK);
+        assertThat(xws.getRow(1).getCell(3).getCellStyle().getBorderRightEnum()).isEqualTo(NONE);
 
         assertThat(xws.getRow(1).getCell(4).getCellStyle().getTopBorderColor()).isEqualTo(IndexedColors.BLACK.index);
         assertThat(xws.getRow(1).getCell(4).getCellStyle().getLeftBorderXSSFColor()).isNull();
         assertThat(xws.getRow(1).getCell(4).getCellStyle().getBottomBorderXSSFColor()).isNull();
         assertThat(xws.getRow(1).getCell(4).getCellStyle().getRightBorderXSSFColor()).isNull();
-        assertThat(xws.getRow(1).getCell(4).getCellStyle().getBorderTopEnum()).isEqualTo(BorderStyle.THIN);
-        assertThat(xws.getRow(1).getCell(4).getCellStyle().getBorderLeftEnum()).isEqualTo(BorderStyle.NONE);
-        assertThat(xws.getRow(1).getCell(4).getCellStyle().getBorderBottomEnum()).isEqualTo(BorderStyle.NONE);
-        assertThat(xws.getRow(1).getCell(4).getCellStyle().getBorderRightEnum()).isEqualTo(BorderStyle.NONE);
+        assertThat(xws.getRow(1).getCell(4).getCellStyle().getBorderTopEnum()).isEqualTo(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+        assertThat(xws.getRow(1).getCell(4).getCellStyle().getBorderLeftEnum()).isEqualTo(NONE);
+        assertThat(xws.getRow(1).getCell(4).getCellStyle().getBorderBottomEnum()).isEqualTo(NONE);
+        assertThat(xws.getRow(1).getCell(4).getCellStyle().getBorderRightEnum()).isEqualTo(NONE);
 
         assertThat(xws.getRow(1).getCell(5).getCellStyle().getTopBorderXSSFColor()).isNull();
         assertThat(xws.getRow(1).getCell(5).getCellStyle().getLeftBorderColor()).isEqualTo(IndexedColors.BLACK.index);
         assertThat(xws.getRow(1).getCell(5).getCellStyle().getBottomBorderColor()).isEqualTo(IndexedColors.BLACK.index);
         assertThat(xws.getRow(1).getCell(5).getCellStyle().getRightBorderXSSFColor()).isNull();
-        assertThat(xws.getRow(1).getCell(5).getCellStyle().getBorderTopEnum()).isEqualTo(BorderStyle.NONE);
-        assertThat(xws.getRow(1).getCell(5).getCellStyle().getBorderLeftEnum()).isEqualTo(BorderStyle.THIN);
-        assertThat(xws.getRow(1).getCell(5).getCellStyle().getBorderBottomEnum()).isEqualTo(BorderStyle.THICK);
-        assertThat(xws.getRow(1).getCell(5).getCellStyle().getBorderRightEnum()).isEqualTo(BorderStyle.NONE);
+        assertThat(xws.getRow(1).getCell(5).getCellStyle().getBorderTopEnum()).isEqualTo(NONE);
+        assertThat(xws.getRow(1).getCell(5).getCellStyle().getBorderLeftEnum()).isEqualTo(THIN);
+        assertThat(xws.getRow(1).getCell(5).getCellStyle().getBorderBottomEnum()).isEqualTo(THICK);
+        assertThat(xws.getRow(1).getCell(5).getCellStyle().getBorderRightEnum()).isEqualTo(NONE);
 
         assertThat(xws.getRow(1).getCell(6).getCellStyle().getTopBorderXSSFColor()).isNull();
         assertThat(xws.getRow(1).getCell(6).getCellStyle().getLeftBorderXSSFColor()).isNull();
         assertThat(xws.getRow(1).getCell(6).getCellStyle().getBottomBorderXSSFColor()).isNull();
         assertThat(xws.getRow(1).getCell(6).getCellStyle().getRightBorderColor()).isEqualTo(IndexedColors.BLACK.index);
-        assertThat(xws.getRow(1).getCell(6).getCellStyle().getBorderTopEnum()).isEqualTo(BorderStyle.NONE);
-        assertThat(xws.getRow(1).getCell(6).getCellStyle().getBorderLeftEnum()).isEqualTo(BorderStyle.NONE);
-        assertThat(xws.getRow(1).getCell(6).getCellStyle().getBorderBottomEnum()).isEqualTo(BorderStyle.NONE);
-        assertThat(xws.getRow(1).getCell(6).getCellStyle().getBorderRightEnum()).isEqualTo(BorderStyle.THIN);
+        assertThat(xws.getRow(1).getCell(6).getCellStyle().getBorderTopEnum()).isEqualTo(NONE);
+        assertThat(xws.getRow(1).getCell(6).getCellStyle().getBorderLeftEnum()).isEqualTo(NONE);
+        assertThat(xws.getRow(1).getCell(6).getCellStyle().getBorderBottomEnum()).isEqualTo(NONE);
+        assertThat(xws.getRow(1).getCell(6).getCellStyle().getBorderRightEnum()).isEqualTo(THIN);
 
         for (int col = 1; col < 10; ++col) {
             assertThat(xws.getRow(2).getCell(col).getCellStyle().getTopBorderXSSFColor()).isNull();
             assertThat(xws.getRow(2).getCell(col).getCellStyle().getLeftBorderColor()).isEqualTo(IndexedColors.BLACK.index);
             assertThat(xws.getRow(2).getCell(col).getCellStyle().getBottomBorderColor()).isEqualTo(IndexedColors.BLACK.index);
             assertThat(xws.getRow(2).getCell(col).getCellStyle().getRightBorderXSSFColor()).isNull();
-            assertThat(xws.getRow(2).getCell(col).getCellStyle().getBorderTopEnum()).isEqualTo(BorderStyle.NONE);
-            assertThat(xws.getRow(2).getCell(col).getCellStyle().getBorderLeftEnum()).isEqualTo(BorderStyle.THIN);
-            assertThat(xws.getRow(2).getCell(col).getCellStyle().getBorderBottomEnum()).isEqualTo(BorderStyle.THIN);
-            assertThat(xws.getRow(2).getCell(col).getCellStyle().getBorderRightEnum()).isEqualTo(BorderStyle.NONE);
+            assertThat(xws.getRow(2).getCell(col).getCellStyle().getBorderTopEnum()).isEqualTo(NONE);
+            assertThat(xws.getRow(2).getCell(col).getCellStyle().getBorderLeftEnum()).isEqualTo(THIN);
+            assertThat(xws.getRow(2).getCell(col).getCellStyle().getBorderBottomEnum()).isEqualTo(THIN);
+            assertThat(xws.getRow(2).getCell(col).getCellStyle().getBorderRightEnum()).isEqualTo(NONE);
         }
     }
 

@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Objects;
+
 import org.junit.jupiter.api.Test;
 
 public class HeaderTest {
@@ -47,8 +47,8 @@ public class HeaderTest {
 
     private static byte[] readFirstBytes(String name, int length) throws IOException {
         try (InputStream is = open(name)) {
-            byte[] bytes = new byte[8];
-            readNBytes(is, bytes, 0, 8);
+            byte[] bytes = new byte[length];
+            readNBytes(is, bytes, 0, length);
             return bytes;
         }
     }

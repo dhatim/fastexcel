@@ -57,14 +57,7 @@ final class StyleCache {
      * @return Index of the cached object.
      */
     private static <T> int cacheStuff(ConcurrentMap<T, Integer> cache, T t, Function<T, Integer> indexFunction) {
-        Integer index = cache.get(t);
-        if (index == null) {
-            // Need to synchronize to get a valid new index (the index function returns the map size)
-            synchronized (cache) {
-                index = cache.computeIfAbsent(t, indexFunction);
-            }
-        }
-        return index;
+        return cache.computeIfAbsent(t, indexFunction);
     }
 
     /**

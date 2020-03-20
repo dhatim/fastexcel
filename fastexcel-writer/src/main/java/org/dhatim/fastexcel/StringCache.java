@@ -16,10 +16,13 @@
 package org.dhatim.fastexcel;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.stream.Stream;
+
+import static java.util.Comparator.comparingInt;
 
 /**
  * Thread-safe cache for shared strings. Each string is uniquely identified by
@@ -63,7 +66,9 @@ class StringCache {
      */
     void write(Writer w) throws IOException {
         w.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"").append(count).append("\" uniqueCount=\"").append(strings.size()).append("\">");
-        Stream<String> sortedStrings = strings.entrySet().stream().sorted((e1, e2) -> Integer.compare(e1.getValue().getIndex(), e2.getValue().getIndex())).map(Entry::getKey);
+        Stream<String> sortedStrings = strings.entrySet().stream()
+                .sorted(comparingInt(e -> e.getValue().getIndex()))
+                .map(Entry::getKey);
         Iterator<String> it = sortedStrings.iterator();
         while (it.hasNext()) {
             w.append("<si><t>").appendEscaped(it.next()).append("</t></si>");

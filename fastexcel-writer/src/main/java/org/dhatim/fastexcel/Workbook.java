@@ -292,7 +292,7 @@ public class Workbook {
      */
     public Worksheet newWorksheet(String name) {
         // Replace chars forbidden in worksheet names (backslahses and colons) by dashes
-        String sheetName = name.replaceAll("[/\\\\\\?\\*\\]\\[\\:]", "-");
+        String sheetName = name.replaceAll("[/\\\\?*\\]\\[:]", "-");
 
         // Maximum length worksheet name is 31 characters
         if (sheetName.length() > 31) {

@@ -17,6 +17,7 @@ package org.dhatim.fastexcel;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Objects;
 
 /**
@@ -71,7 +72,7 @@ class Font {
         this.italic = italic;
 		this.underlined = underlined;
         this.name = name;
-        this.size = size.setScale(2);
+        this.size = size.setScale(2, RoundingMode.HALF_UP);
         this.rgbColor = rgbColor;
     }
 
