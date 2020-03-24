@@ -579,4 +579,31 @@ public class PoiCompatibility {
                 String.valueOf(cellComment.getString())
         );
     }
+
+    @Test
+    public void hideGridLines() throws IOException {
+        byte[] data = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Worksheet 1");
+            ws.hideGridLines();
+        });
+
+        assertFalse(isWorkSheetDisplayingGridLines(data));
+    }
+
+    @Test
+    public void showGridLinesByDefault() throws IOException {
+        byte[] data = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Worksheet 1");
+        });
+
+        assertTrue(isWorkSheetDisplayingGridLines(data));
+    }
+
+
+    private static boolean isWorkSheetDisplayingGridLines(byte[] data) throws IOException {
+        XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
+        XSSFSheet xws = xwb.getSheetAt(0);
+        return xws.isDisplayGridlines();
+    }
+
 }
