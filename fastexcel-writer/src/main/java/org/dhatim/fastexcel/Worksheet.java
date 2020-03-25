@@ -88,6 +88,10 @@ public class Worksheet {
     private VisibilityState visibilityState;
 
     /**
+     * Whether grid lines are displayed
+     */
+    private boolean showGridLines = true;
+    /**
      * The hashed password that protects this sheet.
      */
     private String passwordHash;
@@ -571,7 +575,11 @@ public class Worksheet {
             writer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
             writer.append("<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">");
             writer.append("<dimension ref=\"A1\"/>");
-            writer.append("<sheetViews><sheetView workbookViewId=\"0\"/></sheetViews><sheetFormatPr defaultRowHeight=\"15.0\"/>");
+            writer.append("<sheetViews><sheetView workbookViewId=\"0\"");
+            if(!showGridLines) {
+                writer.append(" showGridLines=\"false\"");
+            }
+            writer.append("/></sheetViews><sheetFormatPr defaultRowHeight=\"15.0\"/>");
             int nbCols = rows.stream().filter(Objects::nonNull).map(r -> r.length).reduce(0, Math::max);
             if (nbCols > 0) {
                 writeCols(writer, nbCols);
@@ -626,5 +634,12 @@ public class Worksheet {
      */
     public void comment(int r, int c, String comment) {
         comments.set(r, c, comment);
+    }
+
+    /**
+     * Hide grid lines
+     */
+    public void hideGridLines() {
+        this.showGridLines = false;
     }
 }
