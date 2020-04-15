@@ -92,6 +92,10 @@ public class Worksheet {
      */
     private boolean showGridLines = true;
     /**
+     * Sheet view zoom percentage
+     */
+    private int zoomScale = 100;
+    /**
      * The hashed password that protects this sheet.
      */
     private String passwordHash;
@@ -579,6 +583,9 @@ public class Worksheet {
             if(!showGridLines) {
                 writer.append(" showGridLines=\"false\"");
             }
+            if(zoomScale != 100) {
+                writer.append(" zoomScale=\"").append(zoomScale).append("\"");
+            }
             writer.append("/></sheetViews><sheetFormatPr defaultRowHeight=\"15.0\"/>");
             int nbCols = rows.stream().filter(Objects::nonNull).map(r -> r.length).reduce(0, Math::max);
             if (nbCols > 0) {
@@ -641,5 +648,17 @@ public class Worksheet {
      */
     public void hideGridLines() {
         this.showGridLines = false;
+    }
+
+    /**
+     * Set sheet view zoom level in percent. Default is 100 (100%).
+     * @param zoomPercent - zoom level from 10 to 400
+     */
+    public void setZoom(int zoomPercent) {
+        if (10 <= zoomPercent && zoomPercent <= 400) {
+            this.zoomScale = zoomPercent;
+        }else{
+            throw new IllegalArgumentException("zoom must be within 10 and 400 inclusive");
+        }
     }
 }

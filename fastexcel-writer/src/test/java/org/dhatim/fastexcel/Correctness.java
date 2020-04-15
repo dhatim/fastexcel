@@ -123,6 +123,24 @@ public class Correctness {
         });
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void zoomTooSmall() throws IOException {
+        //if (scale >= 10 && scale <= 400) {
+        writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Worksheet 1");
+            ws.setZoom(9);
+        });
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void zoomTooBig() throws IOException {
+        //if (scale >= 10 && scale <= 400) {
+        writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Worksheet 1");
+            ws.setZoom(401);
+        });
+    }
+
     @Test
     public void reorderedRange() throws Exception {
         writeWorkbook(wb -> {
