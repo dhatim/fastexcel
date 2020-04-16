@@ -1,13 +1,18 @@
 package org.dhatim.fastexcel;
 
-import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.usermodel.DataValidation.ErrorStyle;
+import org.apache.poi.ss.usermodel.DataValidationConstraint;
+import org.apache.poi.ss.usermodel.FontUnderline;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.SheetVisibility;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.*;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -557,6 +562,7 @@ public class PoiCompatibility {
         final String commentText32 = "another comment";
         byte[] data = writeWorkbook(wb -> {
             Worksheet ws = wb.newWorksheet("Worksheet 1");
+            ws.setZoom(120);
             ws.value(0, 1, "cell value");
             ws.comment(0, 1, commentText01);
             ws.comment(3, 2, commentText32);
@@ -599,6 +605,21 @@ public class PoiCompatibility {
         assertTrue(isWorkSheetDisplayingGridLines(data));
     }
 
+    @Test
+    public void readsWithZoomSet() throws IOException {
+        byte[] data = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Worksheet 1");
+            ws.setZoom(120);
+            ws.value(0, 1, "cell value");
+        });
+
+        // Check generated workbook with Apache POI
+        // There's no API in POI to read zoom, so just checking if the sheet is not corrupted
+        XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
+        XSSFSheet xws = xwb.getSheetAt(0);
+        String value = xws.getRow(0).getCell(1).getStringCellValue();
+        assertEquals("cell value", value);
+    }
 
     private static boolean isWorkSheetDisplayingGridLines(byte[] data) throws IOException {
         XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
