@@ -17,6 +17,7 @@ package org.dhatim.fastexcel.reader;
 
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.*;
+import static org.dhatim.fastexcel.reader.Resources.open;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -213,14 +214,6 @@ class FastExcelReaderTest {
 
     private static String toODT(Date date) {
         return FORMAT.format(date);
-    }
-
-    private static InputStream open(String name) {
-        InputStream result = FastExcelReaderTest.class.getResourceAsStream(name);
-        if (result == null) {
-            throw new IllegalStateException("Cannot read resource " + name);
-        }
-        return result;
     }
 
     private static String getRawValue(org.apache.poi.ss.usermodel.Cell cell) {

@@ -42,7 +42,7 @@ class SimpleReaderTest {
 
     @Test
     void test() throws IOException {
-        try (InputStream is = openResource("/xlsx/simple.xlsx"); ReadableWorkbook wb = new ReadableWorkbook(is)) {
+        try (InputStream is = Resources.open("/xlsx/simple.xlsx"); ReadableWorkbook wb = new ReadableWorkbook(is)) {
             Sheet sheet = wb.getFirstSheet();
             try (Stream<Row> rows = sheet.openStream()) {
                 rows.forEach(r -> {
@@ -59,14 +59,6 @@ class SimpleReaderTest {
                 });
             }
         }
-    }
-
-    private static InputStream openResource(String name) {
-        InputStream result = SimpleReaderTest.class.getResourceAsStream(name);
-        if (result == null) {
-            throw new IllegalStateException("Cannot read resource " + name);
-        }
-        return result;
     }
 
     private static LocalDateTime date(int year, int month, int day) {

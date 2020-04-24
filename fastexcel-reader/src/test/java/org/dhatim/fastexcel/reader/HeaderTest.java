@@ -46,7 +46,7 @@ class HeaderTest {
     }
 
     private static byte[] readFirstBytes(String name, int length) throws IOException {
-        try (InputStream is = open(name)) {
+        try (InputStream is = Resources.open(name)) {
             byte[] bytes = new byte[length];
             readNBytes(is, bytes, 0, length);
             return bytes;
@@ -64,14 +64,6 @@ class HeaderTest {
             n += count;
         }
         return n;
-    }
-
-    private static InputStream open(String name) {
-        InputStream result = HeaderTest.class.getResourceAsStream(name);
-        if (result == null) {
-            throw new IllegalStateException("Cannot read resource " + name);
-        }
-        return result;
     }
 
 }
