@@ -15,8 +15,8 @@
  */
 package org.dhatim.fastexcel;
 
+import org.apache.commons.io.output.NullOutputStream;
 import org.junit.jupiter.api.Test;
-import org.openjdk.jmh.util.NullOutputStream;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -43,7 +43,7 @@ class CorrectnessTest {
     }
 
     @Test
-    void noWorksheet() throws Exception {
+    void noWorksheet() {
         assertThrows(IllegalArgumentException.class, () -> {
             writeWorkbook(wb -> {
             });
@@ -72,7 +72,7 @@ class CorrectnessTest {
 
     @Test
     void worksheetsWithSameNames() throws Exception {
-        byte[] data = writeWorkbook(wb -> {
+        writeWorkbook(wb -> {
             Worksheet ws = wb.newWorksheet("01234567890123456789012345678901");
             assertThat(ws.getName()).isEqualTo("0123456789012345678901234567890");
             ws = wb.newWorksheet("0123456789012345678901234567890");
@@ -96,42 +96,42 @@ class CorrectnessTest {
     }
 
     @Test
-    void exceedMaxRows() throws Exception {
+    void exceedMaxRows() {
         assertThrows(IllegalArgumentException.class, () -> {
             writeWorkbook(wb -> wb.newWorksheet("Worksheet 1").value(Worksheet.MAX_ROWS, 0, "test"));
         });
     }
 
     @Test
-    void negativeRow() throws Exception {
+    void negativeRow() {
         assertThrows(IllegalArgumentException.class, () -> {
             writeWorkbook(wb -> wb.newWorksheet("Worksheet 1").value(-1, 0, "test"));
         });
     }
 
     @Test
-    void exceedMaxCols() throws Exception {
+    void exceedMaxCols() {
         assertThrows(IllegalArgumentException.class, () -> {
             writeWorkbook(wb -> wb.newWorksheet("Worksheet 1").value(0, Worksheet.MAX_COLS, "test"));
         });
     }
 
     @Test
-    void negativeCol() throws Exception {
+    void negativeCol() {
         assertThrows(IllegalArgumentException.class, () -> {
             writeWorkbook(wb -> wb.newWorksheet("Worksheet 1").value(0, -1, "test"));
         });
     }
 
     @Test
-    void notSupportedTypeCell() throws Exception {
+    void notSupportedTypeCell() {
         assertThrows(IllegalArgumentException.class, () -> {
             writeWorkbook(wb -> wb.newWorksheet("Worksheet 1").value(0, 0, new Object()));
         });
     }
 
     @Test
-    void invalidRange() throws Exception {
+    void invalidRange() {
         assertThrows(IllegalArgumentException.class, () -> {
             writeWorkbook(wb -> {
                 Worksheet ws = wb.newWorksheet("Worksheet 1");
@@ -141,7 +141,7 @@ class CorrectnessTest {
     }
 
     @Test
-    void zoomTooSmall() throws IOException {
+    void zoomTooSmall() {
         assertThrows(IllegalArgumentException.class, () -> {
             //if (scale >= 10 && scale <= 400) {
             writeWorkbook(wb -> {
@@ -152,7 +152,7 @@ class CorrectnessTest {
     }
 
     @Test
-    void zoomTooBig() throws IOException {
+    void zoomTooBig() {
         assertThrows(IllegalArgumentException.class, () -> {
             //if (scale >= 10 && scale <= 400) {
             writeWorkbook(wb -> {
