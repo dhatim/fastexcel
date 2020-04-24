@@ -28,7 +28,7 @@ import org.dhatim.fastexcel.reader.Row;
 import org.dhatim.fastexcel.reader.Sheet;
 import org.junit.jupiter.api.Test;
 
-public class SimpleReaderTest {
+class SimpleReaderTest {
 
     private static final Object[][] VALUES = {
             {1, "Lorem", date(2018, 1, 1), null, true},
@@ -44,7 +44,7 @@ public class SimpleReaderTest {
     };
 
     @Test
-    public void test() throws IOException {
+    void test() throws IOException {
         try (InputStream is = openResource("/xlsx/simple.xlsx"); ReadableWorkbook wb = new ReadableWorkbook(is)) {
             Sheet sheet = wb.getFirstSheet();
             try (Stream<Row> rows = sheet.openStream()) {

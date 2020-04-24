@@ -4,9 +4,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class CellAddressTest {
+class CellAddressTest {
     @Test
-    public void refs() {
+    void refs() {
         assertCellAddress("A1", 0, 0);
         assertCellAddress("$A1", 0, 0);
         assertCellAddress("A$1", 0, 0);
