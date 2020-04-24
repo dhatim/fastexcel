@@ -17,6 +17,7 @@ package org.dhatim.fastexcel.reader;
 
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.*;
+import static org.dhatim.fastexcel.reader.Resources.open;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,7 +25,6 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -35,7 +35,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-public class FastExcelReaderTest {
+class FastExcelReaderTest {
 
     private static final class RowDates {
 
@@ -43,7 +43,7 @@ public class FastExcelReaderTest {
         private final String date1;
         private final String date2;
 
-        public RowDates(int rowNum, String date1, String date2) {
+        RowDates(int rowNum, String date1, String date2) {
             this.rowNum = rowNum;
             this.date1 = date1;
             this.date2 = date2;
@@ -75,7 +75,7 @@ public class FastExcelReaderTest {
     private static final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
 
     @Test
-    public void testDates() throws IOException {
+    void testDates() throws IOException {
         assertThat(readUsingFastExcel()).isEqualTo(readUsingPOI());
     }
 
@@ -139,7 +139,7 @@ public class FastExcelReaderTest {
             "/xlsx/write.xlsx",
             // "/xlsx/xlsx-stream-d-date-cell.xlsx"
     })
-    public void testFile(String file) {
+    void testFile(String file) {
         LOGGER.info("Test " + file);
         try (InputStream inputStream = open(file); InputStream inputStream2 = open(file)) {
             try (ReadableWorkbook excel = new ReadableWorkbook(inputStream); Workbook workbook = WorkbookFactory.create(inputStream2)) {
@@ -214,14 +214,6 @@ public class FastExcelReaderTest {
 
     private static String toODT(Date date) {
         return FORMAT.format(date);
-    }
-
-    private static InputStream open(String name) {
-        InputStream result = FastExcelReaderTest.class.getResourceAsStream(name);
-        if (result == null) {
-            throw new IllegalStateException("Cannot read resource " + name);
-        }
-        return result;
     }
 
     private static String getRawValue(org.apache.poi.ss.usermodel.Cell cell) {

@@ -22,31 +22,31 @@ import java.io.InputStream;
 
 import org.junit.jupiter.api.Test;
 
-public class HeaderTest {
+class HeaderTest {
 
     @Test
-    public void testInsufficientBytes() {
+    void testInsufficientBytes() {
         byte[] bytes = new byte[1];
         assertThatThrownBy(() -> ReadableWorkbook.isOLE2Header(bytes)).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> ReadableWorkbook.isOOXMLZipHeader(bytes)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    public void testOLE2File() throws IOException {
+    void testOLE2File() throws IOException {
         byte[] bytes = readFirstBytes("/xls/defined_names_simple.xls", 8);
         assertThat(ReadableWorkbook.isOLE2Header(bytes)).isTrue();
         assertThat(ReadableWorkbook.isOOXMLZipHeader(bytes)).isFalse();
     }
 
     @Test
-    public void testOOXMLZipFile() throws IOException {
+    void testOOXMLZipFile() throws IOException {
         byte[] bytes = readFirstBytes("/xlsx/defined_names_simple.xlsx", 8);
         assertThat(ReadableWorkbook.isOLE2Header(bytes)).isFalse();
         assertThat(ReadableWorkbook.isOOXMLZipHeader(bytes)).isTrue();
     }
 
     private static byte[] readFirstBytes(String name, int length) throws IOException {
-        try (InputStream is = open(name)) {
+        try (InputStream is = Resources.open(name)) {
             byte[] bytes = new byte[length];
             readNBytes(is, bytes, 0, length);
             return bytes;
@@ -64,14 +64,6 @@ public class HeaderTest {
             n += count;
         }
         return n;
-    }
-
-    private static InputStream open(String name) {
-        InputStream result = HeaderTest.class.getResourceAsStream(name);
-        if (result == null) {
-            throw new IllegalStateException("Cannot read resource " + name);
-        }
-        return result;
     }
 
 }
