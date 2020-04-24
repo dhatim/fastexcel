@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dhatim.fastexcel.reader.sample;
+package org.dhatim.fastexcel.reader;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,9 +23,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.stream.Stream;
 
-import org.dhatim.fastexcel.reader.ReadableWorkbook;
-import org.dhatim.fastexcel.reader.Row;
-import org.dhatim.fastexcel.reader.Sheet;
 import org.junit.jupiter.api.Test;
 
 class SimpleReaderTest {
