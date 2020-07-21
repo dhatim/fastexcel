@@ -605,7 +605,7 @@ public class Worksheet {
             }
             writer.append(">");
             if(freezeLeftColumns > 0 || freezeTopRows > 0) {
-                writeFreezePane(writer, freezeTopRows, freezeLeftColumns);
+                writeFreezePane(writer);
             }
             writer.append("</sheetView>");
             writer.append("</sheetViews><sheetFormatPr defaultRowHeight=\"15.0\"/>");
@@ -632,7 +632,7 @@ public class Worksheet {
     /**
      * Writes corresponding pane definitions into XML and freezes pane.
      */
-    private static void writeFreezePane(Writer w, int freezeTopRows, int freezeLeftColumns) throws IOException {
+    private void writeFreezePane(Writer w) throws IOException {
         String activePane = freezeLeftColumns==0 ? "bottomLeft" : freezeTopRows==0 ? "topRight" : "bottomRight";
         String freezePane = "<pane xSplit=\"" + freezeLeftColumns + 
                             "\" ySplit=\"" + freezeTopRows + "\" topLeftCell=\"" + 
@@ -660,9 +660,9 @@ public class Worksheet {
         }
         if (freezeLeftColumns != 0 && freezeTopRows != 0) {
             String bottomRightPane = "<selection pane=\"bottomRight\" activeCell=\"" + 
-                                     getCellMark(0, 0) +
+                                     getCellMark(freezeTopRows, freezeLeftColumns) +
                                      "\" activeCellId=\"0\" sqref=\"" + 
-                                     getCellMark(0, 0) + "\"/>";
+                                     getCellMark(freezeTopRows, freezeLeftColumns) + "\"/>";
             w.append(bottomRightPane);
         }
     }
