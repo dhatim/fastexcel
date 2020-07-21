@@ -15,22 +15,11 @@
  */
 package org.dhatim.fastexcel;
 
-import java.io.IOException;
-
 /**
  * Helper class to define a simple shading to alternate rows in a range of
  * cells.
  */
-class AlternateShading {
-
-    /**
-     * Range where alternate rows are shaded.
-     */
-    private final Range range;
-    /**
-     *  Index of cached fill pattern for shaded rows.
-     */
-    private final int fill;
+class AlternateShading extends Shading{
 
     /**
      * Constructor.
@@ -39,17 +28,6 @@ class AlternateShading {
      * @param fill Index of cached fill pattern for shaded rows.
      */
     AlternateShading(Range range, int fill) {
-        this.range = range;
-        this.fill = fill;
-    }
-
-    /**
-     * Write this definition of alternate shading as an XML element.
-     *
-     * @param w Output writer.
-     * @throws IOException If an I/O error occurs.
-     */
-    void write(Writer w) throws IOException {
-        w.append("<conditionalFormatting sqref=\"").append(range.toString()).append("\"><cfRule type=\"expression\" dxfId=\"").append(fill).append("\" priority=\"1\"><formula>MOD(ROW(),2)</formula></cfRule></conditionalFormatting>");
+        super(range, fill, 2);
     }
 }

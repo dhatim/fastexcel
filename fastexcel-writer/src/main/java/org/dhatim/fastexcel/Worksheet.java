@@ -61,6 +61,10 @@ public class Worksheet {
      */
     private final List<AlternateShading> alternateShadingRanges = new ArrayList<>();
     /**
+     * List of ranges where shading to Nth rows is defined.
+     */
+    private final List<Shading> shadingRanges = new ArrayList<>();
+    /**
      * List of rows to hide
      */
     private final Set<Integer> hiddenRows = new HashSet<>();
@@ -213,7 +217,17 @@ public class Worksheet {
      * @param fill Shading fill pattern.
      */
     void shadeAlternateRows(Range range, Fill fill) {
-        alternateShadingRanges.add(new AlternateShading(range, getWorkbook().cacheAlternateShadingFillColor(fill)));
+        alternateShadingRanges.add(new AlternateShading(range, getWorkbook().cacheShadingFillColor(fill)));
+    }
+    /**
+     * Apply shading to Nth rows in the given range.
+     * 
+     * @param range Range of cells.
+     * @param fill Shading fill patern.
+     * @param eachNRows Shading row frequency.
+     */
+    void shadeRows(Range range, Fill fill, int eachNRows) {
+        shadingRanges.add(new Shading(range, getWorkbook().cacheShadingFillColor(fill), eachNRows));
     }
 
     void addValidation(DataValidation validation) {
@@ -317,7 +331,7 @@ public class Worksheet {
 
     /**
      * Applies autofilter automatically based on provided header cells
-     * @param rowNumber Row number (assuming just header row will be given)
+     * @param rowNumber Row number
      * @param leftCellNumber Left cell number where filter will be initialized
      * @param rightCellNumber Right cell number where filter will be initialized
      */
@@ -562,6 +576,9 @@ public class Worksheet {
         }
         for (AlternateShading a : alternateShadingRanges) {
             a.write(writer);
+        }
+        for (Shading s : shadingRanges) {
+            s.write(writer);
         }
 
         if (passwordHash != null) {
