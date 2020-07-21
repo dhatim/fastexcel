@@ -96,9 +96,13 @@ public class Worksheet {
      */
     private int zoomScale = 100;
     /**
-     * Range of cells that will remain frozen.
+     * Number of top rows that will remain frozen while scrolling.
      */
-    private List<Integer> freezePaneParams = null;
+    private int freezeTopRows = 0;
+    /**
+     * Number of columns from the left that remain frozen while scrolling.
+     */
+    private int freezeLeftColumns = 0;
     /**
      * The hashed password that protects this sheet.
      */
@@ -506,7 +510,7 @@ public class Worksheet {
      * Helper method to get a cell name from (x, y) cell position.
      * e.g. "B3" from cell position (2, 1)
      */
-    private String getCellMark(int row, int coll) {
+    private static String getCellMark(int row, int coll) {
         char columnLetter = (char) ('A' + coll);
         return String.valueOf(columnLetter) + String.valueOf(row+1);
     }
@@ -600,39 +604,8 @@ public class Worksheet {
                 writer.append(" zoomScale=\"").append(zoomScale).append("\"");
             }
             writer.append(">");
-
-            if(freezePaneParams != null) {
-                String freezePane = "<pane xSplit=\"" + freezePaneParams.get(1) + 
-                                    "\" ySplit=\"" + freezePaneParams.get(0) + "\" topLeftCell=\"" + 
-                                    getCellMark(freezePaneParams.get(0), freezePaneParams.get(1)) + 
-                                    "\" activePane=\"bottomRight\" state=\"frozen\"/>";
-                writer.append(freezePane);
-                String topLeftPane = "<selection pane=\"topLeft\" activeCell=\"" + 
-                                      getCellMark(0, 0) +
-                                      "\" activeCellId=\"0\" sqref=\"" + 
-                                      getCellMark(0, 0) + "\"/>";
-                writer.append(topLeftPane);
-                if (freezePaneParams.get(1) != 0) {
-                    String topRightPane = "<selection pane=\"topRight\" activeCell=\"" + 
-                                      getCellMark(0, freezePaneParams.get(1)) +
-                                      "\" activeCellId=\"0\" sqref=\"" + 
-                                      getCellMark(0, freezePaneParams.get(1)) + "\"/>";
-                    writer.append(topRightPane);
-                }
-                if (freezePaneParams.get(0) !=0 ) {
-                    String bottomLeftPane = "<selection pane=\"bottomLeft\" activeCell=\"" + 
-                                        getCellMark(freezePaneParams.get(0), 0) + 
-                                        "\" activeCellId=\"0\" sqref=\"" + 
-                                        getCellMark(freezePaneParams.get(0), 0) + "\"/>";
-                    writer.append(bottomLeftPane);
-                }
-                if (!freezePaneParams.contains(0)) {
-                    String bottomRightPane = "<selection pane=\"bottomRight\" activeCell=\"" + 
-                                         getCellMark(0, 0) +
-                                         "\" activeCellId=\"0\" sqref=\"" + 
-                                         getCellMark(0, 0) + "\"/>";
-                    writer.append(bottomRightPane);
-                }    
+            if(freezeLeftColumns > 0 || freezeTopRows > 0) {
+                writeFreezePane(writer, freezeTopRows, freezeLeftColumns);
             }
             writer.append("</sheetView>");
             writer.append("</sheetViews><sheetFormatPr defaultRowHeight=\"15.0\"/>");
@@ -654,6 +627,44 @@ public class Worksheet {
 
 
         writer.flush();
+    }
+
+    /**
+     * Writes corresponding pane definitions into XML and freezes pane.
+     */
+    private static void writeFreezePane(Writer w, int freezeTopRows, int freezeLeftColumns) throws IOException {
+        String activePane = freezeLeftColumns==0 ? "bottomLeft" : freezeTopRows==0 ? "topRight" : "bottomRight";
+        String freezePane = "<pane xSplit=\"" + freezeLeftColumns + 
+                            "\" ySplit=\"" + freezeTopRows + "\" topLeftCell=\"" + 
+                            getCellMark(freezeTopRows, freezeLeftColumns) + 
+                            "\" activePane=\"" + activePane + "\" state=\"frozen\"/>";
+        w.append(freezePane);
+        String topLeftPane = "<selection pane=\"topLeft\" activeCell=\"" + 
+                             getCellMark(0, 0) +
+                             "\" activeCellId=\"0\" sqref=\"" + 
+                             getCellMark(0, 0) + "\"/>";
+        w.append(topLeftPane);
+        if (freezeLeftColumns != 0) {
+            String topRightPane = "<selection pane=\"topRight\" activeCell=\"" + 
+                                  getCellMark(0, freezeLeftColumns) +
+                                  "\" activeCellId=\"0\" sqref=\"" + 
+                                  getCellMark(0, freezeLeftColumns) + "\"/>";
+            w.append(topRightPane);
+        }
+        if (freezeTopRows !=0 ) {
+            String bottomLeftPane = "<selection pane=\"bottomLeft\" activeCell=\"" + 
+                                    getCellMark(freezeTopRows, 0) + 
+                                    "\" activeCellId=\"0\" sqref=\"" + 
+                                    getCellMark(freezeTopRows, 0) + "\"/>";
+            w.append(bottomLeftPane);
+        }
+        if (freezeLeftColumns != 0 && freezeTopRows != 0) {
+            String bottomRightPane = "<selection pane=\"bottomRight\" activeCell=\"" + 
+                                     getCellMark(0, 0) +
+                                     "\" activeCellId=\"0\" sqref=\"" + 
+                                     getCellMark(0, 0) + "\"/>";
+            w.append(bottomRightPane);
+        }
     }
 
     /**
@@ -693,7 +704,7 @@ public class Worksheet {
     }
 
     /**
-     * Hide grid lines
+     * Hide grid lines.
      */
     public void hideGridLines() {
         this.showGridLines = false;
@@ -714,9 +725,16 @@ public class Worksheet {
     /**
      * Create freeze pane.
      */
-    public void createFreezePane(int leftColl, int topRow) {
-        this.freezePaneParams = new ArrayList<Integer>();
-        this.freezePaneParams.add(topRow);
-        this.freezePaneParams.add(leftColl);
+    public void freezePane(int nLeftColumns, int nTopRows) {
+        this.freezeLeftColumns = nLeftColumns;
+        this.freezeTopRows = nTopRows;
+    }
+
+    /**
+     * Unfreeze any frozen rows, or columns.
+     */
+    public void unfreeze() {
+        this.freezeLeftColumns = 0;
+        this.freezeTopRows = 0;
     }
 }
