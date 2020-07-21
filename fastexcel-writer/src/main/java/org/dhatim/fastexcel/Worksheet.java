@@ -108,6 +108,30 @@ public class Worksheet {
      */
     private int freezeLeftColumns = 0;
     /**
+     * Header margin value in inches.
+     */
+    private float headerMargin = 0.3f;
+    /**
+     * Footer margin value in inches.
+     */
+    private float footerMargin = 0.3f;
+    /**
+     * Top margin value in inches.
+     */
+    private float topMargin = 0.75f;
+    /**
+     * Bottom margin value in inches.
+     */
+    private float bottomMargin = 0.75f;
+    /**
+     * Left margin value in inches.
+     */
+    private float leftMargin = 0.7f;
+    /**
+     * Right margin value in inches.
+     */
+    private float rightMargin = 0.7f;
+    /**
      * The hashed password that protects this sheet.
      */
     private String passwordHash;
@@ -590,8 +614,13 @@ public class Worksheet {
             }
             writer.append("/>");
         }
-
-        writer.append("<pageMargins bottom=\"0.75\" footer=\"0.3\" header=\"0.3\" left=\"0.7\" right=\"0.7\" top=\"0.75\"/>");
+        String margins = "<pageMargins bottom=\"" + bottomMargin + 
+                         "\" footer=\"" + footerMargin + 
+                         "\" header=\"" + headerMargin + 
+                         "\" left=\"" + leftMargin + 
+                         "\" right=\"" + rightMargin + 
+                         "\" top=\"" + topMargin + "\"/>";
+        writer.append(margins);
         if(!comments.isEmpty()) {
             writer.append("<drawing r:id=\"d\"/>");
             writer.append("<legacyDrawing r:id=\"v\"/>");
@@ -764,5 +793,47 @@ public class Worksheet {
     public void unfreeze() {
         this.freezeLeftColumns = 0;
         this.freezeTopRows = 0;
+    }
+
+    /**
+     * Set header margin value (in inches).
+     */
+    public void headerMargin(float margin) {
+        this.headerMargin = margin;
+    }
+
+    /**
+     * Set footer margin value (in inches).
+     */
+    public void footerMargin(float margin) {
+        this.footerMargin = margin;
+    }
+
+    /**
+     * Set top margin value (in inches).
+     */
+    public void topMargin(float margin) {
+        this.topMargin = margin;
+    }
+
+    /**
+     * Set bottom margin value (in inches).
+     */
+    public void bottomMargin(float margin) {
+        this.bottomMargin = margin;
+    }
+
+    /**
+     * Set left margin value (in inches).
+     */
+    public void leftMargin(float margin) {
+        this.leftMargin = margin;
+    }
+
+    /**
+     * Set right margin value (in inches).
+     */
+    public void rightMargin(float margin) {
+        this.rightMargin = margin;
     }
 }
