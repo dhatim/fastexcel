@@ -305,13 +305,24 @@ public class Worksheet {
     }
 
     /**
-     * Adds filter to row
-     * @param rowNumber - row number
+     * Applies autofilter specifically to the given cell range
+     * @param topRowNumber The first row (header) where filter will be initialized
+     * @param leftCellNumber Left cell number where filter will be initialized
+     * @param bottomRowNumber The last row (containing values) that will be included
+     * @param rightCellNumber Right cell number where filter will be initialized
+     */
+    public void setAutoFilter(int topRowNumber, int leftCellNumber, int bottomRowNumber, int rightCellNumber) {
+        autoFilterRange = new Range(this, topRowNumber, leftCellNumber, bottomRowNumber, rightCellNumber);
+    }
+
+    /**
+     * Applies autofilter automatically based on provided header cells
+     * @param rowNumber Row number (assuming just header row will be given)
      * @param leftCellNumber Left cell number where filter will be initialized
      * @param rightCellNumber Right cell number where filter will be initialized
      */
     public void setAutoFilter(int rowNumber, int leftCellNumber, int rightCellNumber) {
-        autoFilterRange = new Range(this, rowNumber, leftCellNumber, rowNumber, rightCellNumber);
+        setAutoFilter(rowNumber, leftCellNumber, this.rows.size()-1, rightCellNumber);
     }
 
     /**
@@ -532,7 +543,7 @@ public class Worksheet {
         if (autoFilterRange != null) {
             writer.append("<autoFilter ref=\"")
                     .append(autoFilterRange.toString())
-                    .append("\"/>");
+                    .append("\">").append("</autoFilter>");
         }
 
         if (!mergedRanges.isEmpty()) {
