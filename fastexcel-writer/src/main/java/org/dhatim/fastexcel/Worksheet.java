@@ -96,6 +96,10 @@ public class Worksheet {
      */
     private int zoomScale = 100;
     /**
+     * Range of cells that will remain frozen.
+     */
+    private List<Integer> freezePaneParams = null;
+    /**
      * The hashed password that protects this sheet.
      */
     private String passwordHash;
@@ -499,6 +503,15 @@ public class Worksheet {
     }
 
     /**
+     * Helper method to get a cell name from (x, y) cell position.
+     * e.g. "B3" from cell position (2, 1)
+     */
+    private String getCellMark(int row, int coll) {
+        char columnLetter = (char) ('A' + coll);
+        return String.valueOf(columnLetter) + String.valueOf(row+1);
+    }
+
+    /**
      * Finish the construction of this worksheet. This creates the worksheet
      * file on the workbook's output stream. Rows and cells in this worksheet
      * are then destroyed.
@@ -586,7 +599,43 @@ public class Worksheet {
             if(zoomScale != 100) {
                 writer.append(" zoomScale=\"").append(zoomScale).append("\"");
             }
-            writer.append("/></sheetViews><sheetFormatPr defaultRowHeight=\"15.0\"/>");
+            writer.append(">");
+
+            if(freezePaneParams != null) {
+                String freezePane = "<pane xSplit=\"" + freezePaneParams.get(1) + 
+                                    "\" ySplit=\"" + freezePaneParams.get(0) + "\" topLeftCell=\"" + 
+                                    getCellMark(freezePaneParams.get(0), freezePaneParams.get(1)) + 
+                                    "\" activePane=\"bottomRight\" state=\"frozen\"/>";
+                writer.append(freezePane);
+                String topLeftPane = "<selection pane=\"topLeft\" activeCell=\"" + 
+                                      getCellMark(0, 0) +
+                                      "\" activeCellId=\"0\" sqref=\"" + 
+                                      getCellMark(0, 0) + "\"/>";
+                writer.append(topLeftPane);
+                if (freezePaneParams.get(1) != 0) {
+                    String topRightPane = "<selection pane=\"topRight\" activeCell=\"" + 
+                                      getCellMark(0, freezePaneParams.get(1)) +
+                                      "\" activeCellId=\"0\" sqref=\"" + 
+                                      getCellMark(0, freezePaneParams.get(1)) + "\"/>";
+                    writer.append(topRightPane);
+                }
+                if (freezePaneParams.get(0) !=0 ) {
+                    String bottomLeftPane = "<selection pane=\"bottomLeft\" activeCell=\"" + 
+                                        getCellMark(freezePaneParams.get(0), 0) + 
+                                        "\" activeCellId=\"0\" sqref=\"" + 
+                                        getCellMark(freezePaneParams.get(0), 0) + "\"/>";
+                    writer.append(bottomLeftPane);
+                }
+                if (!freezePaneParams.contains(0)) {
+                    String bottomRightPane = "<selection pane=\"bottomRight\" activeCell=\"" + 
+                                         getCellMark(0, 0) +
+                                         "\" activeCellId=\"0\" sqref=\"" + 
+                                         getCellMark(0, 0) + "\"/>";
+                    writer.append(bottomRightPane);
+                }    
+            }
+            writer.append("</sheetView>");
+            writer.append("</sheetViews><sheetFormatPr defaultRowHeight=\"15.0\"/>");
             int nbCols = rows.stream().filter(Objects::nonNull).map(r -> r.length).reduce(0, Math::max);
             if (nbCols > 0) {
                 writeCols(writer, nbCols);
@@ -660,5 +709,14 @@ public class Worksheet {
         }else{
             throw new IllegalArgumentException("zoom must be within 10 and 400 inclusive");
         }
+    }
+
+    /**
+     * Create freeze pane.
+     */
+    public void createFreezePane(int leftColl, int topRow) {
+        this.freezePaneParams = new ArrayList<Integer>();
+        this.freezePaneParams.add(topRow);
+        this.freezePaneParams.add(leftColl);
     }
 }
