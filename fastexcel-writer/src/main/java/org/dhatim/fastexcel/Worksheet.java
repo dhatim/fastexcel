@@ -136,6 +136,14 @@ public class Worksheet {
      */
     private float rightMargin = 0.7f;
     /**
+     * Header map for left, central and right field text.
+     */
+    private Map<Position,String> header = new LinkedHashMap();
+    /**
+     * Footer map for left, central and right field text.
+     */
+    private Map<Position,String> footer = new LinkedHashMap();
+    /**
      * The hashed password that protects this sheet.
      */
     private String passwordHash;
@@ -619,7 +627,7 @@ public class Worksheet {
             writer.append("/>");
         }
 
-        /* set page margins for the print setup (see in print preview) */ 
+        /* set page margins for the print setup (see print preview) */ 
         String margins = "<pageMargins bottom=\"" + bottomMargin + 
                          "\" footer=\"" + footerMargin + 
                          "\" header=\"" + headerMargin + 
@@ -630,6 +638,20 @@ public class Worksheet {
 
 	/* set page orientation for the print setup */ 
         writer.append("<pageSetup orientation=\"").append(pageOrientation).append("\"/>");
+
+        /* write to header and footer */
+        writer.append("<headerFooter differentFirst=\"false\" differentOddEven=\"false\">");
+        writer.append("<oddHeader>");
+        if (header.get(Position.LEFT) != null) writer.append(header.get(Position.LEFT));
+        if (header.get(Position.CENTER) != null) writer.append(header.get(Position.CENTER));
+        if (header.get(Position.RIGHT) != null) writer.append(header.get(Position.RIGHT));
+        writer.append("</oddHeader>");
+        writer.append("<oddFooter>");
+        if (footer.get(Position.LEFT) != null) writer.append(footer.get(Position.LEFT));
+        if (footer.get(Position.CENTER) != null) writer.append(footer.get(Position.CENTER));
+        if (footer.get(Position.RIGHT) != null) writer.append(footer.get(Position.RIGHT));
+        writer.append("</oddFooter></headerFooter>");
+        
 
         if(!comments.isEmpty()) {
             writer.append("<drawing r:id=\"d\"/>");
@@ -861,5 +883,96 @@ public class Worksheet {
      */
     public void pageOrientation(String orientation) {
         this.pageOrientation = orientation;
+    }
+
+    /**
+     * Gets input text form and converts it into what will be written in the
+     * <header>/<footer> xml tag
+     * @param text Header/footer text input form
+     * @return (partial) String content of <header> or <footer> XML tag
+     */
+    private String prepareForXml(String text) {
+        switch(text.toLowerCase()) {
+            case "page 1 of ?": 
+                return "Page &amp;P of &amp;N";
+            case "page 1, sheetname":
+                return "Page &amp;P, &amp;A";
+            case "page 1":
+                return "Page &amp;P";
+            case "sheetname":
+                return "&amp;A";
+            default:
+                return text;
+        }
+    }
+
+    /**
+     * Set footer text.
+     * @param text - text input form or custom text
+     * @param position - Position.LEFT/RIGHT/CENTER enum
+     */
+    public void footer(String text, Position position) {
+        this.footer.put(position, "&amp;" + position.getPos() +
+                                  prepareForXml(text));
+    }
+
+    /**
+     * Set footer text with specified font size.
+     * @param text - text input form or custom text
+     * @param position - Position.LEFT/RIGHT/CENTER enum
+     * @param fontSize - integer describing font size
+     */
+    public void footer(String text, Position position, int fontSize) {
+        this.footer.put(position, "&amp;" + position.getPos() +
+                                  "&amp;&quot;Times New Roman,Regular&quot;&amp;" + fontSize +
+                                  prepareForXml(text));
+    }
+
+    /**
+     * Set footer text with specified font and size.
+     * @param text - text input form or custom text
+     * @param position - Position.LEFT/RIGHT/CENTER enum
+     * @param fontName - font name (e.g., "Arial")
+     * @param fontSize - integer describing font size
+     */
+    public void footer(String text, Position position, String fontName, int fontSize) {
+        this.footer.put(position, "&amp;" + position.getPos() +
+                                  "&amp;&quot;" + fontName + ",Regular&quot;&amp;" + fontSize +
+                                  prepareForXml(text));
+    }
+
+    /**
+     * Set header text.
+     * @param text - text input form or custom text
+     * @param position - Position.LEFT/RIGHT/CENTER enum
+     */
+    public void header(String text, Position position, String fontName, int fontSize) {
+        this.header.put(position, "&amp;" + position.getPos() +
+                                  "&amp;&quot;" + fontName + ",Regular&quot;&amp;" + fontSize +
+                                  prepareForXml(text));
+    }
+
+    /**
+     * Set header text with specified font size.
+     * @param text - text input form or custom text
+     * @param position - Position.LEFT/RIGHT/CENTER enum
+     * @param fontSize - integer describing font size
+     */
+    public void header(String text, Position position, int fontSize) {
+        this.header.put(position, "&amp;" + position.getPos() +
+                                  "&amp;&quot;Times New Roman,Regular&quot;&amp;" + fontSize +
+                                  prepareForXml(text));
+    }
+
+    /**
+     * Set header text with specified font and size.
+     * @param text - text input form or custom text
+     * @param position - Position.LEFT/RIGHT/CENTER enum
+     * @param fontName - font name (e.g., "Arial")
+     * @param fontSize - integer describing font size
+     */
+    public void header(String text, Position position) {
+        this.header.put(position, "&amp;" + position.getPos() +
+                                  prepareForXml(text));
     }
 }
