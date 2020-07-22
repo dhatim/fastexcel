@@ -75,7 +75,7 @@ public class Worksheet {
     private final Set<Integer> hiddenColumns = new HashSet<>();
 
     /**
-     * Map of columns and they're widths
+     * Map of columns and their widths
      */
     private final Map<Integer, Double> colWidths = new HashMap<>();
 
@@ -107,6 +107,10 @@ public class Worksheet {
      * Number of columns from the left that remain frozen while scrolling.
      */
     private int freezeLeftColumns = 0;
+    /**
+     * Page orientation [landscape / portrait] for the print preview setup.
+     */
+    private String pageOrientation = "portrait";
     /**
      * Header margin value in inches.
      */
@@ -614,6 +618,8 @@ public class Worksheet {
             }
             writer.append("/>");
         }
+
+        /* set page margins for the print setup (see in print preview) */ 
         String margins = "<pageMargins bottom=\"" + bottomMargin + 
                          "\" footer=\"" + footerMargin + 
                          "\" header=\"" + headerMargin + 
@@ -621,6 +627,10 @@ public class Worksheet {
                          "\" right=\"" + rightMargin + 
                          "\" top=\"" + topMargin + "\"/>";
         writer.append(margins);
+
+	/* set page orientation for the print setup */ 
+        writer.append("<pageSetup orientation=\"").append(pageOrientation).append("\"/>");
+
         if(!comments.isEmpty()) {
             writer.append("<drawing r:id=\"d\"/>");
             writer.append("<legacyDrawing r:id=\"v\"/>");
@@ -780,7 +790,9 @@ public class Worksheet {
     }
 
     /**
-     * Create freeze pane.
+     * Set freeze pane (rows and columns that remain when scrolling).
+     * @param nLeftColumns - number of columns from the left that will remain frozen
+     * @param nTopRows - number of rows from the top that will remain frozen
      */
     public void freezePane(int nLeftColumns, int nTopRows) {
         this.freezeLeftColumns = nLeftColumns;
@@ -796,44 +808,58 @@ public class Worksheet {
     }
 
     /**
-     * Set header margin value (in inches).
+     * Set header margin.
+     * @param margin - header margin in inches
      */
     public void headerMargin(float margin) {
         this.headerMargin = margin;
     }
 
     /**
-     * Set footer margin value (in inches).
+     * Set footer margin.
+     * @param margin - footer page margin in inches
      */
     public void footerMargin(float margin) {
         this.footerMargin = margin;
     }
 
     /**
-     * Set top margin value (in inches).
+     * Set top margin.
+     * @param margin - top page margin in inches
      */
     public void topMargin(float margin) {
         this.topMargin = margin;
     }
 
     /**
-     * Set bottom margin value (in inches).
+     * Set bottom margin.
+     * @param margin - bottom page margin in inches
      */
     public void bottomMargin(float margin) {
         this.bottomMargin = margin;
     }
 
     /**
-     * Set left margin value (in inches).
+     * Set left margin.
+     * @param margin - left page margin in inches
      */
     public void leftMargin(float margin) {
         this.leftMargin = margin;
     }
 
     /**
-     * Set right margin value (in inches).
+     * Set right margin.
+     * @param margin - right page margin in inches
      */
     public void rightMargin(float margin) {
         this.rightMargin = margin;
+    }
+
+    /**
+     * 
+     * @param orientation
+     */
+    public void pageOrientation(String orientation) {
+        this.pageOrientation = orientation;
     }
 }
