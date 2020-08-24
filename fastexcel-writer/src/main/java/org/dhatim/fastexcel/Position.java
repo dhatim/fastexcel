@@ -16,18 +16,19 @@
 package org.dhatim.fastexcel;
 
 /**
- * Helper class to define a simple shading to alternate rows in a range of
- * cells.
+ * Predefined header/footer positions.
  */
-class AlternateShading extends Shading{
+enum Position {
+    LEFT, CENTER, RIGHT;
 
-    /**
-     * Constructor.
-     *
-     * @param range Range where alternate rows are shaded.
-     * @param fill Index of cached fill pattern for shaded rows.
-     */
-    AlternateShading(Range range, int fill) {
-        super(range, fill, 2);
+    public String getPos() {
+        switch(this) {
+            case LEFT: return "L";
+            case CENTER: return "C";
+            case RIGHT: return "R";
+            default: return null;
+        }
     }
 }
+
+

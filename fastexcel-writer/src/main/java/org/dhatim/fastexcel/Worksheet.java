@@ -61,6 +61,10 @@ public class Worksheet {
      */
     private final List<AlternateShading> alternateShadingRanges = new ArrayList<>();
     /**
+     * List of ranges where shading to Nth rows is defined.
+     */
+    private final List<Shading> shadingRanges = new ArrayList<>();
+    /**
      * List of rows to hide
      */
     private final Set<Integer> hiddenRows = new HashSet<>();
@@ -71,7 +75,7 @@ public class Worksheet {
     private final Set<Integer> hiddenColumns = new HashSet<>();
 
     /**
-     * Map of columns and they're widths
+     * Map of columns and their widths
      */
     private final Map<Integer, Double> colWidths = new HashMap<>();
 
@@ -95,6 +99,50 @@ public class Worksheet {
      * Sheet view zoom percentage
      */
     private int zoomScale = 100;
+    /**
+     * Number of top rows that will remain frozen while scrolling.
+     */
+    private int freezeTopRows = 0;
+    /**
+     * Number of columns from the left that remain frozen while scrolling.
+     */
+    private int freezeLeftColumns = 0;
+    /**
+     * Page orientation [landscape / portrait] for the print preview setup.
+     */
+    private String pageOrientation = "portrait";
+    /**
+     * Header margin value in inches.
+     */
+    private float headerMargin = 0.3f;
+    /**
+     * Footer margin value in inches.
+     */
+    private float footerMargin = 0.3f;
+    /**
+     * Top margin value in inches.
+     */
+    private float topMargin = 0.75f;
+    /**
+     * Bottom margin value in inches.
+     */
+    private float bottomMargin = 0.75f;
+    /**
+     * Left margin value in inches.
+     */
+    private float leftMargin = 0.7f;
+    /**
+     * Right margin value in inches.
+     */
+    private float rightMargin = 0.7f;
+    /**
+     * Header map for left, central and right field text.
+     */
+    private Map<Position,String> header = new LinkedHashMap();
+    /**
+     * Footer map for left, central and right field text.
+     */
+    private Map<Position,String> footer = new LinkedHashMap();
     /**
      * The hashed password that protects this sheet.
      */
@@ -205,7 +253,17 @@ public class Worksheet {
      * @param fill Shading fill pattern.
      */
     void shadeAlternateRows(Range range, Fill fill) {
-        alternateShadingRanges.add(new AlternateShading(range, getWorkbook().cacheAlternateShadingFillColor(fill)));
+        alternateShadingRanges.add(new AlternateShading(range, getWorkbook().cacheShadingFillColor(fill)));
+    }
+    /**
+     * Apply shading to Nth rows in the given range.
+     * 
+     * @param range Range of cells.
+     * @param fill Shading fill patern.
+     * @param eachNRows Shading row frequency.
+     */
+    void shadeRows(Range range, Fill fill, int eachNRows) {
+        shadingRanges.add(new Shading(range, getWorkbook().cacheShadingFillColor(fill), eachNRows));
     }
 
     void addValidation(DataValidation validation) {
@@ -297,13 +355,24 @@ public class Worksheet {
     }
 
     /**
-     * Adds filter to row
-     * @param rowNumber - row number
+     * Applies autofilter specifically to the given cell range
+     * @param topRowNumber The first row (header) where filter will be initialized
+     * @param leftCellNumber Left cell number where filter will be initialized
+     * @param bottomRowNumber The last row (containing values) that will be included
+     * @param rightCellNumber Right cell number where filter will be initialized
+     */
+    public void setAutoFilter(int topRowNumber, int leftCellNumber, int bottomRowNumber, int rightCellNumber) {
+        autoFilterRange = new Range(this, topRowNumber, leftCellNumber, bottomRowNumber, rightCellNumber);
+    }
+
+    /**
+     * Applies autofilter automatically based on provided header cells
+     * @param rowNumber Row number
      * @param leftCellNumber Left cell number where filter will be initialized
      * @param rightCellNumber Right cell number where filter will be initialized
      */
     public void setAutoFilter(int rowNumber, int leftCellNumber, int rightCellNumber) {
-        autoFilterRange = new Range(this, rowNumber, leftCellNumber, rowNumber, rightCellNumber);
+        setAutoFilter(rowNumber, leftCellNumber, this.rows.size()-1, rightCellNumber);
     }
 
     /**
@@ -499,6 +568,15 @@ public class Worksheet {
     }
 
     /**
+     * Helper method to get a cell name from (x, y) cell position.
+     * e.g. "B3" from cell position (2, 1)
+     */
+    private static String getCellMark(int row, int coll) {
+        char columnLetter = (char) ('A' + coll);
+        return String.valueOf(columnLetter) + String.valueOf(row+1);
+    }
+
+    /**
      * Finish the construction of this worksheet. This creates the worksheet
      * file on the workbook's output stream. Rows and cells in this worksheet
      * are then destroyed.
@@ -515,7 +593,7 @@ public class Worksheet {
         if (autoFilterRange != null) {
             writer.append("<autoFilter ref=\"")
                     .append(autoFilterRange.toString())
-                    .append("\"/>");
+                    .append("\">").append("</autoFilter>");
         }
 
         if (!mergedRanges.isEmpty()) {
@@ -535,6 +613,9 @@ public class Worksheet {
         for (AlternateShading a : alternateShadingRanges) {
             a.write(writer);
         }
+        for (Shading s : shadingRanges) {
+            s.write(writer);
+        }
 
         if (passwordHash != null) {
             writer.append("<sheetProtection password=\"").append(passwordHash).append("\" ");
@@ -546,7 +627,32 @@ public class Worksheet {
             writer.append("/>");
         }
 
-        writer.append("<pageMargins bottom=\"0.75\" footer=\"0.3\" header=\"0.3\" left=\"0.7\" right=\"0.7\" top=\"0.75\"/>");
+        /* set page margins for the print setup (see print preview) */ 
+        String margins = "<pageMargins bottom=\"" + bottomMargin + 
+                         "\" footer=\"" + footerMargin + 
+                         "\" header=\"" + headerMargin + 
+                         "\" left=\"" + leftMargin + 
+                         "\" right=\"" + rightMargin + 
+                         "\" top=\"" + topMargin + "\"/>";
+        writer.append(margins);
+
+	/* set page orientation for the print setup */ 
+        writer.append("<pageSetup orientation=\"").append(pageOrientation).append("\"/>");
+
+        /* write to header and footer */
+        writer.append("<headerFooter differentFirst=\"false\" differentOddEven=\"false\">");
+        writer.append("<oddHeader>");
+        if (header.get(Position.LEFT) != null) writer.append(header.get(Position.LEFT));
+        if (header.get(Position.CENTER) != null) writer.append(header.get(Position.CENTER));
+        if (header.get(Position.RIGHT) != null) writer.append(header.get(Position.RIGHT));
+        writer.append("</oddHeader>");
+        writer.append("<oddFooter>");
+        if (footer.get(Position.LEFT) != null) writer.append(footer.get(Position.LEFT));
+        if (footer.get(Position.CENTER) != null) writer.append(footer.get(Position.CENTER));
+        if (footer.get(Position.RIGHT) != null) writer.append(footer.get(Position.RIGHT));
+        writer.append("</oddFooter></headerFooter>");
+        
+
         if(!comments.isEmpty()) {
             writer.append("<drawing r:id=\"d\"/>");
             writer.append("<legacyDrawing r:id=\"v\"/>");
@@ -586,7 +692,12 @@ public class Worksheet {
             if(zoomScale != 100) {
                 writer.append(" zoomScale=\"").append(zoomScale).append("\"");
             }
-            writer.append("/></sheetViews><sheetFormatPr defaultRowHeight=\"15.0\"/>");
+            writer.append(">");
+            if(freezeLeftColumns > 0 || freezeTopRows > 0) {
+                writeFreezePane(writer);
+            }
+            writer.append("</sheetView>");
+            writer.append("</sheetViews><sheetFormatPr defaultRowHeight=\"15.0\"/>");
             int nbCols = rows.stream().filter(Objects::nonNull).map(r -> r.length).reduce(0, Math::max);
             if (nbCols > 0) {
                 writeCols(writer, nbCols);
@@ -605,6 +716,44 @@ public class Worksheet {
 
 
         writer.flush();
+    }
+
+    /**
+     * Writes corresponding pane definitions into XML and freezes pane.
+     */
+    private void writeFreezePane(Writer w) throws IOException {
+        String activePane = freezeLeftColumns==0 ? "bottomLeft" : freezeTopRows==0 ? "topRight" : "bottomRight";
+        String freezePane = "<pane xSplit=\"" + freezeLeftColumns + 
+                            "\" ySplit=\"" + freezeTopRows + "\" topLeftCell=\"" + 
+                            getCellMark(freezeTopRows, freezeLeftColumns) + 
+                            "\" activePane=\"" + activePane + "\" state=\"frozen\"/>";
+        w.append(freezePane);
+        String topLeftPane = "<selection pane=\"topLeft\" activeCell=\"" + 
+                             getCellMark(0, 0) +
+                             "\" activeCellId=\"0\" sqref=\"" + 
+                             getCellMark(0, 0) + "\"/>";
+        w.append(topLeftPane);
+        if (freezeLeftColumns != 0) {
+            String topRightPane = "<selection pane=\"topRight\" activeCell=\"" + 
+                                  getCellMark(0, freezeLeftColumns) +
+                                  "\" activeCellId=\"0\" sqref=\"" + 
+                                  getCellMark(0, freezeLeftColumns) + "\"/>";
+            w.append(topRightPane);
+        }
+        if (freezeTopRows !=0 ) {
+            String bottomLeftPane = "<selection pane=\"bottomLeft\" activeCell=\"" + 
+                                    getCellMark(freezeTopRows, 0) + 
+                                    "\" activeCellId=\"0\" sqref=\"" + 
+                                    getCellMark(freezeTopRows, 0) + "\"/>";
+            w.append(bottomLeftPane);
+        }
+        if (freezeLeftColumns != 0 && freezeTopRows != 0) {
+            String bottomRightPane = "<selection pane=\"bottomRight\" activeCell=\"" + 
+                                     getCellMark(freezeTopRows, freezeLeftColumns) +
+                                     "\" activeCellId=\"0\" sqref=\"" + 
+                                     getCellMark(freezeTopRows, freezeLeftColumns) + "\"/>";
+            w.append(bottomRightPane);
+        }
     }
 
     /**
@@ -644,7 +793,7 @@ public class Worksheet {
     }
 
     /**
-     * Hide grid lines
+     * Hide grid lines.
      */
     public void hideGridLines() {
         this.showGridLines = false;
@@ -660,5 +809,170 @@ public class Worksheet {
         }else{
             throw new IllegalArgumentException("zoom must be within 10 and 400 inclusive");
         }
+    }
+
+    /**
+     * Set freeze pane (rows and columns that remain when scrolling).
+     * @param nLeftColumns - number of columns from the left that will remain frozen
+     * @param nTopRows - number of rows from the top that will remain frozen
+     */
+    public void freezePane(int nLeftColumns, int nTopRows) {
+        this.freezeLeftColumns = nLeftColumns;
+        this.freezeTopRows = nTopRows;
+    }
+
+    /**
+     * Unfreeze any frozen rows, or columns.
+     */
+    public void unfreeze() {
+        this.freezeLeftColumns = 0;
+        this.freezeTopRows = 0;
+    }
+
+    /**
+     * Set header margin.
+     * @param margin - header margin in inches
+     */
+    public void headerMargin(float margin) {
+        this.headerMargin = margin;
+    }
+
+    /**
+     * Set footer margin.
+     * @param margin - footer page margin in inches
+     */
+    public void footerMargin(float margin) {
+        this.footerMargin = margin;
+    }
+
+    /**
+     * Set top margin.
+     * @param margin - top page margin in inches
+     */
+    public void topMargin(float margin) {
+        this.topMargin = margin;
+    }
+
+    /**
+     * Set bottom margin.
+     * @param margin - bottom page margin in inches
+     */
+    public void bottomMargin(float margin) {
+        this.bottomMargin = margin;
+    }
+
+    /**
+     * Set left margin.
+     * @param margin - left page margin in inches
+     */
+    public void leftMargin(float margin) {
+        this.leftMargin = margin;
+    }
+
+    /**
+     * Set right margin.
+     * @param margin - right page margin in inches
+     */
+    public void rightMargin(float margin) {
+        this.rightMargin = margin;
+    }
+
+    /**
+     * 
+     * @param orientation
+     */
+    public void pageOrientation(String orientation) {
+        this.pageOrientation = orientation;
+    }
+
+    /**
+     * Gets input text form and converts it into what will be written in the
+     * <header>/<footer> xml tag
+     * @param text Header/footer text input form
+     * @return (partial) String content of <header> or <footer> XML tag
+     */
+    private String prepareForXml(String text) {
+        switch(text.toLowerCase()) {
+            case "page 1 of ?": 
+                return "Page &amp;P of &amp;N";
+            case "page 1, sheetname":
+                return "Page &amp;P, &amp;A";
+            case "page 1":
+                return "Page &amp;P";
+            case "sheetname":
+                return "&amp;A";
+            default:
+                return text;
+        }
+    }
+
+    /**
+     * Set footer text.
+     * @param text - text input form or custom text
+     * @param position - Position.LEFT/RIGHT/CENTER enum
+     */
+    public void footer(String text, Position position) {
+        this.footer.put(position, "&amp;" + position.getPos() +
+                                  prepareForXml(text));
+    }
+
+    /**
+     * Set footer text with specified font size.
+     * @param text - text input form or custom text
+     * @param position - Position.LEFT/RIGHT/CENTER enum
+     * @param fontSize - integer describing font size
+     */
+    public void footer(String text, Position position, int fontSize) {
+        this.footer.put(position, "&amp;" + position.getPos() +
+                                  "&amp;&quot;Times New Roman,Regular&quot;&amp;" + fontSize +
+                                  prepareForXml(text));
+    }
+
+    /**
+     * Set footer text with specified font and size.
+     * @param text - text input form or custom text
+     * @param position - Position.LEFT/RIGHT/CENTER enum
+     * @param fontName - font name (e.g., "Arial")
+     * @param fontSize - integer describing font size
+     */
+    public void footer(String text, Position position, String fontName, int fontSize) {
+        this.footer.put(position, "&amp;" + position.getPos() +
+                                  "&amp;&quot;" + fontName + ",Regular&quot;&amp;" + fontSize +
+                                  prepareForXml(text));
+    }
+
+    /**
+     * Set header text.
+     * @param text - text input form or custom text
+     * @param position - Position.LEFT/RIGHT/CENTER enum
+     */
+    public void header(String text, Position position, String fontName, int fontSize) {
+        this.header.put(position, "&amp;" + position.getPos() +
+                                  "&amp;&quot;" + fontName + ",Regular&quot;&amp;" + fontSize +
+                                  prepareForXml(text));
+    }
+
+    /**
+     * Set header text with specified font size.
+     * @param text - text input form or custom text
+     * @param position - Position.LEFT/RIGHT/CENTER enum
+     * @param fontSize - integer describing font size
+     */
+    public void header(String text, Position position, int fontSize) {
+        this.header.put(position, "&amp;" + position.getPos() +
+                                  "&amp;&quot;Times New Roman,Regular&quot;&amp;" + fontSize +
+                                  prepareForXml(text));
+    }
+
+    /**
+     * Set header text with specified font and size.
+     * @param text - text input form or custom text
+     * @param position - Position.LEFT/RIGHT/CENTER enum
+     * @param fontName - font name (e.g., "Arial")
+     * @param fontSize - integer describing font size
+     */
+    public void header(String text, Position position) {
+        this.header.put(position, "&amp;" + position.getPos() +
+                                  prepareForXml(text));
     }
 }

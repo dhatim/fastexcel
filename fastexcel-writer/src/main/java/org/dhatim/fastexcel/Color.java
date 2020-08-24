@@ -21,7 +21,7 @@ package org.dhatim.fastexcel;
 public final class Color {
 
     /* 
-     * White or very light to tan. 
+     * White and very light colors. 
      */
     public static final String WHITE = "FFFFFF";
     public static final String ALMOND = "EFDECD";
@@ -73,10 +73,9 @@ public final class Color {
     public static final String INDIGO = "4B0082";
     public static final String ANTIQUE_FUCHSIA = "915C83";
     public static final String BURGUNDY = "800020";
-
     /*
      * All kinds of blue.
-    */
+     */
     public static final String ALICE_BLUE = "F0F8FF";
     public static final String AZURE = "007FFF";
     public static final String CADET_BLUE = "5F9EA0";
@@ -96,7 +95,6 @@ public final class Color {
     public static final String PALE_BLUE = "AFEEEE";
     public static final String TEAL = "008080";
     public static final String BLUE_GRAY = "6699CC";
-
     /*
      * Green palette.
      */
@@ -114,8 +112,7 @@ public final class Color {
     public static final String DARK_OLIVE_GREEN = "556B2F";
     public static final String ARMY_GREEN = "4B5320";
     public static final String ASPARAGUS = "87A96B";
-    
-    /**
+    /*
      * Light to dark gray.
      */
     public static final String GRAY1 = "EEEEEE";

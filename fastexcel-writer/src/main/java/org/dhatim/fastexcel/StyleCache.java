@@ -116,7 +116,7 @@ final class StyleCache {
     }
 
     /**
-     * Cache the given fill pattern as a shading color for alternate rows.
+     * Cache the given fill pattern as a shading color for rows.
      *
      * @param f Fill pattern.
      * @return Index of the cached fill pattern.

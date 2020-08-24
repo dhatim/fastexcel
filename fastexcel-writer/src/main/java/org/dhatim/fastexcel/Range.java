@@ -199,6 +199,10 @@ public class Range {
         worksheet.shadeAlternateRows(this, fill);
     }
 
+    void shadeRows(Fill fill, int eachNRows) {
+        worksheet.shadeRows(this, fill, eachNRows);
+    }
+
     /**
      * Construct a new ListDataValidation
      *

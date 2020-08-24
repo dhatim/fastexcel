@@ -267,7 +267,7 @@ public class Workbook {
      * @param fill Fill pattern attributes.
      * @return Cached fill pattern index.
      */
-    int cacheAlternateShadingFillColor(Fill fill) {
+    int cacheShadingFillColor(Fill fill) {
         return styleCache.cacheDxf(fill);
     }
 

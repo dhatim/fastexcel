@@ -51,6 +51,14 @@ public class StyleSetter {
      */
     private String alternateShadingFillColor;
     /**
+     * RGB color for shading Nth rows.
+     */
+    private String shadingFillColor;
+    /**
+     * Shading row frequency.
+     */
+    private int eachNRows;
+    /**
      * Bold flag.
      */
     private boolean bold;
@@ -137,6 +145,19 @@ public class StyleSetter {
      */
     public StyleSetter shadeAlternateRows(String rgb) {
         this.alternateShadingFillColor = rgb;
+        return this;
+    }
+
+    /**
+     * Shade Nth rows.
+     *
+     * @param rgb RGB shading color.
+     * @param eachNRows shading frequency.
+     * @return This style setter.
+     */
+    public StyleSetter shadeRows(String rgb, int eachNRows) {
+        this.shadingFillColor = rgb;
+        this.eachNRows = eachNRows;
         return this;
     }
 
@@ -416,6 +437,10 @@ public class StyleSetter {
         // Shading color for alternate rows is cached separately
         if (alternateShadingFillColor != null) {
             range.shadeAlternateRows(Fill.fromColor(alternateShadingFillColor, false));
+        }
+
+        if (shadingFillColor != null) {
+            range.shadeRows(Fill.fromColor(shadingFillColor, false), eachNRows);
         }
     }
 }
