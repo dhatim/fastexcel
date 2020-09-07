@@ -732,7 +732,7 @@ public class Worksheet {
             Cell[] row = rows.get(r);
             if (row != null) {
                 writeRow(writer, r, hiddenRows.contains(r), 
-                		rowHeights.containsKey(r), rowHeights.get(r), row);
+                		rowHeights.get(r), row);
             }
             rows.set(r, null); // free flushed row data
         }
@@ -792,16 +792,16 @@ public class Worksheet {
      * @throws IOException If an I/O error occurs.
      */
     private static void writeRow(Writer w, int r, boolean isHidden,
-    		boolean customHeight, double rowHeight, Cell... row) throws IOException {
+    		 					Double rowHeight, Cell... row) throws IOException {
         w.append("<row r=\"").append(r + 1).append("\"");
         if (isHidden) {
-            w.append(" hidden=\"true");
+            w.append(" hidden=\"true\"");
         }
-        if(customHeight) {
+        if(rowHeight != null) {
         	w.append(" ht=\"")
         	 .append(rowHeight)
         	 .append("\"")
-        	 .append("customHeight=\"1\"");
+        	 .append(" customHeight=\"1\"");
         }
         w.append(">");
         for (int c = 0; c < row.length; ++c) {
