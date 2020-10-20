@@ -18,7 +18,7 @@ package org.dhatim.fastexcel;
 /**
  * Predefined header/footer positions.
  */
-enum Position {
+public enum Position {
     LEFT, CENTER, RIGHT;
 
     public String getPos() {
