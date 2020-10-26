@@ -116,7 +116,7 @@ Set bottom, top, left, or right margin:
 ws.leftMargin(0.3)
 ws.bottomMargin(0.2)
 ```
-Create a freeze pane (some rows and columns will be kept still while scrolling).
+Create a freeze pane (some rows and columns will be kept still while scrolling).\\
 To freeze the first column on the left and the top three rows:
 ```java
 ws.freezePane(1, 3)
