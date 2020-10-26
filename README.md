@@ -116,12 +116,12 @@ Set bottom, top, left, or right margin:
 ws.leftMargin(0.3)
 ws.bottomMargin(0.2)
 ```
-Create a freeze pane (some rows and columns will be kept still while scrolling).\\
+Create a freeze pane (some rows and columns will be kept still while scrolling).\
 To freeze the first column on the left and the top three rows:
 ```java
 ws.freezePane(1, 3)
 ```
-Set header and footer content.
+Set header and footer content.\
 To set page enumeration in the top right:
 ```java
 ws.header("page 1 of ?", Position.RIGHT)
