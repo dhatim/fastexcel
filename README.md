@@ -101,9 +101,9 @@ ws.range(0, 0, 10, 10).style().shadeRows(Color.GRAY2, 5).set();
 
 Note the cells with a formula do not have a value in the generated workbook.
 ```java
-ws.formula(10, 0, "=SUM(A1:A10)");
+ws.formula(10, 0, "SUM(A1:A10)");
 // With Range.toString():
-ws.formula(10, 0, "=SUM(" + ws.range(0, 0, 9, 0).toString() + ")");
+ws.formula(10, 0, "SUM(" + ws.range(0, 0, 9, 0).toString() + ")");
 ```
 
 ### Additional worksheet features
