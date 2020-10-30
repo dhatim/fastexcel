@@ -25,6 +25,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 
+
 /**
  * A {@link Workbook} contains one or more {@link Worksheet} objects.
  */
@@ -191,7 +192,42 @@ public class Workbook {
             for (Worksheet ws : worksheets) {
                 writeWorkbookSheet(w, ws);
             }
-            w.append("</sheets></workbook>");
+            w.append("</sheets>");
+            /** Defining repeating rows and columns for the print setup...
+             *  This is defined for each sheet separately 
+             * (if there are any repeating rows or cols in the sheet at all) **/
+            worksheets.forEach( ws -> {
+                String defineName = "";
+                if(ws.getRepeatingCols() != null) {
+                    String startCol = ws.getRepeatingCols().get(0);
+                    String endCol = ws.getRepeatingCols().get(1);
+                    defineName += ws.getName() + "!$" + startCol + ":$" + endCol;
+                }
+                if(ws.getRepeatingRows() != null) {
+                    if (ws.getRepeatingCols() != null) defineName += ",";
+                    int startRow = ws.getRepeatingRows().get(0);
+                    int endRow = ws.getRepeatingRows().get(1);
+                    defineName += ws.getName() + "!$" + startRow + ":$" + endRow;
+                }
+                System.out.println(defineName);
+                try {
+                    if (!defineName.equals("")) {
+                        System.out.println(defineName);
+                        w.append("<definedNames>");
+                        w.append("<definedName function=\"false\" " + 
+                                 "hidden=\"false\" " +
+                                 "localSheetId=\"0\" " + 
+                                 "name=\"_xlnm.Print_Titles\" " + 
+                                 "vbProcedure=\"false\">");
+                        w.append(defineName);
+                        w.append("</definedName>");
+                        w.append("</definedNames>");
+                    }
+                } catch(Exception e) {
+                        System.out.println(e);
+                }
+            });
+            w.append("</workbook>");
         });
     }
 

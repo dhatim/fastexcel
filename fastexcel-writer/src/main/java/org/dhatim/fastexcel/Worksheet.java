@@ -40,11 +40,6 @@ public class Worksheet {
      * Maximum column width in Excel.
      */
     public static final int MAX_COL_WIDTH = 255;
-    
-    /**
-     * Maximum row height in Excel.
-     */ 
-    public static final double MAX_ROW_HEIGHT = 409.5;
 
     private final Workbook workbook;
     private final String name;
@@ -83,11 +78,6 @@ public class Worksheet {
      * Map of columns and their widths
      */
     private final Map<Integer, Double> colWidths = new HashMap<>();
-    
-    /**
-     * Map of rows and their heights
-     */
-    private final Map<Integer, Double> rowHeights = new HashMap<>();
 
     final Comments comments = new Comments();
 
@@ -154,6 +144,16 @@ public class Worksheet {
      */
     private Map<Position,String> footer = new LinkedHashMap();
     /**
+     * Range of repeating rows for the print setup.
+     * (Those rows will be repeated on each page when document is printed.)
+     */
+    private ArrayList repeatingRows;
+    /**
+     * Range of repeating columns for the print setup.
+     * (Those columns will be repeated on each page when document is printed.)
+     */
+    private ArrayList repeatingCols;
+    /**
      * The hashed password that protects this sheet.
      */
     private String passwordHash;
@@ -194,6 +194,26 @@ public class Worksheet {
      */
     public String getName() {
         return name;
+    }
+
+    /**
+     * Get repeating rows defined for the print setup.
+     * 
+     * @return List representing a range of rows to be repeated 
+     *              on each page when printing.
+     */
+    public ArrayList<Integer> getRepeatingRows(){
+        return repeatingRows;
+    }
+
+    /**
+     * Get repeating cols defined for the print setup.
+     * 
+     * @return List representing a range of columns to be repeated 
+     *              on each page when printing.
+     */
+    public ArrayList<String> getRepeatingCols(){
+        return repeatingCols;
     }
 
     /**
@@ -434,19 +454,6 @@ public class Worksheet {
             throw new IllegalArgumentException();
         }
         colWidths.put(c, width);
-    }
-    
-    /**
-     * Specify the custom row height for a row
-     * <p> The maximum value for row height is <b>409.5</b> </p>
-     * @param r
-     * @param height
-     */
-    public void rowHeight(int r, double height) {
-        if (height > MAX_ROW_HEIGHT) {
-            throw new IllegalArgumentException();
-        }
-        rowHeights.put(r, height);
     }
 
     /**
@@ -731,8 +738,7 @@ public class Worksheet {
         for (int r = flushedRows; r < rows.size(); ++r) {
             Cell[] row = rows.get(r);
             if (row != null) {
-                writeRow(writer, r, hiddenRows.contains(r), 
-                		rowHeights.get(r), row);
+                writeRow(writer, r, hiddenRows.contains(r), row);
             }
             rows.set(r, null); // free flushed row data
         }
@@ -757,7 +763,7 @@ public class Worksheet {
                              "\" activeCellId=\"0\" sqref=\"" + 
                              getCellMark(0, 0) + "\"/>";
         w.append(topLeftPane);
-        if (freezeLeftColumns != 0) {
+        if (freezeLeftColumns > 0) {
             String topRightPane = "<selection pane=\"topRight\" activeCell=\"" + 
                                   getCellMark(0, freezeLeftColumns) +
                                   "\" activeCellId=\"0\" sqref=\"" + 
@@ -786,24 +792,15 @@ public class Worksheet {
      * @param w Output writer.
      * @param r Zero-based row number.
      * @param isHidden Whether or not this row is hidden
-     * @param customHeight Whether custom row height is set
-     * @param rowHeight Row height value in points to be set if customHeight is true
      * @param row Cells in the row.
      * @throws IOException If an I/O error occurs.
      */
-    private static void writeRow(Writer w, int r, boolean isHidden,
-    		 					Double rowHeight, Cell... row) throws IOException {
-        w.append("<row r=\"").append(r + 1).append("\"");
+    private static void writeRow(Writer w, int r, boolean isHidden, Cell... row) throws IOException {
+        w.append("<row r=\"").append(r + 1);
         if (isHidden) {
-            w.append(" hidden=\"true\"");
+            w.append("\" hidden=\"true");
         }
-        if(rowHeight != null) {
-        	w.append(" ht=\"")
-        	 .append(rowHeight)
-        	 .append("\"")
-        	 .append(" customHeight=\"1\"");
-        }
-        w.append(">");
+        w.append("\">");
         for (int c = 0; c < row.length; ++c) {
             if (row[c] != null) {
                 row[c].write(w, r, c);
@@ -916,6 +913,30 @@ public class Worksheet {
      */
     public void pageOrientation(String orientation) {
         this.pageOrientation = orientation;
+    }
+
+    public void repeatRows(int startRow, int endRow) {
+        this.repeatingRows = new ArrayList<Integer>();
+        this.repeatingRows.add(startRow);
+        this.repeatingRows.add(endRow);
+    }
+
+    public void repeatRows(int row) {
+        this.repeatingRows = new ArrayList<Integer>();
+        this.repeatingRows.add(row);
+        this.repeatingRows.add(row);
+    }
+
+    public void repeatCols(String startCol, String endCol) {
+        this.repeatingCols = new ArrayList<String>();
+        this.repeatingCols.add(startCol);
+        this.repeatingCols.add(endCol);
+    }
+
+    public void repeatCols(String col) {
+        this.repeatingCols = new ArrayList<String>();
+        this.repeatingCols.add(col);
+        this.repeatingCols.add(col);
     }
 
     /**
