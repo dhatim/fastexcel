@@ -209,10 +209,8 @@ public class Workbook {
                     int endRow = ws.getRepeatingRows().get(1);
                     defineName += ws.getName() + "!$" + startRow + ":$" + endRow;
                 }
-                System.out.println(defineName);
-                try {
-                    if (!defineName.equals("")) {
-                        System.out.println(defineName);
+                if (!defineName.equals("")) {
+                    try {
                         w.append("<definedNames>");
                         w.append("<definedName function=\"false\" " + 
                                  "hidden=\"false\" " +
@@ -222,9 +220,10 @@ public class Workbook {
                         w.append(defineName);
                         w.append("</definedName>");
                         w.append("</definedNames>");
+                    } catch (IOException e) {
+                        System.out.println("Repeating rows/cols failed. Exception thrown:");
+                        System.out.println("Repeating rows/cols failed.");
                     }
-                } catch(Exception e) {
-                        System.out.println(e);
                 }
             });
             w.append("</workbook>");
