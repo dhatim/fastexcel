@@ -157,12 +157,12 @@ public class Worksheet {
      * Range of repeating rows for the print setup.
      * (Those rows will be repeated on each page when document is printed.)
      */
-    private ArrayList repeatingRows;
+    private RepeatRange repeatingRows = null;
     /**
      * Range of repeating columns for the print setup.
      * (Those columns will be repeated on each page when document is printed.)
      */
-    private ArrayList repeatingCols;
+    private RepeatRange repeatingCols = null;
     /**
      * The hashed password that protects this sheet.
      */
@@ -212,7 +212,7 @@ public class Worksheet {
      * @return List representing a range of rows to be repeated 
      *              on each page when printing.
      */
-    public ArrayList<Integer> getRepeatingRows(){
+    public RepeatRange getRepeatingRows(){
         return repeatingRows;
     }
 
@@ -222,7 +222,7 @@ public class Worksheet {
      * @return List representing a range of columns to be repeated 
      *              on each page when printing.
      */
-    public ArrayList<Integer> getRepeatingCols(){
+    public RepeatRange getRepeatingCols(){
         return repeatingCols;
     }
 
@@ -949,27 +949,19 @@ public class Worksheet {
     }
 
     public void repeatRows(int startRow, int endRow) {
-        this.repeatingRows = new ArrayList<Integer>();
-        this.repeatingRows.add(startRow);
-        this.repeatingRows.add(endRow);
+        this.repeatingRows = new RepeatRange(startRow, endRow);
     }
 
     public void repeatRows(int row) {
-        this.repeatingRows = new ArrayList<Integer>();
-        this.repeatingRows.add(row);
-        this.repeatingRows.add(row);
+        this.repeatingRows = new RepeatRange(row, row);
     }
 
     public void repeatCols(int startCol, int endCol) {
-        this.repeatingCols = new ArrayList<Integer>();
-        this.repeatingCols.add(startCol);
-        this.repeatingCols.add(endCol);
+        this.repeatingCols = new RepeatRange(startCol, endCol);
     }
 
     public void repeatCols(int col) {
-        this.repeatingCols = new ArrayList<Integer>();
-        this.repeatingCols.add(col);
-        this.repeatingCols.add(col);
+        this.repeatingCols = new RepeatRange(col, col);
     }
 
     /**

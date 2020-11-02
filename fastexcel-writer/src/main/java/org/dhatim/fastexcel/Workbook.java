@@ -199,16 +199,15 @@ public class Workbook {
     
             for (Worksheet ws : worksheets) {
                 String defineName = "";
-                if(ws.getRepeatingCols() != null) {
-                    String startCol = Range.colToString(ws.getRepeatingCols().get(0));
-                    String endCol = Range.colToString(ws.getRepeatingCols().get(1));
-                    defineName += ws.getName() + "!$" + startCol + ":$" + endCol;
+                RepeatRange repeatingCols = ws.getRepeatingCols();
+                RepeatRange repeatingRows = ws.getRepeatingRows();
+
+                if (repeatingCols != null) {
+                    defineName += ws.getName() + "!" + repeatingCols.colRangeToString();
                 }
-                if(ws.getRepeatingRows() != null) {
-                    if (ws.getRepeatingCols() != null) defineName += ",";
-                    int startRow = 1 + ws.getRepeatingRows().get(0);
-                    int endRow = 1 + ws.getRepeatingRows().get(1);
-                    defineName += ws.getName() + "!$" + startRow + ":$" + endRow;
+                if (repeatingRows != null) {
+                    if (repeatingCols != null) defineName += ","; //add description separator
+                    defineName += ws.getName() + "!" + repeatingRows.rowRangeToString();
                 }
                 if (!defineName.equals("")) {
                     w.append("<definedNames>");
