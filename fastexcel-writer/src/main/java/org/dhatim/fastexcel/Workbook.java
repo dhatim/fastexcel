@@ -205,8 +205,8 @@ public class Workbook {
                 }
                 if(ws.getRepeatingRows() != null) {
                     if (ws.getRepeatingCols() != null) defineName += ",";
-                    int startRow = ws.getRepeatingRows().get(0);
-                    int endRow = ws.getRepeatingRows().get(1);
+                    int startRow = 1 + ws.getRepeatingRows().get(0);
+                    int endRow = 1 + ws.getRepeatingRows().get(1);
                     defineName += ws.getName() + "!$" + startRow + ":$" + endRow;
                 }
                 if (!defineName.equals("")) {
