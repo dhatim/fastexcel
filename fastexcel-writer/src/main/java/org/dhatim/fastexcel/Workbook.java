@@ -196,7 +196,8 @@ public class Workbook {
             /** Defining repeating rows and columns for the print setup...
              *  This is defined for each sheet separately 
              * (if there are any repeating rows or cols in the sheet at all) **/
-            worksheets.forEach( ws -> {
+    
+            for (Worksheet ws : worksheets) {
                 String defineName = "";
                 if(ws.getRepeatingCols() != null) {
                     String startCol = Range.colToString(ws.getRepeatingCols().get(0));
@@ -210,22 +211,17 @@ public class Workbook {
                     defineName += ws.getName() + "!$" + startRow + ":$" + endRow;
                 }
                 if (!defineName.equals("")) {
-                    try {
-                        w.append("<definedNames>");
-                        w.append("<definedName function=\"false\" " + 
-                                 "hidden=\"false\" " +
-                                 "localSheetId=\"0\" " + 
-                                 "name=\"_xlnm.Print_Titles\" " + 
-                                 "vbProcedure=\"false\">");
-                        w.append(defineName);
-                        w.append("</definedName>");
-                        w.append("</definedNames>");
-                    } catch (IOException e) {
-                        System.out.println("Repeating rows/cols failed. Exception thrown:");
-                        System.out.println("Repeating rows/cols failed.");
-                    }
+                    w.append("<definedNames>");
+                    w.append("<definedName function=\"false\" " + 
+                                "hidden=\"false\" " +
+                                "localSheetId=\"0\" " + 
+                                "name=\"_xlnm.Print_Titles\" " + 
+                                "vbProcedure=\"false\">");
+                    w.append(defineName);
+                    w.append("</definedName>");
+                    w.append("</definedNames>");
                 }
-            });
+            }
             w.append("</workbook>");
         });
     }
