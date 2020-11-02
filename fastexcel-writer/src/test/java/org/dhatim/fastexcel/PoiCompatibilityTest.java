@@ -134,12 +134,12 @@ class PoiCompatibilityTest {
                             }
                         }
                     }
-                    ws.formula(numRows + 1, 1, "=SUM(" + ws.range(1, 1, numRows, 1).toString() + ")");
-                    ws.formula(numRows + 1, 2, "=SUM(" + ws.range(1, 2, numRows, 2).toString() + ")");
-                    ws.formula(numRows + 1, 3, "=SUM(" + ws.range(1, 3, numRows, 3).toString() + ")");
-                    ws.formula(numRows + 1, 4, "=AVERAGE(" + ws.range(1, 4, numRows, 4).toString() + ")");
+                    ws.formula(numRows + 1, 1, "SUM(" + ws.range(1, 1, numRows, 1).toString() + ")");
+                    ws.formula(numRows + 1, 2, "SUM(" + ws.range(1, 2, numRows, 2).toString() + ")");
+                    ws.formula(numRows + 1, 3, "SUM(" + ws.range(1, 3, numRows, 3).toString() + ")");
+                    ws.formula(numRows + 1, 4, "AVERAGE(" + ws.range(1, 4, numRows, 4).toString() + ")");
                     ws.style(numRows + 1, 4).format("yyyy-MM-dd HH:mm:ss").set();
-                    ws.formula(numRows + 1, 5, "=AVERAGE(" + ws.range(1, 5, numRows, 5).toString() + ")");
+                    ws.formula(numRows + 1, 5, "AVERAGE(" + ws.range(1, 5, numRows, 5).toString() + ")");
                     ws.style(numRows + 1, 5).format("yyyy-MM-dd").bold().italic().fontColor(Color.RED).fontName("Garamond").fontSize(new BigDecimal("14.5")).horizontalAlignment("center").verticalAlignment("top").wrapText(true).set();
                     ws.range(1, 0, numRows, numCols - 1).style().borderColor(Color.RED).borderStyle(BorderStyle.THICK).shadeAlternateRows(Color.RED).set();
                 });
@@ -163,6 +163,11 @@ class PoiCompatibilityTest {
             for (int j = 1; j <= numRows; ++j) {
                 assertThat(xws.getRow(j).getCell(0).getStringCellValue()).isEqualTo("String value " + j);
             }
+            assertThat(xws.getRow(numRows+1).getCell(1).getCellFormula()).isEqualTo("SUM(B2:B5001)");
+            assertThat(xws.getRow(numRows+1).getCell(2).getCellFormula()).isEqualTo("SUM(C2:C5001)");
+            assertThat(xws.getRow(numRows+1).getCell(3).getCellFormula()).isEqualTo("SUM(D2:D5001)");
+            assertThat(xws.getRow(numRows+1).getCell(4).getCellFormula()).isEqualTo("AVERAGE(E2:E5001)");
+            assertThat(xws.getRow(numRows+1).getCell(5).getCellFormula()).isEqualTo("AVERAGE(F2:F5001)");
         }
     }
 
