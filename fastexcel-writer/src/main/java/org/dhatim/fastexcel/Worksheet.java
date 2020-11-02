@@ -222,7 +222,7 @@ public class Worksheet {
      * @return List representing a range of columns to be repeated 
      *              on each page when printing.
      */
-    public ArrayList<String> getRepeatingCols(){
+    public ArrayList<Integer> getRepeatingCols(){
         return repeatingCols;
     }
 
@@ -960,14 +960,14 @@ public class Worksheet {
         this.repeatingRows.add(row);
     }
 
-    public void repeatCols(String startCol, String endCol) {
-        this.repeatingCols = new ArrayList<String>();
+    public void repeatCols(int startCol, int endCol) {
+        this.repeatingCols = new ArrayList<Integer>();
         this.repeatingCols.add(startCol);
         this.repeatingCols.add(endCol);
     }
 
-    public void repeatCols(String col) {
-        this.repeatingCols = new ArrayList<String>();
+    public void repeatCols(int col) {
+        this.repeatingCols = new ArrayList<Integer>();
         this.repeatingCols.add(col);
         this.repeatingCols.add(col);
     }

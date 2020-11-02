@@ -199,8 +199,8 @@ public class Workbook {
             worksheets.forEach( ws -> {
                 String defineName = "";
                 if(ws.getRepeatingCols() != null) {
-                    String startCol = ws.getRepeatingCols().get(0);
-                    String endCol = ws.getRepeatingCols().get(1);
+                    String startCol = Range.colToString(ws.getRepeatingCols().get(0));
+                    String endCol = Range.colToString(ws.getRepeatingCols().get(1));
                     defineName += ws.getName() + "!$" + startCol + ":$" + endCol;
                 }
                 if(ws.getRepeatingRows() != null) {
