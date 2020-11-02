@@ -153,7 +153,11 @@ class RowSpliterator implements Spliterator<Row> {
 
     private Cell parseString(CellAddress addr) throws XMLStreamException {
         r.goTo("v");
-        int index = Integer.parseInt(r.getValueUntilEndElement("v"));
+        String v = r.getValueUntilEndElement("v");
+        if(v.isEmpty()) {
+            return new Cell(workbook, CellType.STRING, "", addr, null, "");
+        }
+        int index = Integer.parseInt(v);
         RichTextString sharedStringValue = workbook.getSharedStringsTable().getItemAt(index);
         Object value = sharedStringValue.toString();
         String formula = null;
