@@ -28,7 +28,7 @@ public final class Color {
     public static final String TAN = "D2B48C";
     public static final String PEARL = "EAE0C8";
     public static final String BEIGE = "F5F5DC";
-    public static final String APRICOT = "FBCEB1";
+    public static final String APRICOT = "F6D2B7";
     public static final String SAND = "C2B280";
     public static final String VANILLA = "F3E5AB";
     public static final String CHAMPAGNE = "FAD6A5";
@@ -58,12 +58,14 @@ public final class Color {
     public static final String INDIAN_RED = "CD5C5C";
     public static final String ORCHID = "DA70D6";
     public static final String RICH_LILAC = "B666D2";
+    public static final String OPERA_MAUVE = "B98DA8";
     public static final String VIOLET = "EE82EE";
     public static final String DARK_VIOLET = "9400D3";
     public static final String MEDIUM_VIOLET_RED = "C71585";
     public static final String PLUM = "DDA0DD";
     public static final String ROSE = "FF0066";
     public static final String BRIGHT_LAVENDER = "BF94E4";
+    public static final String PINK_LAVENDER = "C9A6BC";
     public static final String LAVENDER = "967BB6";
     public static final String RED = "FF0000";
     public static final String CORAL = "FF4040";
@@ -84,6 +86,7 @@ public final class Color {
     public static final String AQUA = "00FFFF";
     public static final String AQUAMARINE = "7FFFD4";
     public static final String LIGHT_CORNFLOWER_BLUE = "93CCEA";
+    public static final String PEWTER_BLUE = "99B6C2";
     public static final String CORNFLOWER_BLUE = "6495ED";
     public static final String LIGHT_TURQUOISE = "AFEEEE";
     public static final String TURQUOISE = "40E0dE";
@@ -91,6 +94,7 @@ public final class Color {
     public static final String DARK_ROYAL_BLUE = "002366";
     public static final String NAVY_BLUE = "000080";
     public static final String SKY_BLUE = "89CEBB";
+    public static final String DARK_SKY_BLUE = "A6BFC9";
     public static final String SEA_BLUE = "006994";
     public static final String PALE_BLUE = "AFEEEE";
     public static final String TEAL = "008080";
@@ -106,6 +110,7 @@ public final class Color {
     public static final String APPLE_GREEN = "8DB600";
     public static final String ANDROID_GREEN = "A4C639";
     public static final String SEA_GREEN = "2E8B57";
+    public static final String LAUREL_GREEN = "A8C19A";
     public static final String DARK_GREEN = "006400";
     public static final String OLIVE = "808000";
     public static final String OLIVE_GREEN = "BAB86C";
