@@ -949,19 +949,19 @@ public class Worksheet {
     }
 
     public void repeatRows(int startRow, int endRow) {
-        this.repeatingRows = new RepeatRange(startRow, endRow);
+        this.repeatingRows = new RepeatRange(startRow, endRow, RepeatRangeType.ROW);
     }
 
     public void repeatRows(int row) {
-        this.repeatingRows = new RepeatRange(row, row);
+        this.repeatingRows = new RepeatRange(row, row, RepeatRangeType.ROW);
     }
 
     public void repeatCols(int startCol, int endCol) {
-        this.repeatingCols = new RepeatRange(startCol, endCol);
+        this.repeatingCols = new RepeatRange(startCol, endCol, RepeatRangeType.COLUMN);
     }
 
     public void repeatCols(int col) {
-        this.repeatingCols = new RepeatRange(col, col);
+        this.repeatingCols = new RepeatRange(col, col, RepeatRangeType.COLUMN);
     }
 
     /**

@@ -22,6 +22,7 @@ import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Stream;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 
@@ -198,17 +199,11 @@ public class Workbook {
              * (if there are any repeating rows or cols in the sheet at all) **/
     
             for (Worksheet ws : worksheets) {
-                String defineName = "";
-                RepeatRange repeatingCols = ws.getRepeatingCols();
-                RepeatRange repeatingRows = ws.getRepeatingRows();
-
-                if (repeatingCols != null) {
-                    defineName += ws.getName() + "!" + repeatingCols.colRangeToString();
-                }
-                if (repeatingRows != null) {
-                    if (repeatingCols != null) defineName += ","; //add description separator
-                    defineName += ws.getName() + "!" + repeatingRows.rowRangeToString();
-                }
+                String defineName = Stream.of(ws.getRepeatingCols(),ws.getRepeatingRows())
+                                .filter(Objects::nonNull)
+                                .map(r -> ws.getName() + "!" + r.toString())
+                                .collect(Collectors.joining(","));
+                System.out.println(defineName);
                 if (!defineName.equals("")) {
                     w.append("<definedNames>");
                     w.append("<definedName function=\"false\" " + 

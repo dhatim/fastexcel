@@ -15,16 +15,18 @@
  */
 package org.dhatim.fastexcel;
 
-/** This class represents either a range of columns or a range of rows
- *  for the repeating cols/rows in the print setup. */
+/** This class represents a range of rows/columns for the 
+ *      repeating rows/columns feature in the print setup. */
 class RepeatRange { 
     
     final int from;
     final int to;
+    final RepeatRangeType type;
 
-    public RepeatRange(int from, int to) {
+    public RepeatRange(int from, int to, RepeatRangeType type) {
         this.from = from;
         this.to = to;
+        this.type = type;
     }
 
     /**
@@ -34,11 +36,17 @@ class RepeatRange {
         return "$" + Range.colToString(from) + ":$" + Range.colToString(to);
     }
 
-    /**
+        /**
      * Row indexes need to be increased by 1 
-     * (sheet rows start from 1 and not from 0)
+     *  (sheet row indexes start from 1 and not from 0)
      */
     public String rowRangeToString() {
         return "$" + (1 + from) + ":$" + (1 + to);
+    }
+
+    public String toString() {
+        if (type == RepeatRangeType.ROW) return rowRangeToString();
+        else if (type == RepeatRangeType.COLUMN) return colRangeToString();
+        else return null;
     }
 }
