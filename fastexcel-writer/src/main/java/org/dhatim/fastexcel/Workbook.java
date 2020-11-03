@@ -203,7 +203,7 @@ public class Workbook {
                                 .filter(Objects::nonNull)
                                 .map(r -> ws.getName() + "!" + r.toString())
                                 .collect(Collectors.joining(","));
-                System.out.println(defineName);
+
                 if (!defineName.equals("")) {
                     w.append("<definedNames>");
                     w.append("<definedName function=\"false\" " + 
