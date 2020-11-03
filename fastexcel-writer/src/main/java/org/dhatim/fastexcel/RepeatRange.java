@@ -17,7 +17,7 @@ package org.dhatim.fastexcel;
 
 /** This class represents either a range of columns or a range of rows
  *  for the repeating cols/rows in the print setup. */
-public class RepeatRange { 
+class RepeatRange { 
     
     final int from;
     final int to;
