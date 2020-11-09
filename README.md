@@ -123,11 +123,11 @@ ws.freezePane(1, 3)
 ```
 Define repeating rows or columns for the print setup.
 ```java
-ws.repeatRows(1, 5) // keep first top 5 rows on each page when printing.
-ws.repeatRows(2) // keep the second row on each page when printing.
+ws.repeatRows(0, 4) // keep first top 5 rows on each page when printing.
+ws.repeatRows(2) // keep the third row on each page when printing.
 
-ws.repeatCols("A", "C") // repeat columns A to C (A, B, and C) on each page when printing.
-ws.repeatCols("A") // repeat only column A on each page for the print setup.
+ws.repeatCols(0, 2) // repeat first three columns (A to C) on each page when printing.
+ws.repeatCols(0) // repeat only first column (A) on each page for the print setup.
 ```
 Set header and footer content.\
 To set page enumeration in the top right:
