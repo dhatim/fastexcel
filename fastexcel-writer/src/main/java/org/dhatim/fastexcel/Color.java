@@ -28,7 +28,7 @@ public final class Color {
     public static final String TAN = "D2B48C";
     public static final String PEARL = "EAE0C8";
     public static final String BEIGE = "F5F5DC";
-    public static final String APRICOT = "F6D2B7";
+    public static final String APRICOT = "FBCEB1";
     public static final String SAND = "C2B280";
     public static final String VANILLA = "F3E5AB";
     public static final String CHAMPAGNE = "FAD6A5";
@@ -59,6 +59,7 @@ public final class Color {
     public static final String ORCHID = "DA70D6";
     public static final String RICH_LILAC = "B666D2";
     public static final String OPERA_MAUVE = "B98DA8";
+    public static final String THISTLE = "D0B3C6";
     public static final String VIOLET = "EE82EE";
     public static final String DARK_VIOLET = "9400D3";
     public static final String MEDIUM_VIOLET_RED = "C71585";
@@ -78,6 +79,7 @@ public final class Color {
     /*
      * All kinds of blue.
      */
+    public static final String LIGHT_PASTEL_BLUE = "BAD7F2";
     public static final String ALICE_BLUE = "F0F8FF";
     public static final String AZURE = "007FFF";
     public static final String CADET_BLUE = "5F9EA0";
@@ -110,6 +112,7 @@ public final class Color {
     public static final String APPLE_GREEN = "8DB600";
     public static final String ANDROID_GREEN = "A4C639";
     public static final String SEA_GREEN = "2E8B57";
+    public static final String LIGHT_LAUREL_GREEN = "C9D8C0";
     public static final String LAUREL_GREEN = "A8C19A";
     public static final String DARK_GREEN = "006400";
     public static final String OLIVE = "808000";
