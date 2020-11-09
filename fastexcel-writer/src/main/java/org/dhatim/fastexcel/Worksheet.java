@@ -157,12 +157,12 @@ public class Worksheet {
      * Range of repeating rows for the print setup.
      * (Those rows will be repeated on each page when document is printed.)
      */
-    private RepeatRange repeatingRows = null;
+    private RepeatRowRange repeatingRows = null;
     /**
      * Range of repeating columns for the print setup.
      * (Those columns will be repeated on each page when document is printed.)
      */
-    private RepeatRange repeatingCols = null;
+    private RepeatColRange repeatingCols = null;
     /**
      * The hashed password that protects this sheet.
      */
@@ -212,7 +212,7 @@ public class Worksheet {
      * @return List representing a range of rows to be repeated 
      *              on each page when printing.
      */
-    public RepeatRange getRepeatingRows(){
+    public RepeatRowRange getRepeatingRows(){
         return repeatingRows;
     }
 
@@ -222,7 +222,7 @@ public class Worksheet {
      * @return List representing a range of columns to be repeated 
      *              on each page when printing.
      */
-    public RepeatRange getRepeatingCols(){
+    public RepeatColRange getRepeatingCols(){
         return repeatingCols;
     }
 
@@ -949,19 +949,19 @@ public class Worksheet {
     }
 
     public void repeatRows(int startRow, int endRow) {
-        this.repeatingRows = new RepeatRange(startRow, endRow, RepeatRangeType.ROW);
+        this.repeatingRows = new RepeatRowRange(startRow, endRow);
     }
 
     public void repeatRows(int row) {
-        this.repeatingRows = new RepeatRange(row, row, RepeatRangeType.ROW);
+        this.repeatingRows = new RepeatRowRange(row, row);
     }
 
     public void repeatCols(int startCol, int endCol) {
-        this.repeatingCols = new RepeatRange(startCol, endCol, RepeatRangeType.COLUMN);
+        this.repeatingCols = new RepeatColRange(startCol, endCol);
     }
 
     public void repeatCols(int col) {
-        this.repeatingCols = new RepeatRange(col, col, RepeatRangeType.COLUMN);
+        this.repeatingCols = new RepeatColRange(col, col);
     }
 
     /**

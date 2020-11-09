@@ -15,18 +15,22 @@
  */
 package org.dhatim.fastexcel;
 
-/**
- * Predefined header/footer positions.
- */
-enum RepeatRangeType {
-    ROW, COLUMN;
+/** This class represents a range of columns for the 
+ *      repeating columns feature in the print setup. */
+class RepeatColRange { 
+    
+    final int from;
+    final int to;
 
-    public String getType() {
-        switch(this) {
-            case ROW: return "row";
-            case COLUMN: return "column";
-            default: return null;
-        }
+    public RepeatColRange(int from, int to) {
+        this.from = from;
+        this.to = to;
+    }
+
+    /**
+     * Column indexes need to be transformed to the letter form.
+     */
+    public String toString() {
+        return "$" + Range.colToString(from) + ":$" + Range.colToString(to);
     }
 }
-
