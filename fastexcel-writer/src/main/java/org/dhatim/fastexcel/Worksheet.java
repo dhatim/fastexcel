@@ -360,6 +360,15 @@ public class Worksheet {
     }
 
     /**
+     * Keep this sheet in active tab.
+     */
+    public void keepInActiveTab() {
+        int sheetIndex = workbook.getIndex(this);
+        //tabs are indexed from 0, sheets are indexed from 1
+        workbook.setActiveTab(sheetIndex - 1);
+    }
+
+    /**
      * Protects the sheet with a password. This method protects all the default {@link SheetProtectionOption}s and
      * 'sheet'. (Note that this is not very secure and only meant for discouraging changes.)
      * @param password The password to use.

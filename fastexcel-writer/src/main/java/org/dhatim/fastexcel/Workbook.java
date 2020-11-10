@@ -32,6 +32,7 @@ import java.util.zip.ZipEntry;
  */
 public class Workbook {
 
+    private int activeTab = 0;
     private final String applicationName;
     private final String applicationVersion;
     private final List<Worksheet> worksheets = new ArrayList<>();
@@ -79,6 +80,10 @@ public class Workbook {
      */
     public void setCompressionLevel(int level) {
         this.os.setLevel(level);
+    }
+
+    public void setActiveTab(int tabIndex) {
+        this.activeTab = tabIndex;
     }
 
     /**
@@ -186,7 +191,7 @@ public class Workbook {
                             "xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">" +
                     "<workbookPr date1904=\"false\"/>" +
                         "<bookViews>" +
-                            "<workbookView activeTab=\"0\"/>" +
+                            "<workbookView activeTab=\"" + activeTab + "\"/>" +
                         "</bookViews>" +
                         "<sheets>");
 
