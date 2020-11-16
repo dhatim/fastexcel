@@ -208,8 +208,7 @@ public class Workbook {
                                 .filter(Objects::nonNull)
                                 .map(r -> ws.getName() + "!" + r.toString())
                                 .collect(Collectors.joining(","));
-
-                if (!defineName.equals("")) {
+                if (!defineName.isEmpty()) {
                     w.append("<definedNames>");
                     w.append("<definedName function=\"false\" " + 
                                 "hidden=\"false\" " +
