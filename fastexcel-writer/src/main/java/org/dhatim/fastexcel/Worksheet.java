@@ -122,6 +122,38 @@ public class Worksheet {
      */
     private String pageOrientation = "portrait";
     /**
+     * Scaling factor for the print setup.
+     */
+    private int pageScale = 100;
+    /**
+     * Auto page breaks.
+     */
+    private Boolean autoPageBreaks = false;
+    /**
+     * Fit to page (true for fit to width/height).
+     */
+    private Boolean fitToPage = false;
+    /**
+     * Fit to width in the print setup.
+     */
+    private int fitToWidth = 1;
+    /**
+     * Fit to height in the print setup.
+     */
+    private int fitToHeight = 1;
+    /**
+     * First page number in the print setup.
+     */
+    private int firstPageNumber = 0;
+    /**
+     * Whether to use the firstPageNumber in the print setup.
+     */
+    private Boolean useFirstPageNumber=false;
+    /**
+     * Black and white mode in the print setup.
+     */
+    private Boolean blackAndWhite = false;
+    /**
      * Header margin value in inches.
      */
     private float headerMargin = 0.3f;
@@ -689,7 +721,7 @@ public class Worksheet {
             writer.append("/>");
         }
 
-        /* set page margins for the print setup (see print preview) */ 
+        /* set page margins for the print setup (see in print preview) */ 
         String margins = "<pageMargins bottom=\"" + bottomMargin + 
                          "\" footer=\"" + footerMargin + 
                          "\" header=\"" + headerMargin + 
@@ -699,7 +731,16 @@ public class Worksheet {
         writer.append(margins);
 
 	/* set page orientation for the print setup */ 
-        writer.append("<pageSetup orientation=\"").append(pageOrientation).append("\"/>");
+        writer.append("<pageSetup")
+            .append(" paperSize=\"1\"")
+            .append(" scale=\"" + pageScale + "\"")
+            .append(" fitToWidth=\"" + fitToWidth + "\"")
+            .append(" fitToHeight=\"" + fitToHeight + "\"")
+            .append(" firstPageNumber=\"" + firstPageNumber + "\"")
+            .append(" useFirstPageNumber=\"" + useFirstPageNumber.toString() + "\"")
+            .append(" blackAndWhite=\"" + blackAndWhite.toString() + "\"")
+            .append(" orientation=\"" + pageOrientation + "\"")
+            .append("/>");
 
         /* write to header and footer */
         writer.append("<headerFooter differentFirst=\"false\" differentOddEven=\"false\">");
@@ -746,6 +787,7 @@ public class Worksheet {
             writer = workbook.beginFile("xl/worksheets/sheet" + index + ".xml");
             writer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
             writer.append("<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">");
+            writer.append("<sheetPr filterMode=\"" + "false" + "\"><pageSetUpPr fitToPage=\"" + fitToPage + "\" autoPageBreaks=\"" + autoPageBreaks + "\"/></sheetPr>");
             writer.append("<dimension ref=\"A1\"/>");
             writer.append("<sheetViews><sheetView workbookViewId=\"0\"");
             if(!showGridLines) {
@@ -883,6 +925,14 @@ public class Worksheet {
         }
     }
 
+    public void setAutoPageBreaks(Boolean autoPageBreaks) {
+        this.autoPageBreaks = autoPageBreaks;
+    }
+
+    public void setFitToPage(Boolean fitToPage) {
+        this.fitToPage = true;
+    }
+
     /**
      * Set freeze pane (rows and columns that remain when scrolling).
      * @param nLeftColumns - number of columns from the left that will remain frozen
@@ -955,6 +1005,37 @@ public class Worksheet {
      */
     public void pageOrientation(String orientation) {
         this.pageOrientation = orientation;
+    }
+    /**
+     * @param scale = scaling factor for the print setup (between 1 and 100)
+     *
+     */
+    public void pageScale(int scale) {
+        this.pageScale = scale;
+    }
+    /**
+     * @param pageNumber - first page number (default: 0)
+     */
+    public void firstPageNumber(int pageNumber) {
+        this.firstPageNumber = pageNumber;
+        this.useFirstPageNumber = true;
+    }
+
+    public void fitToHeight(Short fitToHeight) {
+        this.fitToPage = true;
+        this.fitToHeight = fitToHeight;
+    }
+
+    public void fitToWidth(Short fitToWidth) {
+        this.fitToPage = true;
+        this.fitToWidth = fitToWidth;
+    }
+
+    public void printInBlackAndWhite() {
+        this.blackAndWhite = true;
+    }
+    public void printInColor() {
+        this.blackAndWhite = false;
     }
 
     public void repeatRows(int startRow, int endRow) {
