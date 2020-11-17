@@ -107,42 +107,77 @@ ws.formula(10, 0, "SUM(" + ws.range(0, 0, 9, 0).toString() + ")");
 ```
 
 ### Additional worksheet features
+
+To keep the sheet in active tab:
+```java
+ws.keepInActiveTab();
+```
 Set page orientation (visible in print preview mode):
 ```java
-ws.pageOrientation("landscape")
+ws.pageOrientation("landscape");
 ```
 Set bottom, top, left, or right margin:
 ```java
-ws.leftMargin(0.3)
-ws.bottomMargin(0.2)
+ws.leftMargin(0.3);
+ws.bottomMargin(0.2);
 ```
 Create a freeze pane (some rows and columns will be kept still while scrolling).\
 To freeze the first column on the left and the top three rows:
 ```java
-ws.freezePane(1, 3)
+ws.freezePane(1, 3);
 ```
 Define repeating rows or columns for the print setup.
 ```java
-ws.repeatRows(0, 4) // keep first top 5 rows on each page when printing.
-ws.repeatRows(2) // keep the third row on each page when printing.
+ws.repeatRows(0, 4); // keep first top 5 rows on each page when printing.
+ws.repeatRows(2); // keep the third row on each page when printing.
 
-ws.repeatCols(0, 2) // repeat first three columns (A to C) on each page when printing.
-ws.repeatCols(0) // repeat only first column (A) on each page for the print setup.
+ws.repeatCols(0, 2); // repeat first three columns (A to C) on each page when printing.
+ws.repeatCols(0); // repeat only first column (A) on each page for the print setup.
 ```
 Set header and footer content.\
 To set page enumeration in the top right:
 ```java
-ws.header("page 1 of ?", Position.RIGHT)
+ws.header("page 1 of ?", Position.RIGHT);
 ```
 To set custom text in the footer (bottom left):
 ```java
-ws.footer("Generated with Fastexcel", Position.LEFT, "Arial", 10) 
+ws.footer("Generated with Fastexcel", Position.LEFT, "Arial", 10);
 ```
 To provide sheetname in the bottom central position:
 ```java
-ws.footer("sheetname", Position.CENTER, 8)
+ws.footer("sheetname", Position.CENTER, 8);
 ```
-
+To set firstPageNumber to 2 (default is 0):
+```java
+ws.firstPageNumber(2);
+```
+To remove any cell background color or font color for the print setup:
+(this does not apply to printer color settings, only removes any colored rows etc. - see in print preview)
+```java
+ws.printInBlackAndWhite();
+```
+To revert back the colors for the print setup:
+```java
+ws.printInColor();
+```
+To set the scaling factor to 60 % for the print setup:
+```java
+ws.pageScale(60);
+```
+To enable autoPageBreaks:
+```java
+ws.setAutoPageBreaks(true);
+```
+To set fitToPage:
+```java
+ws.setFitToPage(true);
+```
+To set fitToWidth to 2 pages with unlimited number of rows:
+```java
+ws.setFitToPage(true);
+ws.fitToWidth(2);
+ws.fitToHeight(999);
+```
 
 ### Multithreaded generation
 
