@@ -22,14 +22,17 @@ import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Stream;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
+
 
 /**
  * A {@link Workbook} contains one or more {@link Worksheet} objects.
  */
 public class Workbook {
 
+    private int activeTab = 0;
     private final String applicationName;
     private final String applicationVersion;
     private final List<Worksheet> worksheets = new ArrayList<>();
@@ -77,6 +80,10 @@ public class Workbook {
      */
     public void setCompressionLevel(int level) {
         this.os.setLevel(level);
+    }
+
+    public void setActiveTab(int tabIndex) {
+        this.activeTab = tabIndex;
     }
 
     /**
@@ -184,14 +191,36 @@ public class Workbook {
                             "xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">" +
                     "<workbookPr date1904=\"false\"/>" +
                         "<bookViews>" +
-                            "<workbookView activeTab=\"0\"/>" +
+                            "<workbookView activeTab=\"" + activeTab + "\"/>" +
                         "</bookViews>" +
                         "<sheets>");
 
             for (Worksheet ws : worksheets) {
                 writeWorkbookSheet(w, ws);
             }
-            w.append("</sheets></workbook>");
+            w.append("</sheets>");
+            /** Defining repeating rows and columns for the print setup...
+             *  This is defined for each sheet separately 
+             * (if there are any repeating rows or cols in the sheet at all) **/
+    
+            for (Worksheet ws : worksheets) {
+                String defineName = Stream.of(ws.getRepeatingCols(),ws.getRepeatingRows())
+                                .filter(Objects::nonNull)
+                                .map(r -> ws.getName() + "!" + r.toString())
+                                .collect(Collectors.joining(","));
+                if (!defineName.isEmpty()) {
+                    w.append("<definedNames>");
+                    w.append("<definedName function=\"false\" " + 
+                                "hidden=\"false\" " +
+                                "localSheetId=\"0\" " + 
+                                "name=\"_xlnm.Print_Titles\" " + 
+                                "vbProcedure=\"false\">");
+                    w.append(defineName);
+                    w.append("</definedName>");
+                    w.append("</definedNames>");
+                }
+            }
+            w.append("</workbook>");
         });
     }
 

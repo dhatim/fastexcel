@@ -122,6 +122,38 @@ public class Worksheet {
      */
     private String pageOrientation = "portrait";
     /**
+     * Scaling factor for the print setup.
+     */
+    private int pageScale = 100;
+    /**
+     * Auto page breaks.
+     */
+    private Boolean autoPageBreaks = false;
+    /**
+     * Fit to page (true for fit to width/height).
+     */
+    private Boolean fitToPage = false;
+    /**
+     * Fit to width in the print setup.
+     */
+    private int fitToWidth = 1;
+    /**
+     * Fit to height in the print setup.
+     */
+    private int fitToHeight = 1;
+    /**
+     * First page number in the print setup.
+     */
+    private int firstPageNumber = 0;
+    /**
+     * Whether to use the firstPageNumber in the print setup.
+     */
+    private Boolean useFirstPageNumber=false;
+    /**
+     * Black and white mode in the print setup.
+     */
+    private Boolean blackAndWhite = false;
+    /**
      * Header margin value in inches.
      */
     private float headerMargin = 0.3f;
@@ -153,6 +185,16 @@ public class Worksheet {
      * Footer map for left, central and right field text.
      */
     private Map<Position,String> footer = new LinkedHashMap();
+    /**
+     * Range of repeating rows for the print setup.
+     * (Those rows will be repeated on each page when document is printed.)
+     */
+    private RepeatRowRange repeatingRows = null;
+    /**
+     * Range of repeating columns for the print setup.
+     * (Those columns will be repeated on each page when document is printed.)
+     */
+    private RepeatColRange repeatingCols = null;
     /**
      * The hashed password that protects this sheet.
      */
@@ -194,6 +236,26 @@ public class Worksheet {
      */
     public String getName() {
         return name;
+    }
+
+    /**
+     * Get repeating rows defined for the print setup.
+     * 
+     * @return List representing a range of rows to be repeated 
+     *              on each page when printing.
+     */
+    public RepeatRowRange getRepeatingRows(){
+        return repeatingRows;
+    }
+
+    /**
+     * Get repeating cols defined for the print setup.
+     * 
+     * @return List representing a range of columns to be repeated 
+     *              on each page when printing.
+     */
+    public RepeatColRange getRepeatingCols(){
+        return repeatingCols;
     }
 
     /**
@@ -327,6 +389,15 @@ public class Worksheet {
      */
     public void showColumn(int column) {
         hiddenColumns.remove(column);
+    }
+
+    /**
+     * Keep this sheet in active tab.
+     */
+    public void keepInActiveTab() {
+        int sheetIndex = workbook.getIndex(this);
+        //tabs are indexed from 0, sheets are indexed from 1
+        workbook.setActiveTab(sheetIndex - 1);
     }
 
     /**
@@ -650,7 +721,7 @@ public class Worksheet {
             writer.append("/>");
         }
 
-        /* set page margins for the print setup (see print preview) */ 
+        /* set page margins for the print setup (see in print preview) */ 
         String margins = "<pageMargins bottom=\"" + bottomMargin + 
                          "\" footer=\"" + footerMargin + 
                          "\" header=\"" + headerMargin + 
@@ -660,7 +731,16 @@ public class Worksheet {
         writer.append(margins);
 
 	/* set page orientation for the print setup */ 
-        writer.append("<pageSetup orientation=\"").append(pageOrientation).append("\"/>");
+        writer.append("<pageSetup")
+            .append(" paperSize=\"1\"")
+            .append(" scale=\"" + pageScale + "\"")
+            .append(" fitToWidth=\"" + fitToWidth + "\"")
+            .append(" fitToHeight=\"" + fitToHeight + "\"")
+            .append(" firstPageNumber=\"" + firstPageNumber + "\"")
+            .append(" useFirstPageNumber=\"" + useFirstPageNumber.toString() + "\"")
+            .append(" blackAndWhite=\"" + blackAndWhite.toString() + "\"")
+            .append(" orientation=\"" + pageOrientation + "\"")
+            .append("/>");
 
         /* write to header and footer */
         writer.append("<headerFooter differentFirst=\"false\" differentOddEven=\"false\">");
@@ -707,6 +787,7 @@ public class Worksheet {
             writer = workbook.beginFile("xl/worksheets/sheet" + index + ".xml");
             writer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
             writer.append("<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">");
+            writer.append("<sheetPr filterMode=\"" + "false" + "\"><pageSetUpPr fitToPage=\"" + fitToPage + "\" autoPageBreaks=\"" + autoPageBreaks + "\"/></sheetPr>");
             writer.append("<dimension ref=\"A1\"/>");
             writer.append("<sheetViews><sheetView workbookViewId=\"0\"");
             if(!showGridLines) {
@@ -844,6 +925,14 @@ public class Worksheet {
         }
     }
 
+    public void setAutoPageBreaks(Boolean autoPageBreaks) {
+        this.autoPageBreaks = autoPageBreaks;
+    }
+
+    public void setFitToPage(Boolean fitToPage) {
+        this.fitToPage = true;
+    }
+
     /**
      * Set freeze pane (rows and columns that remain when scrolling).
      * @param nLeftColumns - number of columns from the left that will remain frozen
@@ -916,6 +1005,53 @@ public class Worksheet {
      */
     public void pageOrientation(String orientation) {
         this.pageOrientation = orientation;
+    }
+    /**
+     * @param scale = scaling factor for the print setup (between 1 and 100)
+     *
+     */
+    public void pageScale(int scale) {
+        this.pageScale = scale;
+    }
+    /**
+     * @param pageNumber - first page number (default: 0)
+     */
+    public void firstPageNumber(int pageNumber) {
+        this.firstPageNumber = pageNumber;
+        this.useFirstPageNumber = true;
+    }
+
+    public void fitToHeight(Short fitToHeight) {
+        this.fitToPage = true;
+        this.fitToHeight = fitToHeight;
+    }
+
+    public void fitToWidth(Short fitToWidth) {
+        this.fitToPage = true;
+        this.fitToWidth = fitToWidth;
+    }
+
+    public void printInBlackAndWhite() {
+        this.blackAndWhite = true;
+    }
+    public void printInColor() {
+        this.blackAndWhite = false;
+    }
+
+    public void repeatRows(int startRow, int endRow) {
+        this.repeatingRows = new RepeatRowRange(startRow, endRow);
+    }
+
+    public void repeatRows(int row) {
+        this.repeatingRows = new RepeatRowRange(row, row);
+    }
+
+    public void repeatCols(int startCol, int endCol) {
+        this.repeatingCols = new RepeatColRange(startCol, endCol);
+    }
+
+    public void repeatCols(int col) {
+        this.repeatingCols = new RepeatColRange(col, col);
     }
 
     /**

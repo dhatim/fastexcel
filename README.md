@@ -121,6 +121,14 @@ To freeze the first column on the left and the top three rows:
 ```java
 ws.freezePane(1, 3)
 ```
+Define repeating rows or columns for the print setup.
+```java
+ws.repeatRows(0, 4) // keep first top 5 rows on each page when printing.
+ws.repeatRows(2) // keep the third row on each page when printing.
+
+ws.repeatCols(0, 2) // repeat first three columns (A to C) on each page when printing.
+ws.repeatCols(0) // repeat only first column (A) on each page for the print setup.
+```
 Set header and footer content.\
 To set page enumeration in the top right:
 ```java
