@@ -1094,7 +1094,7 @@ public class Worksheet {
     public void footer(String text, Position position, int fontSize) {
         this.footer.put(position, "&amp;" + position.getPos() +
                                   "&amp;&quot;Times New Roman,Regular&quot;&amp;" + fontSize +
-                                  prepareForXml(text));
+                                  "&amp;K000000" + prepareForXml(text));
     }
 
     /**
@@ -1107,7 +1107,7 @@ public class Worksheet {
     public void footer(String text, Position position, String fontName, int fontSize) {
         this.footer.put(position, "&amp;" + position.getPos() +
                                   "&amp;&quot;" + fontName + ",Regular&quot;&amp;" + fontSize +
-                                  prepareForXml(text));
+                                  "&amp;K000000" + prepareForXml(text));
     }
 
     /**
@@ -1118,7 +1118,7 @@ public class Worksheet {
     public void header(String text, Position position, String fontName, int fontSize) {
         this.header.put(position, "&amp;" + position.getPos() +
                                   "&amp;&quot;" + fontName + ",Regular&quot;&amp;" + fontSize +
-                                  prepareForXml(text));
+                                  "&amp;K000000" + prepareForXml(text));
     }
 
     /**
@@ -1130,7 +1130,7 @@ public class Worksheet {
     public void header(String text, Position position, int fontSize) {
         this.header.put(position, "&amp;" + position.getPos() +
                                   "&amp;&quot;Times New Roman,Regular&quot;&amp;" + fontSize +
-                                  prepareForXml(text));
+                                  "&amp;K000000" + prepareForXml(text));
     }
 
     /**
