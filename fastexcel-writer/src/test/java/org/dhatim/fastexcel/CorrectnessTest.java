@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class CorrectnessTest {
@@ -195,6 +196,21 @@ class CorrectnessTest {
             ws.range(1, 0, 1, 2).style().merge().set();
             ws.range(1, 0, 1, 2).merge();
             ws.style(1, 0).horizontalAlignment("center").set();
+        });
+    }
+
+    @Test
+    public void values() throws IOException {
+        writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Worksheet 1");
+            ws.value(0, 0, "Row 1");
+
+            ws.values(3, new Object[] {"A", "B", "C", 42});
+
+            assertThat(ws.value(3, 0)).isEqualTo("A");
+            assertThat(ws.value(3, 1)).isEqualTo("B");
+            assertThat(ws.value(3, 2)).isEqualTo("C");
+            assertThat(ws.value(3, 3)).isEqualTo(42);
         });
     }
 

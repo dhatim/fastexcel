@@ -537,6 +537,41 @@ public class Worksheet {
     }
 
     /**
+     * Set the cell values at the given row.
+     *
+     * <p>Any existing cells will be replaced.</p>
+     *
+     * @param r Zero-based row number.
+     * @param values Cell values. Supported types are
+     * {@link String}, {@link Date}, {@link LocalDate}, {@link LocalDateTime}, {@link ZonedDateTime},
+     * {@link Number} and {@link Boolean} implementations. Note Excel timestamps do not carry
+     * any timezone information; {@link Date} values are converted to an Excel
+     * serial number with the system timezone. If you need a specific timezone,
+     * prefer passing a {@link ZonedDateTime}.
+     */
+    public Cell[] values(int r, Object[] values) {
+        // Check limits
+        if (r < 0 || r >= MAX_ROWS || values.length > MAX_COLS) {
+            throw new IllegalArgumentException();
+        }
+        flushedCheck(r);
+
+        // Add null for missing rows.
+        while (r >= rows.size()) {
+            rows.add(null);
+        }
+        Cell[] row = new Cell[values.length];
+        for (int c = 0; c < row.length; c++) {
+            Cell cell = new Cell();
+            cell.setValue(workbook, values[c]);
+            row[c] = cell;
+        }
+        rows.set(r, row);
+
+        return row;
+    }
+
+    /**
      * Get the cell value (or formula) at the given coordinates.
      *
      * @param r Zero-based row number.
