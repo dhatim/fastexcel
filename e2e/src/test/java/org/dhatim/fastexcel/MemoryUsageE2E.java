@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class MemoryUsageTest {
+public class MemoryUsageE2E {
     private static final File testFile = new File("target/memtest.xlsx");
     public static final int ROWS = 25_000;
     public static final int SHEETS = 3;

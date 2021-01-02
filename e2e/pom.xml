@@ -79,7 +79,7 @@
                         <configuration>
                             <argLine>-Xmx50M</argLine>
                             <includes>
-                                <include>**/*Test.java</include>
+                                <include>**/*E2E.java</include>
                             </includes>
                         </configuration>
                     </plugin>
