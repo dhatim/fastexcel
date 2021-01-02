@@ -78,33 +78,32 @@ class Cell {
         }
     }
 
-    /**
-     * Set value of this cell.
-     *
-     * @param wb Parent workbook.
-     * @param v Cell value. Supported types are
-     * {@link String}, {@link Date}, {@link LocalDate}, {@link LocalDateTime}, {@link ZonedDateTime},
-     * {@link Number} and {@link Boolean} implementations. Note Excel timestamps do not carry
-     * any timezone information; {@link Date} values are converted to an Excel
-     * serial number with the system timezone. If you need a specific timezone,
-     * prefer passing a {@link ZonedDateTime}.
-     */
-    void setValue(Workbook wb, Object v) {
-        if (v instanceof String) {
-            value = wb.cacheString((String) v);
-        } else if (v == null || v instanceof Number || v instanceof Boolean) {
-            value = v;
-        } else if (v instanceof Date) {
-            value = TimestampUtil.convertDate((Date) v);
-        } else if (v instanceof LocalDateTime) {
-            value = TimestampUtil.convertDate(Date.from(((LocalDateTime) v).atZone(ZoneId.systemDefault()).toInstant()));
-        } else if (v instanceof LocalDate) {
-            value = TimestampUtil.convertDate((LocalDate) v);
-        } else if (v instanceof ZonedDateTime) {
-            value = TimestampUtil.convertZonedDateTime((ZonedDateTime) v);
-        } else {
-            throw new IllegalArgumentException("No supported cell type for " + v.getClass());
-        }
+    void setValue(Workbook wb, String v) {
+        value = wb.cacheString(v);
+    }
+
+    void setValue(Number v) {
+        value = v;
+    }
+
+    void setValue(Boolean v) {
+        value = v;
+    }
+    void setValue(Date v) {
+        value = TimestampUtil.convertDate(v);
+    }
+
+    void setValue(LocalDateTime v) {
+        value = TimestampUtil.convertDate(Date.from(v.atZone(ZoneId.systemDefault()).toInstant()));
+    }
+
+    void setValue(LocalDate v) {
+        value = TimestampUtil.convertDate(v);
+
+    }
+
+    void setValue(ZonedDateTime v) {
+        value = TimestampUtil.convertZonedDateTime(v);
     }
 
     /**

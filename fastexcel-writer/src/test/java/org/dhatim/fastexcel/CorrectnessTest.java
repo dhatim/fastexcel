@@ -124,13 +124,6 @@ class CorrectnessTest {
     }
 
     @Test
-    void notSupportedTypeCell() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            writeWorkbook(wb -> wb.newWorksheet("Worksheet 1").value(0, 0, new Object()));
-        });
-    }
-
-    @Test
     void invalidRange() {
         assertThrows(IllegalArgumentException.class, () -> {
             writeWorkbook(wb -> {
