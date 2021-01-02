@@ -4,6 +4,7 @@
         <groupId>org.dhatim</groupId>
         <artifactId>fastexcel-parent</artifactId>
         <version>0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>fastexcel-reader</artifactId>
     <name>Fastexcel Reader</name>
