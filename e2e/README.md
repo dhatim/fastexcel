@@ -8,6 +8,6 @@ CSV results will be written to `target` directory with the name of the class (e.
 
 ## Tests
 
-Run tests with
+Run e2e tests with
 
-    mvn clean test
+    mvn clean test -Pe2e
