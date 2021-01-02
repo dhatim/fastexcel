@@ -600,7 +600,6 @@ public class Worksheet {
         cell(r, c).setValue(value);
     }
 
-
     /**
      * Get the cell value (or formula) at the given coordinates.
      *

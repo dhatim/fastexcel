@@ -79,7 +79,7 @@ class Cell {
     }
 
     void setValue(Workbook wb, String v) {
-        value = wb.cacheString(v);
+        value = v == null ? null : wb.cacheString(v);
     }
 
     void setValue(Number v) {
@@ -90,20 +90,21 @@ class Cell {
         value = v;
     }
     void setValue(Date v) {
-        value = TimestampUtil.convertDate(v);
+        value = v == null ? null : TimestampUtil.convertDate(v);
     }
 
     void setValue(LocalDateTime v) {
-        value = TimestampUtil.convertDate(Date.from(v.atZone(ZoneId.systemDefault()).toInstant()));
+        value = v == null ? null :
+            TimestampUtil.convertDate(Date.from(v.atZone(ZoneId.systemDefault()).toInstant()));
     }
 
     void setValue(LocalDate v) {
-        value = TimestampUtil.convertDate(v);
+        value = v == null ? null : TimestampUtil.convertDate(v);
 
     }
 
     void setValue(ZonedDateTime v) {
-        value = TimestampUtil.convertZonedDateTime(v);
+        value = v == null ? null : TimestampUtil.convertZonedDateTime(v);
     }
 
     /**
