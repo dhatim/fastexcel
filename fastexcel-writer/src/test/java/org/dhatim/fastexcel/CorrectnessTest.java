@@ -20,7 +20,12 @@ import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.util.Date;
 import java.util.function.Consumer;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -124,13 +129,6 @@ class CorrectnessTest {
     }
 
     @Test
-    void notSupportedTypeCell() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            writeWorkbook(wb -> wb.newWorksheet("Worksheet 1").value(0, 0, new Object()));
-        });
-    }
-
-    @Test
     void invalidRange() {
         assertThrows(IllegalArgumentException.class, () -> {
             writeWorkbook(wb -> {
@@ -198,4 +196,30 @@ class CorrectnessTest {
         });
     }
 
+    @Test
+    void shouldBeAbleToNullifyCell() throws IOException {
+        writeWorkbook(wb ->{
+            Worksheet ws = wb.newWorksheet("Sheet 1");
+            ws.value(0,0, "One");
+            ws.value(1,0, 42);
+            ws.value(2,0, true);
+            ws.value(3,0, new Date());
+            ws.value(4,0, LocalDate.now());
+            ws.value(5,0, LocalDateTime.now());
+            ws.value(6,0, ZonedDateTime.now());
+            for (int r = 0; r <= 6; r++) {
+              assertThat(ws.cell(r, 0).getValue()).isNotNull();
+            }
+            ws.value(0,0, (Boolean) null);
+            ws.value(1,0, (Number) null);
+            ws.value(2,0, (String) null);
+            ws.value(3,0, (LocalDate) null);
+            ws.value(4,0, (ZonedDateTime) null);
+            ws.value(5,0, (LocalDateTime) null);
+            ws.value(6,0, (LocalDate) null);
+            for (int r = 0; r <= 6; r++) {
+              assertThat(ws.cell(r, 0).getValue()).isNull();
+            }
+        });
+    }
 }

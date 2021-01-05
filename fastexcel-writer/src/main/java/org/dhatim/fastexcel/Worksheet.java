@@ -525,15 +525,79 @@ public class Worksheet {
      *
      * @param r Zero-based row number.
      * @param c Zero-based column number.
-     * @param value Cell value. Supported types are
-     * {@link String}, {@link Date}, {@link LocalDate}, {@link LocalDateTime}, {@link ZonedDateTime},
-     * {@link Number} and {@link Boolean} implementations. Note Excel timestamps do not carry
+     * @param value Cell value.
+     */
+    public void value(int r, int c, String value) {
+        cell(r, c).setValue(workbook, value);
+    }
+    /**
+     * Set the cell value at the given coordinates.
+     *
+     * @param r Zero-based row number.
+     * @param c Zero-based column number.
+     * @param value Cell value.
+     */
+    public void value(int r, int c, Number value) {
+        cell(r, c).setValue(value);
+    }
+    /**
+     * Set the cell value at the given coordinates.
+     *
+     * @param r Zero-based row number.
+     * @param c Zero-based column number.
+     * @param value Cell value.
+     */
+    public void value(int r, int c, Boolean value) {
+        cell(r, c).setValue(value);
+    }
+    /**
+     * Set the cell value at the given coordinates.
+     *
+     * @param r Zero-based row number.
+     * @param c Zero-based column number.
+     * @param value Cell value. Note Excel timestamps do not carry
      * any timezone information; {@link Date} values are converted to an Excel
      * serial number with the system timezone. If you need a specific timezone,
      * prefer passing a {@link ZonedDateTime}.
      */
-    public void value(int r, int c, Object value) {
-        cell(r, c).setValue(workbook, value);
+    public void value(int r, int c, Date value) {
+        cell(r, c).setValue(value);
+    }
+    /**
+     * Set the cell value at the given coordinates.
+     *
+     * @param r Zero-based row number.
+     * @param c Zero-based column number.
+     * @param value Cell value. Note Excel timestamps do not carry
+     * any timezone information; {@link Date} values are converted to an Excel
+     * serial number with the system timezone. If you need a specific timezone,
+     * prefer passing a {@link ZonedDateTime}.
+     */
+    public void value(int r, int c, LocalDateTime value) {
+        cell(r, c).setValue(value);
+    }
+    /**
+     * Set the cell value at the given coordinates.
+     *
+     * @param r Zero-based row number.
+     * @param c Zero-based column number.
+     * @param value Cell value. Note Excel timestamps do not carry
+     * any timezone information; {@link Date} values are converted to an Excel
+     * serial number with the system timezone. If you need a specific timezone,
+     * prefer passing a {@link ZonedDateTime}.
+     */
+    public void value(int r, int c, LocalDate value) {
+        cell(r, c).setValue(value);
+    }
+    /**
+     * Set the cell value at the given coordinates.
+     *
+     * @param r Zero-based row number.
+     * @param c Zero-based column number.
+     * @param value Cell value.
+     */
+    public void value(int r, int c, ZonedDateTime value) {
+        cell(r, c).setValue(value);
     }
 
     /**

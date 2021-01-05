@@ -42,4 +42,5 @@ class WriterTest {
         String s = baos.toString("UTF-8");
         assertThat(s).isEqualTo("some characters are ignored:  or ");
     }
+
 }
