@@ -36,21 +36,20 @@ import org.apache.poi.openxml4j.exceptions.NotOfficeXmlFileException;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.openxml4j.opc.PackageAccess;
+import org.apache.poi.openxml4j.opc.PackagePart;
 import org.apache.poi.openxml4j.util.ZipFileZipEntrySource;
 import org.apache.poi.poifs.common.POIFSConstants;
 import org.apache.poi.poifs.storage.HeaderBlockConstants;
 import org.apache.poi.util.IOUtils;
 import org.apache.poi.util.LittleEndian;
-import org.apache.poi.xssf.eventusermodel.ReadOnlySharedStringsTable;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
-import org.apache.poi.xssf.model.SharedStrings;
-import org.xml.sax.SAXException;
+import org.apache.poi.xssf.usermodel.XSSFRelation;
 
 public class ReadableWorkbook implements Closeable {
 
     private final OPCPackage pkg;
     private final XSSFReader reader;
-    private final SharedStrings sst;
+    private final SST sst;
     private final XMLInputFactory factory;
 
     private boolean date1904;
@@ -69,22 +68,36 @@ public class ReadableWorkbook implements Closeable {
     }
 
     private ReadableWorkbook(OPCPackage pkg) throws IOException {
-        try {
-            this.pkg = pkg;
-            reader = new XSSFReader(pkg);
-            sst = new ReadOnlySharedStringsTable(pkg, false);
-        } catch (NotOfficeXmlFileException | OpenXML4JException | SAXException e) {
-            throw new ExcelReaderException(e);
-        }
         factory = XMLInputFactory.newInstance();
         // To prevent XML External Entity (XXE) attacks
         factory.setProperty(XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
         factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
 
+        try {
+            this.pkg = pkg;
+            reader = new XSSFReader(pkg);
+            sst = SST.fromInputStream(factory, getSharedStrings(pkg));
+        } catch (NotOfficeXmlFileException | OpenXML4JException | XMLStreamException e) {
+            throw new ExcelReaderException(e);
+        }
+
         try (SimpleXmlReader workbookReader = new SimpleXmlReader(factory, reader.getWorkbookData())) {
             readWorkbook(workbookReader);
         } catch (InvalidFormatException | XMLStreamException e) {
             throw new ExcelReaderException(e);
+        }
+    }
+
+    private InputStream getSharedStrings(OPCPackage pkg) throws IOException {
+        ArrayList<PackagePart> parts =
+            pkg.getPartsByContentType(XSSFRelation.SHARED_STRINGS.getContentType());
+
+        // Some workbooks have no shared strings table.
+        if (parts.size() > 0) {
+            PackagePart sstPart = parts.get(0);
+            return sstPart.getInputStream();
+        }else{
+            return null;
         }
     }
 
@@ -147,7 +160,7 @@ public class ReadableWorkbook implements Closeable {
         return factory;
     }
 
-    SharedStrings getSharedStringsTable() {
+    SST getSharedStringsTable() {
         return sst;
     }
 

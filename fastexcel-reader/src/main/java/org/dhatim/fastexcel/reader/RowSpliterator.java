@@ -158,10 +158,10 @@ class RowSpliterator implements Spliterator<Row> {
             return new Cell(workbook, CellType.STRING, "", addr, null, "");
         }
         int index = Integer.parseInt(v);
-        RichTextString sharedStringValue = workbook.getSharedStringsTable().getItemAt(index);
-        Object value = sharedStringValue.toString();
+        String sharedStringValue = workbook.getSharedStringsTable().getItemAt(index);
+        Object value = sharedStringValue;
         String formula = null;
-        String rawValue = sharedStringValue.toString();
+        String rawValue = sharedStringValue;
         return new Cell(workbook, CellType.STRING, value, addr, formula, rawValue);
     }
 
