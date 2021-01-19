@@ -5,13 +5,11 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 class SST {
   private static final SST EMPTY = new SST();
   private final SimpleXmlReader reader;
-  private boolean fullyRead = false;
   private final List<String> values = new ArrayList<>();
 
   private SST() {
@@ -35,22 +33,9 @@ class SST {
   }
 
   private void readUpTo(int index) throws XMLStreamException {
-      while(index >= values.size()) {
-        reader.goTo("si");
-//        StringBuilder value = new StringBuilder();
-//        while(reader.goTo(() -> reader.isStartElement("t") || reader.isEndElement("si"))) {
-//          value.append(reader.getValueUntilEndElement("t"));
-//        }
-        values.add(reader.getValueUntilEndElement("si", "rPh"));
-      }
-  }
-
-  private StringBuilder getT(StringBuilder value) {
-    try {
-      return value.append(reader.getValueUntilEndElement("t"));
-    } catch (XMLStreamException e) {
-      throw new RuntimeException(e);
+    while (index >= values.size()) {
+      reader.goTo("si");
+      values.add(reader.getValueUntilEndElement("si", "rPh"));
     }
   }
-
 }
