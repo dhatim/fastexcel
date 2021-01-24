@@ -70,6 +70,14 @@ class SimpleXmlReader implements Closeable {
         return reader.getAttributeValue(null, name);
     }
 
+    public String getAttributeRequired(String name) throws XMLStreamException {
+        String value = getAttribute(name);
+        if(value == null) {
+            throw new XMLStreamException("missing required attribute "+name);
+        }
+        return value;
+    }
+
     public String getAttribute(String namespace, String name) {
         return reader.getAttributeValue(namespace, name);
     }
@@ -118,5 +126,4 @@ class SimpleXmlReader implements Closeable {
         }
         return sb.toString();
     }
-
 }

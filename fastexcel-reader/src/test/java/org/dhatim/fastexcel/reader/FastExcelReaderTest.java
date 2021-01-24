@@ -131,6 +131,7 @@ class FastExcelReaderTest {
             "/xlsx/phonetic_text.xlsx",
             "/xlsx/pivot_table_named_range.xlsx",
             "/xlsx/rich_text_stress.xlsx",
+            "/xlsx/rels.xlsx",
             "/xlsx/RkNumber.xlsx",
             "/xlsx/smart_tags_2007.xlsx",
             "/xlsx/sushi.xlsx",

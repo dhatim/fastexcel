@@ -28,13 +28,13 @@ public class ReadableWorkbook implements Closeable {
 
     private final OPCPackage pkg;
     private final SST sst;
-    private final XMLInputFactory factory;
+    private final static XMLInputFactory factory = defaultXmlInputFactory();
 
     private boolean date1904;
     private final List<Sheet> sheets = new ArrayList<>();
 
     public ReadableWorkbook(File inputFile) throws IOException {
-        this(OPCPackage.open(inputFile));
+        this(OPCPackage.open(inputFile, factory));
     }
 
     /**
@@ -42,14 +42,10 @@ public class ReadableWorkbook implements Closeable {
      * (but will not uncompress it in memory)
      */
     public ReadableWorkbook(InputStream inputStream) throws IOException {
-        this(OPCPackage.open(inputStream));
+        this(OPCPackage.open(inputStream, factory));
     }
 
     private ReadableWorkbook(OPCPackage pkg) throws IOException {
-        factory = XMLInputFactory.newInstance();
-        // To prevent XML External Entity (XXE) attacks
-        factory.setProperty(XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
-        factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
 
         try {
             this.pkg = pkg;
@@ -58,11 +54,19 @@ public class ReadableWorkbook implements Closeable {
             throw new ExcelReaderException(e);
         }
 
-        try (SimpleXmlReader workbookReader = new SimpleXmlReader(factory, pkg.getWorkbook())) {
+        try (SimpleXmlReader workbookReader = new SimpleXmlReader(factory, pkg.getWorkbookContent())) {
             readWorkbook(workbookReader);
         } catch (XMLStreamException e) {
             throw new ExcelReaderException(e);
         }
+    }
+
+    private static XMLInputFactory defaultXmlInputFactory() {
+        XMLInputFactory factory = XMLInputFactory.newInstance();
+        // To prevent XML External Entity (XXE) attacks
+        factory.setProperty(XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
+        factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
+        return factory;
     }
 
     @Override
