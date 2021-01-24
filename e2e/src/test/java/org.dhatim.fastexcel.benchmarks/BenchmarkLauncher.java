@@ -12,7 +12,6 @@ import java.util.regex.Pattern;
 
 @BenchmarkMode(Mode.SingleShotTime)
 @Warmup(iterations = 3)
-@Measurement(iterations = 5)
 @Fork(1)
 @Threads(1)
 public abstract class BenchmarkLauncher {
@@ -21,6 +20,7 @@ public abstract class BenchmarkLauncher {
     public void launchBenchmarks() throws RunnerException {
         Options options = new OptionsBuilder()
                 .include(Pattern.quote(getClass().getName()))
+                .measurementIterations(15)
                 .shouldFailOnError(true)
                 .result("target/" + getClass().getSimpleName() + ".csv")
                 .resultFormat(ResultFormatType.CSV)

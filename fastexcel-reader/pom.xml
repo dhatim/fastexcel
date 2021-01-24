@@ -11,9 +11,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.fasterxml.woodstox</groupId>
-            <artifactId>woodstox-core</artifactId>
-            <version>5.0.3</version>
+            <groupId>com.fasterxml</groupId>
+            <artifactId>aalto-xml</artifactId>
+            <version>1.2.2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
