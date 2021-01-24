@@ -15,28 +15,18 @@
  */
 package org.dhatim.fastexcel.reader;
 
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipFile;
-import org.apache.commons.compress.utils.IOUtils;
-import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
 
 public class ReadableWorkbook implements Closeable {
 
-  private final ZipFile pkg;
+    private final OPCPackage pkg;
     private final SST sst;
     private final XMLInputFactory factory;
 
@@ -44,7 +34,7 @@ public class ReadableWorkbook implements Closeable {
     private final List<Sheet> sheets = new ArrayList<>();
 
     public ReadableWorkbook(File inputFile) throws IOException {
-        this(open(inputFile));
+        this(OPCPackage.open(inputFile));
     }
 
     /**
@@ -52,10 +42,10 @@ public class ReadableWorkbook implements Closeable {
      * (but will not uncompress it in memory)
      */
     public ReadableWorkbook(InputStream inputStream) throws IOException {
-        this(open(inputStream));
+        this(OPCPackage.open(inputStream));
     }
 
-    private ReadableWorkbook(ZipFile pkg) throws IOException {
+    private ReadableWorkbook(OPCPackage pkg) throws IOException {
         factory = XMLInputFactory.newInstance();
         // To prevent XML External Entity (XXE) attacks
         factory.setProperty(XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
@@ -63,27 +53,19 @@ public class ReadableWorkbook implements Closeable {
 
         try {
             this.pkg = pkg;
-           sst = SST.fromInputStream(factory, getEntry(pkg, "xl/sharedStrings.xml"));
+            sst = SST.fromInputStream(factory, pkg.getSharedStrings());
         } catch (XMLStreamException e) {
             throw new ExcelReaderException(e);
         }
 
-      try (SimpleXmlReader workbookReader = new SimpleXmlReader(factory, getEntry(pkg, "xl/workbook.xml"))) {
+        try (SimpleXmlReader workbookReader = new SimpleXmlReader(factory, pkg.getWorkbook())) {
             readWorkbook(workbookReader);
         } catch (XMLStreamException e) {
             throw new ExcelReaderException(e);
         }
     }
 
-  private InputStream getEntry(ZipFile pkg, String name) throws IOException {
-    ZipArchiveEntry ss = pkg.getEntry(name);
-    if (ss == null) {
-      return null;
-    }
-    return pkg.getInputStream(ss);
-  }
-
-  @Override
+    @Override
     public void close() throws IOException {
         pkg.close();
     }
@@ -130,11 +112,7 @@ public class ReadableWorkbook implements Closeable {
 
     Stream<Row> openStream(Sheet sheet) throws IOException {
         try {
-            String name = "xl/worksheets/sheet" + (sheet.getIndex() + 1) + ".xml";
-            InputStream inputStream = getEntry(pkg, name);
-            if (inputStream == null) {
-              throw new IOException(name + " not found");
-            }
+            InputStream inputStream = pkg.getSheetContent(sheet);
             Stream<Row> stream = StreamSupport.stream(new RowSpliterator(this, inputStream), false);
             return stream.onClose(asUncheckedRunnable(inputStream));
         } catch (XMLStreamException e) {
@@ -151,14 +129,12 @@ public class ReadableWorkbook implements Closeable {
     }
 
     public static boolean isOOXMLZipHeader(byte[] bytes) {
-      return HeaderSignatures.isHeader(bytes, HeaderSignatures.OOXML_FILE_HEADER);
+        return HeaderSignatures.isHeader(bytes, HeaderSignatures.OOXML_FILE_HEADER);
     }
 
     public static boolean isOLE2Header(byte[] bytes) {
-      return HeaderSignatures.isHeader(bytes, HeaderSignatures.OLE_2_SIGNATURE);
+        return HeaderSignatures.isHeader(bytes, HeaderSignatures.OLE_2_SIGNATURE);
     }
-
-
 
     private static Runnable asUncheckedRunnable(Closeable c) {
         return () -> {
@@ -168,15 +144,6 @@ public class ReadableWorkbook implements Closeable {
                 throw new UncheckedIOException(e);
             }
         };
-    }
-
-    private static ZipFile open(File file) throws IOException {
-        return new ZipFile(file);
-    }
-
-    private static ZipFile open(InputStream in) throws IOException {
-        byte[] compressedBytes = IOUtils.toByteArray(in);
-        return new ZipFile(new SeekableInMemoryByteChannel(compressedBytes));
     }
 
 }

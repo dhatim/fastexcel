@@ -16,15 +16,15 @@ class SST {
     reader = null;
   }
 
-  public SST(XMLInputFactory factory, InputStream in) throws XMLStreamException {
+  SST(XMLInputFactory factory, InputStream in) throws XMLStreamException {
     reader = new SimpleXmlReader(factory, in);
   }
 
-  public static SST fromInputStream(XMLInputFactory factory, InputStream in) throws XMLStreamException {
+  static SST fromInputStream(XMLInputFactory factory, InputStream in) throws XMLStreamException {
     return in == null ? EMPTY : new SST(factory, in);
   }
 
-  public String getItemAt(int index) throws XMLStreamException {
+  String getItemAt(int index) throws XMLStreamException {
     if (reader == null) {
       return null;
     }
