@@ -5,7 +5,6 @@ import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
 
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.IOException;
@@ -16,6 +15,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 import static java.lang.String.format;
+import static org.dhatim.fastexcel.reader.DefaultXMLInputFactory.factory;
 
 class OPCPackage implements AutoCloseable {
     private static final Pattern filenameRegex = Pattern.compile("^(.*/)([^/]+)$");
@@ -23,19 +23,19 @@ class OPCPackage implements AutoCloseable {
     private final Map<String, String> workbookPartsById;
     private final PartEntryNames parts;
 
-    private OPCPackage(File zipFile, XMLInputFactory factory) throws IOException {
-        this(new ZipFile(zipFile), factory);
+    private OPCPackage(File zipFile) throws IOException {
+        this(new ZipFile(zipFile));
     }
 
-    private OPCPackage(SeekableInMemoryByteChannel channel, XMLInputFactory factory) throws IOException {
-        this(new ZipFile(channel), factory);
+    private OPCPackage(SeekableInMemoryByteChannel channel) throws IOException {
+        this(new ZipFile(channel));
     }
 
-    private OPCPackage(ZipFile zip, XMLInputFactory factory) throws IOException {
+    private OPCPackage(ZipFile zip) throws IOException {
         try {
             this.zip = zip;
-            this.parts = extractPartEntriesFromContentTypes(factory);
-            this.workbookPartsById = readWorkbookPartsIds(relsNameFor(parts.workbook), factory);
+            this.parts = extractPartEntriesFromContentTypes();
+            this.workbookPartsById = readWorkbookPartsIds(relsNameFor(parts.workbook));
         } catch (XMLStreamException e) {
             throw new IOException(e);
         }
@@ -45,7 +45,7 @@ class OPCPackage implements AutoCloseable {
         return filenameRegex.matcher(entryName).replaceFirst("$1_rels/$2.rels");
     }
 
-    private Map<String, String> readWorkbookPartsIds(String workbookRelsEntryName, XMLInputFactory factory) throws IOException, XMLStreamException {
+    private Map<String, String> readWorkbookPartsIds(String workbookRelsEntryName) throws IOException, XMLStreamException {
         Map<String, String> partsIdById = new HashMap<>();
         SimpleXmlReader rels = new SimpleXmlReader(factory, getRequiredEntryContent(workbookRelsEntryName));
         while (rels.goTo("Relationship")) {
@@ -56,7 +56,7 @@ class OPCPackage implements AutoCloseable {
         return partsIdById;
     }
 
-    private PartEntryNames extractPartEntriesFromContentTypes(XMLInputFactory factory) throws XMLStreamException, IOException {
+    private PartEntryNames extractPartEntriesFromContentTypes() throws XMLStreamException, IOException {
         PartEntryNames entries = new PartEntryNames();
         final String contentTypesXml = "[Content_Types].xml";
         try (SimpleXmlReader reader = new SimpleXmlReader(factory, getRequiredEntryContent(contentTypesXml))) {
@@ -80,13 +80,13 @@ class OPCPackage implements AutoCloseable {
             .orElseThrow(() -> new ExcelReaderException(name + " not found"));
     }
 
-    static OPCPackage open(File inputFile, XMLInputFactory factory) throws IOException {
-        return new OPCPackage(inputFile, factory);
+    static OPCPackage open(File inputFile) throws IOException {
+        return new OPCPackage(inputFile);
     }
 
-    static OPCPackage open(InputStream inputStream, XMLInputFactory factory) throws IOException {
+    static OPCPackage open(InputStream inputStream) throws IOException {
         byte[] compressedBytes = IOUtils.toByteArray(inputStream);
-        return new OPCPackage(new SeekableInMemoryByteChannel(compressedBytes), factory);
+        return new OPCPackage(new SeekableInMemoryByteChannel(compressedBytes));
     }
 
     InputStream getSharedStrings() throws IOException {

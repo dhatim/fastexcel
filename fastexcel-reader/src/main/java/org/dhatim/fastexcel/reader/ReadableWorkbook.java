@@ -24,17 +24,18 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import static org.dhatim.fastexcel.reader.DefaultXMLInputFactory.factory;
+
 public class ReadableWorkbook implements Closeable {
 
     private final OPCPackage pkg;
     private final SST sst;
-    private final static XMLInputFactory factory = defaultXmlInputFactory();
 
     private boolean date1904;
     private final List<Sheet> sheets = new ArrayList<>();
 
     public ReadableWorkbook(File inputFile) throws IOException {
-        this(OPCPackage.open(inputFile, factory));
+        this(OPCPackage.open(inputFile));
     }
 
     /**
@@ -42,14 +43,14 @@ public class ReadableWorkbook implements Closeable {
      * (but will not uncompress it in memory)
      */
     public ReadableWorkbook(InputStream inputStream) throws IOException {
-        this(OPCPackage.open(inputStream, factory));
+        this(OPCPackage.open(inputStream));
     }
 
     private ReadableWorkbook(OPCPackage pkg) throws IOException {
 
         try {
             this.pkg = pkg;
-            sst = SST.fromInputStream(factory, pkg.getSharedStrings());
+            sst = SST.fromInputStream(pkg.getSharedStrings());
         } catch (XMLStreamException e) {
             throw new ExcelReaderException(e);
         }
@@ -59,14 +60,6 @@ public class ReadableWorkbook implements Closeable {
         } catch (XMLStreamException e) {
             throw new ExcelReaderException(e);
         }
-    }
-
-    private static XMLInputFactory defaultXmlInputFactory() {
-        XMLInputFactory factory = XMLInputFactory.newInstance();
-        // To prevent XML External Entity (XXE) attacks
-        factory.setProperty(XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
-        factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
-        return factory;
     }
 
     @Override
