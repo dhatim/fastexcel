@@ -15,7 +15,6 @@
  */
 package org.dhatim.fastexcel.reader;
 
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import java.io.*;
 import java.util.ArrayList;
@@ -115,10 +114,6 @@ public class ReadableWorkbook implements Closeable {
         } catch (XMLStreamException e) {
             throw new IOException(e);
         }
-    }
-
-    XMLInputFactory getXmlFactory() {
-        return factory;
     }
 
     SST getSharedStringsTable() {

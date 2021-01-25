@@ -22,6 +22,8 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import static org.dhatim.fastexcel.reader.DefaultXMLInputFactory.factory;
+
 class RowSpliterator implements Spliterator<Row> {
 
     private final SimpleXmlReader r;
@@ -32,7 +34,7 @@ class RowSpliterator implements Spliterator<Row> {
 
     public RowSpliterator(ReadableWorkbook workbook, InputStream inputStream) throws XMLStreamException {
         this.workbook = workbook;
-        this.r = new SimpleXmlReader(workbook.getXmlFactory(), inputStream);
+        this.r = new SimpleXmlReader(factory, inputStream);
 
         r.goTo("sheetData");
     }
