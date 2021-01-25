@@ -15,49 +15,27 @@
  */
 package org.dhatim.fastexcel.reader;
 
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.compress.archivers.zip.ZipFile;
-import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.openxml4j.exceptions.NotOfficeXmlFileException;
-import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
-import org.apache.poi.openxml4j.opc.OPCPackage;
-import org.apache.poi.openxml4j.opc.PackageAccess;
-import org.apache.poi.openxml4j.util.ZipFileZipEntrySource;
-import org.apache.poi.poifs.common.POIFSConstants;
-import org.apache.poi.poifs.storage.HeaderBlockConstants;
-import org.apache.poi.util.IOUtils;
-import org.apache.poi.util.LittleEndian;
-import org.apache.poi.xssf.eventusermodel.ReadOnlySharedStringsTable;
-import org.apache.poi.xssf.eventusermodel.XSSFReader;
-import org.apache.poi.xssf.model.SharedStrings;
-import org.xml.sax.SAXException;
+import static org.dhatim.fastexcel.reader.DefaultXMLInputFactory.factory;
 
 public class ReadableWorkbook implements Closeable {
 
     private final OPCPackage pkg;
-    private final XSSFReader reader;
-    private final SharedStrings sst;
-    private final XMLInputFactory factory;
+    private final SST sst;
 
     private boolean date1904;
     private final List<Sheet> sheets = new ArrayList<>();
 
     public ReadableWorkbook(File inputFile) throws IOException {
-        this(open(inputFile));
+        this(OPCPackage.open(inputFile));
     }
 
     /**
@@ -65,25 +43,21 @@ public class ReadableWorkbook implements Closeable {
      * (but will not uncompress it in memory)
      */
     public ReadableWorkbook(InputStream inputStream) throws IOException {
-        this(open(inputStream));
+        this(OPCPackage.open(inputStream));
     }
 
     private ReadableWorkbook(OPCPackage pkg) throws IOException {
+
         try {
             this.pkg = pkg;
-            reader = new XSSFReader(pkg);
-            sst = new ReadOnlySharedStringsTable(pkg, false);
-        } catch (NotOfficeXmlFileException | OpenXML4JException | SAXException e) {
+            sst = SST.fromInputStream(pkg.getSharedStrings());
+        } catch (XMLStreamException e) {
             throw new ExcelReaderException(e);
         }
-        factory = XMLInputFactory.newInstance();
-        // To prevent XML External Entity (XXE) attacks
-        factory.setProperty(XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
-        factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
 
-        try (SimpleXmlReader workbookReader = new SimpleXmlReader(factory, reader.getWorkbookData())) {
+        try (SimpleXmlReader workbookReader = new SimpleXmlReader(factory, pkg.getWorkbookContent())) {
             readWorkbook(workbookReader);
-        } catch (InvalidFormatException | XMLStreamException e) {
+        } catch (XMLStreamException e) {
             throw new ExcelReaderException(e);
         }
     }
@@ -135,10 +109,10 @@ public class ReadableWorkbook implements Closeable {
 
     Stream<Row> openStream(Sheet sheet) throws IOException {
         try {
-            InputStream inputStream = reader.getSheet(sheet.getId());
+            InputStream inputStream = pkg.getSheetContent(sheet);
             Stream<Row> stream = StreamSupport.stream(new RowSpliterator(this, inputStream), false);
             return stream.onClose(asUncheckedRunnable(inputStream));
-        } catch (XMLStreamException | InvalidFormatException e) {
+        } catch (XMLStreamException e) {
             throw new IOException(e);
         }
     }
@@ -147,32 +121,16 @@ public class ReadableWorkbook implements Closeable {
         return factory;
     }
 
-    SharedStrings getSharedStringsTable() {
+    SST getSharedStringsTable() {
         return sst;
     }
 
     public static boolean isOOXMLZipHeader(byte[] bytes) {
-        requireLength(bytes, POIFSConstants.OOXML_FILE_HEADER.length);
-        return Arrays.equals(
-                Arrays.copyOf(bytes, POIFSConstants.OOXML_FILE_HEADER.length),
-                POIFSConstants.OOXML_FILE_HEADER
-        );
+        return HeaderSignatures.isHeader(bytes, HeaderSignatures.OOXML_FILE_HEADER);
     }
 
     public static boolean isOLE2Header(byte[] bytes) {
-        requireLength(bytes, 8);
-        byte[] ole2Header = new byte[8];
-        LittleEndian.putLong(ole2Header, 0, HeaderBlockConstants._signature);
-        return Arrays.equals(
-                Arrays.copyOf(bytes, ole2Header.length),
-                ole2Header
-        );
-    }
-
-    private static void requireLength(byte[] bytes, int requiredLength) {
-        if (bytes.length < requiredLength) {
-            throw new IllegalArgumentException("Insufficient header bytes");
-        }
+        return HeaderSignatures.isHeader(bytes, HeaderSignatures.OLE_2_SIGNATURE);
     }
 
     private static Runnable asUncheckedRunnable(Closeable c) {
@@ -183,24 +141,6 @@ public class ReadableWorkbook implements Closeable {
                 throw new UncheckedIOException(e);
             }
         };
-    }
-
-    private static OPCPackage open(File file) {
-        try {
-            return OPCPackage.open(file, PackageAccess.READ);
-        } catch (InvalidFormatException e) {
-            throw new ExcelReaderException(e);
-        }
-    }
-
-    private static OPCPackage open(InputStream in) throws IOException {
-        try {
-            byte[] compressedBytes = IOUtils.toByteArray(in);
-            ZipFile zipFile = new ZipFile(new SeekableInMemoryByteChannel(compressedBytes));
-            return OPCPackage.open(new ZipFileZipEntrySource(zipFile));
-        } catch (InvalidFormatException e) {
-            throw new ExcelReaderException(e);
-        }
     }
 
 }

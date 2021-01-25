@@ -15,15 +15,15 @@
  */
 package org.dhatim.fastexcel.reader;
 
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 
 class SimpleXmlReader implements Closeable {
 
@@ -70,6 +70,14 @@ class SimpleXmlReader implements Closeable {
         return reader.getAttributeValue(null, name);
     }
 
+    public String getAttributeRequired(String name) throws XMLStreamException {
+        String value = getAttribute(name);
+        if(value == null) {
+            throw new XMLStreamException("missing required attribute "+name);
+        }
+        return value;
+    }
+
     public String getAttribute(String namespace, String name) {
         return reader.getAttributeValue(namespace, name);
     }
@@ -93,6 +101,10 @@ class SimpleXmlReader implements Closeable {
     }
 
     public String getValueUntilEndElement(String elementName) throws XMLStreamException {
+        return getValueUntilEndElement(elementName, "");
+    }
+
+    public String getValueUntilEndElement(String elementName, String skipping) throws XMLStreamException {
         StringBuilder sb = new StringBuilder();
         int childElement = 1;
         while (reader.hasNext()) {
@@ -100,7 +112,11 @@ class SimpleXmlReader implements Closeable {
             if (type == XMLStreamReader.CDATA || type == XMLStreamReader.CHARACTERS || type == XMLStreamReader.SPACE) {
                 sb.append(reader.getText());
             } else if (type == XMLStreamReader.START_ELEMENT) {
-                childElement++;
+                if(skipping.equals(reader.getLocalName())) {
+                    getValueUntilEndElement(reader.getLocalName());
+                }else {
+                    childElement++;
+                }
             } else if (type == XMLStreamReader.END_ELEMENT) {
                 childElement--;
                 if (elementName.equals(reader.getLocalName()) && childElement == 0) {
@@ -110,5 +126,4 @@ class SimpleXmlReader implements Closeable {
         }
         return sb.toString();
     }
-
 }
