@@ -207,6 +207,7 @@ public class Range {
      * Construct a new ListDataValidation
      *
      * @param listRange The Range of the list this validation references
+     * @return a new list data validation object
      */
     public ListDataValidation validateWithList(Range listRange) {
         ListDataValidation listDataValidation = new ListDataValidation(this, listRange);

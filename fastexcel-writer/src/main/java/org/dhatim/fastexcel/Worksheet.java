@@ -40,10 +40,10 @@ public class Worksheet {
      * Maximum column width in Excel.
      */
     public static final int MAX_COL_WIDTH = 255;
-    
+
     /**
      * Maximum row height in Excel.
-     */ 
+     */
     public static final double MAX_ROW_HEIGHT = 409.5;
 
     private final Workbook workbook;
@@ -83,7 +83,7 @@ public class Worksheet {
      * Map of columns and their widths
      */
     private final Map<Integer, Double> colWidths = new HashMap<>();
-    
+
     /**
      * Map of rows and their heights
      */
@@ -240,8 +240,8 @@ public class Worksheet {
 
     /**
      * Get repeating rows defined for the print setup.
-     * 
-     * @return List representing a range of rows to be repeated 
+     *
+     * @return List representing a range of rows to be repeated
      *              on each page when printing.
      */
     public RepeatRowRange getRepeatingRows(){
@@ -250,8 +250,8 @@ public class Worksheet {
 
     /**
      * Get repeating cols defined for the print setup.
-     * 
-     * @return List representing a range of columns to be repeated 
+     *
+     * @return List representing a range of columns to be repeated
      *              on each page when printing.
      */
     public RepeatColRange getRepeatingCols(){
@@ -329,9 +329,9 @@ public class Worksheet {
     }
     /**
      * Apply shading to Nth rows in the given range.
-     * 
+     *
      * @param range Range of cells.
-     * @param fill Shading fill patern.
+     * @param fill Shading fill pattern.
      * @param eachNRows Shading row frequency.
      */
     void shadeRows(Range range, Fill fill, int eachNRows) {
@@ -346,6 +346,7 @@ public class Worksheet {
      * Sets the visibility state of the sheet
      * <p>
      * This is done by setting the {@code state} attribute in the workbook.xml.
+     * @param visibilityState New visibility state for this sheet.
      */
     public void setVisibilityState(VisibilityState visibilityState) {
         this.visibilityState = visibilityState;
@@ -506,12 +507,12 @@ public class Worksheet {
         }
         colWidths.put(c, width);
     }
-    
+
     /**
      * Specify the custom row height for a row
      * <p> The maximum value for row height is <b>409.5</b> </p>
-     * @param r
-     * @param height
+     * @param r Zero-based row number
+     * @param height New row height
      */
     public void rowHeight(int r, double height) {
         if (height > MAX_ROW_HEIGHT) {
@@ -785,16 +786,16 @@ public class Worksheet {
             writer.append("/>");
         }
 
-        /* set page margins for the print setup (see in print preview) */ 
-        String margins = "<pageMargins bottom=\"" + bottomMargin + 
-                         "\" footer=\"" + footerMargin + 
-                         "\" header=\"" + headerMargin + 
-                         "\" left=\"" + leftMargin + 
-                         "\" right=\"" + rightMargin + 
+        /* set page margins for the print setup (see in print preview) */
+        String margins = "<pageMargins bottom=\"" + bottomMargin +
+                         "\" footer=\"" + footerMargin +
+                         "\" header=\"" + headerMargin +
+                         "\" left=\"" + leftMargin +
+                         "\" right=\"" + rightMargin +
                          "\" top=\"" + topMargin + "\"/>";
         writer.append(margins);
 
-	/* set page orientation for the print setup */ 
+	/* set page orientation for the print setup */
         writer.append("<pageSetup")
             .append(" paperSize=\"1\"")
             .append(" scale=\"" + pageScale + "\"")
@@ -818,7 +819,7 @@ public class Worksheet {
         if (footer.get(Position.CENTER) != null) writer.append(footer.get(Position.CENTER));
         if (footer.get(Position.RIGHT) != null) writer.append(footer.get(Position.RIGHT));
         writer.append("</oddFooter></headerFooter>");
-        
+
 
         if(!comments.isEmpty()) {
             writer.append("<drawing r:id=\"d\"/>");
@@ -876,7 +877,7 @@ public class Worksheet {
         for (int r = flushedRows; r < rows.size(); ++r) {
             Cell[] row = rows.get(r);
             if (row != null) {
-                writeRow(writer, r, hiddenRows.contains(r), 
+                writeRow(writer, r, hiddenRows.contains(r),
                 		rowHeights.get(r), row);
             }
             rows.set(r, null); // free flushed row data
@@ -892,34 +893,34 @@ public class Worksheet {
      */
     private void writeFreezePane(Writer w) throws IOException {
         String activePane = freezeLeftColumns==0 ? "bottomLeft" : freezeTopRows==0 ? "topRight" : "bottomRight";
-        String freezePane = "<pane xSplit=\"" + freezeLeftColumns + 
-                            "\" ySplit=\"" + freezeTopRows + "\" topLeftCell=\"" + 
-                            getCellMark(freezeTopRows, freezeLeftColumns) + 
+        String freezePane = "<pane xSplit=\"" + freezeLeftColumns +
+                            "\" ySplit=\"" + freezeTopRows + "\" topLeftCell=\"" +
+                            getCellMark(freezeTopRows, freezeLeftColumns) +
                             "\" activePane=\"" + activePane + "\" state=\"frozen\"/>";
         w.append(freezePane);
-        String topLeftPane = "<selection pane=\"topLeft\" activeCell=\"" + 
+        String topLeftPane = "<selection pane=\"topLeft\" activeCell=\"" +
                              getCellMark(0, 0) +
-                             "\" activeCellId=\"0\" sqref=\"" + 
+                             "\" activeCellId=\"0\" sqref=\"" +
                              getCellMark(0, 0) + "\"/>";
         w.append(topLeftPane);
         if (freezeLeftColumns != 0) {
-            String topRightPane = "<selection pane=\"topRight\" activeCell=\"" + 
+            String topRightPane = "<selection pane=\"topRight\" activeCell=\"" +
                                   getCellMark(0, freezeLeftColumns) +
-                                  "\" activeCellId=\"0\" sqref=\"" + 
+                                  "\" activeCellId=\"0\" sqref=\"" +
                                   getCellMark(0, freezeLeftColumns) + "\"/>";
             w.append(topRightPane);
         }
         if (freezeTopRows !=0 ) {
-            String bottomLeftPane = "<selection pane=\"bottomLeft\" activeCell=\"" + 
-                                    getCellMark(freezeTopRows, 0) + 
-                                    "\" activeCellId=\"0\" sqref=\"" + 
+            String bottomLeftPane = "<selection pane=\"bottomLeft\" activeCell=\"" +
+                                    getCellMark(freezeTopRows, 0) +
+                                    "\" activeCellId=\"0\" sqref=\"" +
                                     getCellMark(freezeTopRows, 0) + "\"/>";
             w.append(bottomLeftPane);
         }
         if (freezeLeftColumns != 0 && freezeTopRows != 0) {
-            String bottomRightPane = "<selection pane=\"bottomRight\" activeCell=\"" + 
+            String bottomRightPane = "<selection pane=\"bottomRight\" activeCell=\"" +
                                      getCellMark(freezeTopRows, freezeLeftColumns) +
-                                     "\" activeCellId=\"0\" sqref=\"" + 
+                                     "\" activeCellId=\"0\" sqref=\"" +
                                      getCellMark(freezeTopRows, freezeLeftColumns) + "\"/>";
             w.append(bottomRightPane);
         }
@@ -1064,8 +1065,8 @@ public class Worksheet {
     }
 
     /**
-     * 
-     * @param orientation
+     * Set the page orientation.
+     * @param orientation New page orientation for this worksheet
      */
     public void pageOrientation(String orientation) {
         this.pageOrientation = orientation;
@@ -1126,7 +1127,7 @@ public class Worksheet {
      */
     private String prepareForXml(String text) {
         switch(text.toLowerCase()) {
-            case "page 1 of ?": 
+            case "page 1 of ?":
                 return "Page &amp;P of &amp;N";
             case "page 1, sheetname":
                 return "Page &amp;P, &amp;A";
@@ -1178,6 +1179,8 @@ public class Worksheet {
      * Set header text.
      * @param text - text input form or custom text
      * @param position - Position.LEFT/RIGHT/CENTER enum
+     * @param fontName - font name (e.g., "Arial")
+     * @param fontSize - integer describing font size
      */
     public void header(String text, Position position, String fontName, int fontSize) {
         this.header.put(position, "&amp;" + position.getPos() +
@@ -1201,8 +1204,6 @@ public class Worksheet {
      * Set header text with specified font and size.
      * @param text - text input form or custom text
      * @param position - Position.LEFT/RIGHT/CENTER enum
-     * @param fontName - font name (e.g., "Arial")
-     * @param fontSize - integer describing font size
      */
     public void header(String text, Position position) {
         this.header.put(position, "&amp;" + position.getPos() +
