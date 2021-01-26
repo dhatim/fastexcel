@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.dhatim</groupId>
         <artifactId>root-oss</artifactId>
-        <version>18.8.0</version>
+        <version>21.1.10</version>
     </parent>
 
     <artifactId>fastexcel-parent</artifactId>
