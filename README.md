@@ -1,6 +1,6 @@
 fastexcel
 =========
-[![Build Status](https://travis-ci.org/dhatim/fastexcel.png?branch=master)](https://travis-ci.org/dhatim/fastexcel)
+[![Build Status](https://github.com/dhatim/fastexcel/workflows/.github/workflows/build.yml/badge.svg)](https://github.com/dhatim/fastexcel/actions)
 [![Coverage Status](https://coveralls.io/repos/github/dhatim/fastexcel/badge.svg?branch=master)](https://coveralls.io/github/dhatim/fastexcel?branch=master)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/aaa0b14bdc2944a7b5a46c06557314e8)](https://www.codacy.com/app/mathieu-ligocki/fastexcel?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=dhatim/fastexcel&amp;utm_campaign=Badge_Grade)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.dhatim/fastexcel/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.dhatim/fastexcel)
