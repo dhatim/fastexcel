@@ -1,7 +1,0 @@
-language: java
-dist: trusty
-jdk: openjdk8
-install: true
-script: . .travis/script.sh
-before_install:
- - cp .travis/toolchains.xml $HOME/.m2/toolchains.xml
