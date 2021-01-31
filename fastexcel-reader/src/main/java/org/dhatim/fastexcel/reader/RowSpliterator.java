@@ -151,10 +151,13 @@ class RowSpliterator implements Spliterator<Row> {
     }
 
     private Cell parseString(CellAddress addr) throws XMLStreamException {
-        r.goTo("v");
+        r.goTo(() -> r.isStartElement("v") || r.isEndElement("c"));
+        if (r.isEndElement("c")) {
+            return empty(addr, CellType.STRING);
+        }
         String v = r.getValueUntilEndElement("v");
-        if(v.isEmpty()) {
-            return new Cell(workbook, CellType.STRING, "", addr, null, "");
+        if (v.isEmpty()) {
+            return empty(addr, CellType.STRING);
         }
         int index = Integer.parseInt(v);
         String sharedStringValue = workbook.getSharedStringsTable().getItemAt(index);
@@ -162,6 +165,10 @@ class RowSpliterator implements Spliterator<Row> {
         String formula = null;
         String rawValue = sharedStringValue;
         return new Cell(workbook, CellType.STRING, value, addr, formula, rawValue);
+    }
+
+    private Cell empty(CellAddress addr, CellType type) {
+        return new Cell(workbook, type, "", addr, null, "");
     }
 
     private Cell parseInlineStr(CellAddress addr) throws XMLStreamException {
