@@ -138,6 +138,7 @@ class FastExcelReaderTest {
             "/xlsx/text_and_numbers.xlsx",
             "/xlsx/world.xlsx",
             "/xlsx/write.xlsx",
+            "/xlsx/issue143.xlsx",
             // "/xlsx/xlsx-stream-d-date-cell.xlsx"
     })
     void testFile(String file) {
