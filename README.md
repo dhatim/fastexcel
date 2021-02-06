@@ -41,7 +41,7 @@ Note heap memory usage is measured just before flushing the workbook to the outp
 <dependency>
     <groupId>org.dhatim</groupId>
     <artifactId>fastexcel</artifactId>
-    <version>0.10.12</version>
+    <version>0.12.3</version>
 </dependency>
 ```
 
@@ -219,7 +219,7 @@ In between there a more developer friendly wrapper around Apache Poi called [Exc
 <dependency>
     <groupId>org.dhatim</groupId>
     <artifactId>fastexcel-reader</artifactId>
-    <version>0.10.12</version>
+    <version>0.12.3</version>
 </dependency>
 ```
 
