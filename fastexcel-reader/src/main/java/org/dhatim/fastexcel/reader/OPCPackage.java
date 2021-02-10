@@ -94,6 +94,9 @@ class OPCPackage implements AutoCloseable {
     }
 
     private InputStream getEntryContent(String name) throws IOException {
+        if (name == null) {
+            return null;
+        }
         if (name.startsWith("/")) {
             name = name.substring(1);
         }
