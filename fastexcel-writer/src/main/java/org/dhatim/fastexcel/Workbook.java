@@ -204,6 +204,7 @@ public class Workbook {
              * (if there are any repeating rows or cols in the sheet at all) **/
     
             for (Worksheet ws : worksheets) {
+                int index = getIndex(ws) -1;
                 String defineName = Stream.of(ws.getRepeatingCols(),ws.getRepeatingRows())
                                 .filter(Objects::nonNull)
                                 .map(r -> ws.getName() + "!" + r.toString())
@@ -212,8 +213,8 @@ public class Workbook {
                     w.append("<definedNames>");
                     w.append("<definedName function=\"false\" " + 
                                 "hidden=\"false\" " +
-                                "localSheetId=\"0\" " + 
-                                "name=\"_xlnm.Print_Titles\" " + 
+                                "localSheetId=\"" + index + 
+                                "\" name=\"_xlnm.Print_Titles\" " + 
                                 "vbProcedure=\"false\">");
                     w.append(defineName);
                     w.append("</definedName>");
