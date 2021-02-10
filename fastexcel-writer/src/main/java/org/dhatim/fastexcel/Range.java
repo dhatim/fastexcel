@@ -216,6 +216,14 @@ public class Range {
     }
 
     /**
+     * Specifically define this range by assigning it a name.
+     * It will be visible in the cell range dropdown menu.
+     */
+    public void setName(String name) {
+        worksheet.addNamedRange(this, name);
+    }
+
+    /**
      * Return the set of styles used by the cells in this range.
      *
      * @return Set of styles.

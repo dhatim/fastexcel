@@ -22,6 +22,7 @@ import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.Map;
 import java.util.stream.Stream;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -209,8 +210,9 @@ public class Workbook {
                                 .filter(Objects::nonNull)
                                 .map(r -> ws.getName() + "!" + r.toString())
                                 .collect(Collectors.joining(","));
+                
+                w.append("<definedNames>");
                 if (!defineName.isEmpty()) {
-                    w.append("<definedNames>");
                     w.append("<definedName function=\"false\" " + 
                                 "hidden=\"false\" " +
                                 "localSheetId=\"" + index + 
@@ -218,8 +220,24 @@ public class Workbook {
                                 "vbProcedure=\"false\">");
                     w.append(defineName);
                     w.append("</definedName>");
-                    w.append("</definedNames>");
                 }
+                /** define specifically named ranges **/
+                for (Map.Entry<String, Range> nr : ws.getNamedRanges().entrySet()) {
+                    String rangeName = nr.getKey();
+                    Range range = nr.getValue();
+                    w.append("<definedName function=\"false\" " + 
+                                "hidden=\"false\" " + 
+                                "name=\"")
+                        .append(rangeName)
+                        .append("\" vbProcedure=\"false\">")
+                        .append(ws.getName())
+                        .append("!")
+                        .append("$" + Range.colToString(range.getLeft()) + "$" + (1 + range.getTop()))
+                        .append(":")
+                        .append("$" + Range.colToString(range.getRight()) + "$" + (1 + range.getBottom()))
+                        .append("</definedName>");
+                }
+                w.append("</definedNames>");
             }
             w.append("</workbook>");
         });

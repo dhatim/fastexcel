@@ -204,6 +204,10 @@ public class Worksheet {
      * Range of row where will be inserted auto filter
      */
     private Range autoFilterRange = null;
+    /**
+     * List of named ranges.
+     */
+    private Map<String, Range> namedRanges = new LinkedHashMap();
 
     /**
      * The set of protection options that are applied on the sheet.
@@ -256,6 +260,13 @@ public class Worksheet {
      */
     public RepeatColRange getRepeatingCols(){
         return repeatingCols;
+    }
+
+    /**
+     * Get a list of named ranges.
+     */
+    public Map<String, Range> getNamedRanges() {
+        return namedRanges;
     }
 
     /**
