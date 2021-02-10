@@ -218,6 +218,8 @@ public class Range {
     /**
      * Specifically define this range by assigning it a name.
      * It will be visible in the cell range dropdown menu.
+     * 
+     * @param name string representing the name of this cell range
      */
     public void setName(String name) {
         worksheet.addNamedRange(this, name);

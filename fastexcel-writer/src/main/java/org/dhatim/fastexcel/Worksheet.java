@@ -274,6 +274,8 @@ public class Worksheet {
 
     /**
      * Get a list of named ranges.
+     * 
+     * @return Map containing <name, cell range> entries.
      */
     public Map<String, Range> getNamedRanges() {
         return namedRanges;
@@ -1236,6 +1238,10 @@ public class Worksheet {
      * list of named ranges under the provided name.
      * It will be visible when this sheet is open in the
      * cell range dropdown menu under the specified name.
+     * 
+     * @param range Range of cells that needs to be named.
+     * @param name String representing the given cell range's name.
+     * 
      */
     public void addNamedRange(Range range, String name) {
         this.namedRanges.put(name, range);
