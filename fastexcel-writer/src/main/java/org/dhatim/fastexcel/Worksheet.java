@@ -252,6 +252,10 @@ public class Worksheet {
         return repeatingRows;
     }
 
+    public Range getAutoFilterRange(){
+        return autoFilterRange;
+    }
+
     /**
      * Get repeating cols defined for the print setup.
      *

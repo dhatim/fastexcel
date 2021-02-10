@@ -237,6 +237,18 @@ public class Workbook {
                         .append("$" + Range.colToString(range.getRight()) + "$" + (1 + range.getBottom()))
                         .append("</definedName>");
                 }
+                Range af = ws.getAutoFilterRange();
+                if (af != null) {
+                    w.append("<definedName function=\"false\" hidden=\"true\" localSheetId=\"")
+                    .append(index)
+                    .append("\" name=\"_xlnm._FilterDatabase\" vbProcedure=\"false\">")
+                    .append(ws.getName())
+                    .append("!")
+                    .append("$" + Range.colToString(af.getLeft()) + "$" + (1 + af.getTop()))
+                    .append(":")
+                    .append("$" + Range.colToString(af.getRight()) + "$" + (1 + af.getBottom()))
+                    .append("</definedName>");
+                }
                 w.append("</definedNames>");
             }
             w.append("</workbook>");
