@@ -1220,4 +1220,14 @@ public class Worksheet {
         this.header.put(position, "&amp;" + position.getPos() +
                                   prepareForXml(text));
     }
+
+    /**
+     * Add the given range to this sheet's
+     * list of named ranges under the provided name.
+     * It will be visible when this sheet is open in the
+     * cell range dropdown menu under the specified name.
+     */
+    public void addNamedRange(Range range, String name) {
+        this.namedRanges.put(name, range);
+    }
 }
