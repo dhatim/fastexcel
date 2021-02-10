@@ -252,6 +252,12 @@ public class Worksheet {
         return repeatingRows;
     }
 
+    /**
+     * Get cell range that autofilter is applied to.
+     * 
+     * @return Range of cells that autofilter is set to
+     *             (null if autofilter is not set).
+     */
     public Range getAutoFilterRange(){
         return autoFilterRange;
     }
