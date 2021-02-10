@@ -49,8 +49,7 @@ public class ReadableWorkbook implements Closeable {
 
         try {
             this.pkg = pkg;
-            InputStream is = pkg.getSharedStrings();
-            sst = is == null ? null : SST.fromInputStream(is);
+            sst = SST.fromInputStream(pkg.getSharedStrings());
         } catch (XMLStreamException e) {
             throw new ExcelReaderException(e);
         }
