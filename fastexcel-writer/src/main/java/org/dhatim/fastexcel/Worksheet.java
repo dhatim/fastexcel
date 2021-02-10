@@ -275,7 +275,8 @@ public class Worksheet {
     /**
      * Get a list of named ranges.
      * 
-     * @return Map containing <name, cell range> entries.
+     * @return Map containing named range entries 
+     *              where keys are the names and values are cell ranges.
      */
     public Map<String, Range> getNamedRanges() {
         return namedRanges;
