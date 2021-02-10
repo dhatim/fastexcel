@@ -205,32 +205,32 @@ public class Workbook {
              * (if there are any repeating rows or cols in the sheet at all) **/
     
             for (Worksheet ws : worksheets) {
-                int index = getIndex(ws) -1;
+                int worksheetIndex = getIndex(ws) - 1;                
                 String defineName = Stream.of(ws.getRepeatingCols(),ws.getRepeatingRows())
                                 .filter(Objects::nonNull)
-                                .map(r -> ws.getName() + "!" + r.toString())
+                                .map(r -> "&apos;" + ws.getName() + "&apos;!" + r.toString())
                                 .collect(Collectors.joining(","));
                 
                 w.append("<definedNames>");
                 if (!defineName.isEmpty()) {
                     w.append("<definedName function=\"false\" " + 
-                                "hidden=\"false\" " +
-                                "localSheetId=\"" + index + 
-                                "\" name=\"_xlnm.Print_Titles\" " + 
-                                "vbProcedure=\"false\">");
-                    w.append(defineName);
-                    w.append("</definedName>");
+                                "hidden=\"false\" localSheetId=\"" + 
+                                worksheetIndex + "\" name=\"_xlnm.Print_Titles\" " + 
+                                "vbProcedure=\"false\">")
+                     .append(defineName)
+                     .append("</definedName>");
                 }
                 /** define specifically named ranges **/
                 for (Map.Entry<String, Range> nr : ws.getNamedRanges().entrySet()) {
                     String rangeName = nr.getKey();
                     Range range = nr.getValue();
                     w.append("<definedName function=\"false\" " + 
-                                "hidden=\"false\" " + 
-                                "name=\"")
+                                "hidden=\"false\" localSheetId=\"" + 
+                                worksheetIndex + "\" name=\"")
                         .append(rangeName)
-                        .append("\" vbProcedure=\"false\">")
+                        .append("\" vbProcedure=\"false\">&apos;")
                         .append(ws.getName())
+                        .append("&apos;")
                         .append("!")
                         .append("$" + Range.colToString(range.getLeft()) + "$" + (1 + range.getTop()))
                         .append(":")
@@ -240,7 +240,7 @@ public class Workbook {
                 Range af = ws.getAutoFilterRange();
                 if (af != null) {
                     w.append("<definedName function=\"false\" hidden=\"true\" localSheetId=\"")
-                    .append(index)
+                    .append(worksheetIndex)
                     .append("\" name=\"_xlnm._FilterDatabase\" vbProcedure=\"false\">")
                     .append("&apos;")
                     .append(ws.getName())
