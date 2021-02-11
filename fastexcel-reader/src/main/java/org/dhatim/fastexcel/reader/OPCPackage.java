@@ -61,10 +61,12 @@ class OPCPackage implements AutoCloseable {
         final String contentTypesXml = "[Content_Types].xml";
         try (SimpleXmlReader reader = new SimpleXmlReader(factory, getRequiredEntryContent(contentTypesXml))) {
             while (reader.goTo(() -> reader.isStartElement("Override"))) {
-                if (PartEntryNames.WORKBOOK_MAIN_CONTENT_TYPE.equals(reader.getAttributeRequired("ContentType"))) {
+                String contentType = reader.getAttributeRequired("ContentType");
+                if (PartEntryNames.WORKBOOK_MAIN_CONTENT_TYPE.equals(contentType)
+                        || PartEntryNames.WORKBOOK_EXCEL_MACRO_ENABLED_MAIN_CONTENT_TYPE.equals(contentType)) {
                     entries.workbook = reader.getAttributeRequired("PartName");
                 }
-                if (PartEntryNames.SHARED_STRINGS_CONTENT_TYPE.equals(reader.getAttributeRequired("ContentType"))) {
+                if (PartEntryNames.SHARED_STRINGS_CONTENT_TYPE.equals(contentType)) {
                     entries.sharedStrings = reader.getAttributeRequired("PartName");
                 }
                 if (entries.isFullyFilled()) {
@@ -128,7 +130,9 @@ class OPCPackage implements AutoCloseable {
 
     private static class PartEntryNames {
         public static final String WORKBOOK_MAIN_CONTENT_TYPE =
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml";
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml";
+        public static final String WORKBOOK_EXCEL_MACRO_ENABLED_MAIN_CONTENT_TYPE =
+                "application/vnd.ms-excel.sheet.macroEnabled.main+xml";
         public static final String SHARED_STRINGS_CONTENT_TYPE =
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml";
         String workbook;
