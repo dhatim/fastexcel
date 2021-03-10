@@ -96,6 +96,10 @@ or shade every Nth row (e.g. every 5th):
 ```java
 ws.range(0, 0, 10, 10).style().shadeRows(Color.GRAY2, 5).set();
 ```
+Name a cell range (name of a cell range can only include letters, numbers and underscore):
+```java
+ws.range(0, 0, 0, 10).setName("header");
+```
 
 ### Formulas
 

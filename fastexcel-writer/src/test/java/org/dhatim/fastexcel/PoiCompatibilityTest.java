@@ -630,4 +630,31 @@ class PoiCompatibilityTest {
         return xws.isDisplayGridlines();
     }
 
+    @Test
+    void hasValidNamedRange() throws Exception {
+
+        byte[] data = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Worksheet 1");
+            ws.value(0, 1, "column 1");
+            ws.value(0, 2, "column 2");
+            ws.value(0, 3, "column 3");
+            ws.value(1, 1, "value 1");
+            ws.value(1, 2, "value 2");
+            ws.value(1, 3, "value 3");
+            ws.range(0, 0, 1, 3).setName("col names");
+        });
+
+        // Check generated workbook with Apache POI
+        XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
+        XSSFSheet xws = xwb.getSheetAt(0);
+        // Fetch the XSSF Name object
+        XSSFName name = xwb.getName("col names");
+        String formula = name.getRefersToFormula();
+        
+        assertTrue(name != null);
+        assertTrue(name.getNameName().equals("col names"));
+        assertTrue(formula.equals("'Worksheet 1'!$A$1:$D$2"));
+    }
+
+
 }

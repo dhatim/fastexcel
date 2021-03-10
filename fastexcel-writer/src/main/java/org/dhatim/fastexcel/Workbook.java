@@ -22,6 +22,7 @@ import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.Map;
 import java.util.stream.Stream;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -204,21 +205,53 @@ public class Workbook {
              * (if there are any repeating rows or cols in the sheet at all) **/
     
             for (Worksheet ws : worksheets) {
+                int worksheetIndex = getIndex(ws) - 1;                
                 String defineName = Stream.of(ws.getRepeatingCols(),ws.getRepeatingRows())
                                 .filter(Objects::nonNull)
-                                .map(r -> ws.getName() + "!" + r.toString())
+                                .map(r -> "&apos;" + ws.getName() + "&apos;!" + r.toString())
                                 .collect(Collectors.joining(","));
+                
+                w.append("<definedNames>");
                 if (!defineName.isEmpty()) {
-                    w.append("<definedNames>");
                     w.append("<definedName function=\"false\" " + 
-                                "hidden=\"false\" " +
-                                "localSheetId=\"0\" " + 
-                                "name=\"_xlnm.Print_Titles\" " + 
-                                "vbProcedure=\"false\">");
-                    w.append(defineName);
-                    w.append("</definedName>");
-                    w.append("</definedNames>");
+                                "hidden=\"false\" localSheetId=\"" + 
+                                worksheetIndex + "\" name=\"_xlnm.Print_Titles\" " + 
+                                "vbProcedure=\"false\">")
+                     .append(defineName)
+                     .append("</definedName>");
                 }
+                /** define specifically named ranges **/
+                for (Map.Entry<String, Range> nr : ws.getNamedRanges().entrySet()) {
+                    String rangeName = nr.getKey();
+                    Range range = nr.getValue();
+                    w.append("<definedName function=\"false\" " + 
+                                "hidden=\"false\" localSheetId=\"" + 
+                                worksheetIndex + "\" name=\"")
+                        .append(rangeName)
+                        .append("\" vbProcedure=\"false\">&apos;")
+                        .append(ws.getName())
+                        .append("&apos;")
+                        .append("!")
+                        .append("$" + Range.colToString(range.getLeft()) + "$" + (1 + range.getTop()))
+                        .append(":")
+                        .append("$" + Range.colToString(range.getRight()) + "$" + (1 + range.getBottom()))
+                        .append("</definedName>");
+                }
+                Range af = ws.getAutoFilterRange();
+                if (af != null) {
+                    w.append("<definedName function=\"false\" hidden=\"true\" localSheetId=\"")
+                    .append(worksheetIndex)
+                    .append("\" name=\"_xlnm._FilterDatabase\" vbProcedure=\"false\">")
+                    .append("&apos;")
+                    .append(ws.getName())
+                    .append("&apos;")
+                    .append("!")
+                    .append("$" + Range.colToString(af.getLeft()) + "$" + (1 + af.getTop()))
+                    .append(":")
+                    .append("$" + Range.colToString(af.getRight()) + "$" + (1 + af.getBottom()))
+                    .append("</definedName>");
+                }
+                w.append("</definedNames>");
             }
             w.append("</workbook>");
         });

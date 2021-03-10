@@ -204,6 +204,10 @@ public class Worksheet {
      * Range of row where will be inserted auto filter
      */
     private Range autoFilterRange = null;
+    /**
+     * List of named ranges.
+     */
+    private Map<String, Range> namedRanges = new LinkedHashMap();
 
     /**
      * The set of protection options that are applied on the sheet.
@@ -249,6 +253,16 @@ public class Worksheet {
     }
 
     /**
+     * Get cell range that autofilter is applied to.
+     * 
+     * @return Range of cells that autofilter is set to
+     *             (null if autofilter is not set).
+     */
+    public Range getAutoFilterRange(){
+        return autoFilterRange;
+    }
+
+    /**
      * Get repeating cols defined for the print setup.
      *
      * @return List representing a range of columns to be repeated
@@ -256,6 +270,16 @@ public class Worksheet {
      */
     public RepeatColRange getRepeatingCols(){
         return repeatingCols;
+    }
+
+    /**
+     * Get a list of named ranges.
+     * 
+     * @return Map containing named range entries 
+     *              where keys are the names and values are cell ranges.
+     */
+    public Map<String, Range> getNamedRanges() {
+        return namedRanges;
     }
 
     /**
@@ -1208,5 +1232,19 @@ public class Worksheet {
     public void header(String text, Position position) {
         this.header.put(position, "&amp;" + position.getPos() +
                                   prepareForXml(text));
+    }
+
+    /**
+     * Add the given range to this sheet's
+     * list of named ranges under the provided name.
+     * It will be visible when this sheet is open in the
+     * cell range dropdown menu under the specified name.
+     * 
+     * @param range Range of cells that needs to be named.
+     * @param name String representing the given cell range's name.
+     * 
+     */
+    public void addNamedRange(Range range, String name) {
+        this.namedRanges.put(name, range);
     }
 }
