@@ -203,19 +203,19 @@ public class Workbook {
             /** Defining repeating rows and columns for the print setup...
              *  This is defined for each sheet separately 
              * (if there are any repeating rows or cols in the sheet at all) **/
-    
+
+            w.append("<definedNames>");
             for (Worksheet ws : worksheets) {
-                int worksheetIndex = getIndex(ws) - 1;                
+                int worksheetIndex = getIndex(ws) - 1;
                 String defineName = Stream.of(ws.getRepeatingCols(),ws.getRepeatingRows())
                                 .filter(Objects::nonNull)
                                 .map(r -> "&apos;" + ws.getName() + "&apos;!" + r.toString())
                                 .collect(Collectors.joining(","));
-                
-                w.append("<definedNames>");
+
                 if (!defineName.isEmpty()) {
-                    w.append("<definedName function=\"false\" " + 
-                                "hidden=\"false\" localSheetId=\"" + 
-                                worksheetIndex + "\" name=\"_xlnm.Print_Titles\" " + 
+                    w.append("<definedName function=\"false\" " +
+                                "hidden=\"false\" localSheetId=\"" +
+                                worksheetIndex + "\" name=\"_xlnm.Print_Titles\" " +
                                 "vbProcedure=\"false\">")
                      .append(defineName)
                      .append("</definedName>");
@@ -224,8 +224,8 @@ public class Workbook {
                 for (Map.Entry<String, Range> nr : ws.getNamedRanges().entrySet()) {
                     String rangeName = nr.getKey();
                     Range range = nr.getValue();
-                    w.append("<definedName function=\"false\" " + 
-                                "hidden=\"false\" localSheetId=\"" + 
+                    w.append("<definedName function=\"false\" " +
+                                "hidden=\"false\" localSheetId=\"" +
                                 worksheetIndex + "\" name=\"")
                         .append(rangeName)
                         .append("\" vbProcedure=\"false\">&apos;")
@@ -251,8 +251,8 @@ public class Workbook {
                     .append("$" + Range.colToString(af.getRight()) + "$" + (1 + af.getBottom()))
                     .append("</definedName>");
                 }
-                w.append("</definedNames>");
             }
+            w.append("</definedNames>");
             w.append("</workbook>");
         });
     }

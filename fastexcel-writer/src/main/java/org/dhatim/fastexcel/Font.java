@@ -84,11 +84,11 @@ class Font {
      * @param underlined Underlined flag.
      * @param name Font name. Defaults to "Calibri".
      * @param size Font size, in points. Defaults to 11.0.
-     * @param rgbColor RGB font color. Defaults to "000000".
+     * @param rgbColor RGB font color. Defaults to "FF000000".
      * @return New font object.
      */
     static Font build(boolean bold, boolean italic, boolean underlined, String name, BigDecimal size, String rgbColor) {
-        return new Font(bold, italic, underlined, name == null ? "Calibri" : name, size == null ? BigDecimal.valueOf(11.0) : size, rgbColor == null ? "000000" : rgbColor);
+        return new Font(bold, italic, underlined, name == null ? "Calibri" : name, size == null ? BigDecimal.valueOf(11.0) : size, rgbColor == null ? "FF000000" : rgbColor);
     }
 
     @Override
