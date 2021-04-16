@@ -3,7 +3,7 @@
     <parent>
         <groupId>org.dhatim</groupId>
         <artifactId>fastexcel-parent</artifactId>
-        <version>0-SNAPSHOT</version>
+        <version>21.1.10-SR0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>fastexcel-reader</artifactId>

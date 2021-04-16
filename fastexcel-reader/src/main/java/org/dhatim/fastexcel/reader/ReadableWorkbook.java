@@ -19,6 +19,7 @@ import javax.xml.stream.XMLStreamException;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -32,6 +33,7 @@ public class ReadableWorkbook implements Closeable {
 
     private boolean date1904;
     private final List<Sheet> sheets = new ArrayList<>();
+    private Integer activeTab;
 
     public ReadableWorkbook(File inputFile) throws IOException {
         this(OPCPackage.open(inputFile));
@@ -42,7 +44,15 @@ public class ReadableWorkbook implements Closeable {
      * (but will not uncompress it in memory)
      */
     public ReadableWorkbook(InputStream inputStream) throws IOException {
-        this(OPCPackage.open(inputStream));
+        this(inputStream, false);
+    }
+
+    /**
+     * Note: will load the whole xlsx file into memory,
+     * (but will not uncompress it in memory)
+     */
+    public ReadableWorkbook(InputStream inputStream, boolean withStyle) throws IOException {
+        this(OPCPackage.open(inputStream, withStyle));
     }
 
     private ReadableWorkbook(OPCPackage pkg) throws IOException {
@@ -53,7 +63,6 @@ public class ReadableWorkbook implements Closeable {
         } catch (XMLStreamException e) {
             throw new ExcelReaderException(e);
         }
-
         try (SimpleXmlReader workbookReader = new SimpleXmlReader(factory, pkg.getWorkbookContent())) {
             readWorkbook(workbookReader);
         } catch (XMLStreamException e) {
@@ -86,9 +95,22 @@ public class ReadableWorkbook implements Closeable {
         return sheets.stream().filter(sheet -> name.equals(sheet.getName())).findFirst();
     }
 
+    public Optional<Sheet> getActiveSheet() {
+        if (activeTab == null) {
+            return Optional.empty();
+        }
+        return getSheet(activeTab);
+    }
+
     private void readWorkbook(SimpleXmlReader r) throws XMLStreamException {
-        while (r.goTo(() -> r.isStartElement("sheets") || r.isStartElement("workbookPr") || r.isEndElement("workbook"))) {
-            if ("sheets".equals(r.getLocalName())) {
+        while (r.goTo(() -> r.isStartElement("sheets") || r.isStartElement("workbookPr") ||
+            r.isStartElement("workbookView") || r.isEndElement("workbook"))) {
+            if ("workbookView".equals(r.getLocalName())) {
+                String activeTab = r.getAttribute("activeTab");
+                if (activeTab != null) {
+                    this.activeTab = Integer.parseInt(activeTab);
+                }
+            } else if ("sheets".equals(r.getLocalName())) {
                 r.forEach("sheet", "sheets", this::createSheet);
             } else if ("workbookPr".equals(r.getLocalName())) {
                 String date1904Value = r.getAttribute("date1904");
@@ -102,8 +124,16 @@ public class ReadableWorkbook implements Closeable {
     private void createSheet(SimpleXmlReader r) {
         String name = r.getAttribute("name");
         String id = r.getAttribute("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id");
+        SheetVisibility sheetVisibility;
+        if ("veryHidden".equals(r.getAttribute("state"))) {
+            sheetVisibility = SheetVisibility.VERY_HIDDEN;
+        } else if ("hidden".equals(r.getAttribute("state"))) {
+            sheetVisibility = SheetVisibility.HIDDEN;
+        } else {
+            sheetVisibility = SheetVisibility.VISIBLE;
+        }
         int index = sheets.size();
-        sheets.add(new Sheet(this, index, id, name));
+        sheets.add(new Sheet(this, index, id, name, sheetVisibility));
     }
 
     Stream<Row> openStream(Sheet sheet) throws IOException {
@@ -114,6 +144,14 @@ public class ReadableWorkbook implements Closeable {
         } catch (XMLStreamException e) {
             throw new IOException(e);
         }
+    }
+
+    public List<String> getFormats() {
+        return pkg.getFormatList();
+    }
+
+    public Map<String, String> getNumFmtIdToFormat() {
+        return pkg.getFmtIdToFmtString();
     }
 
     SST getSharedStringsTable() {

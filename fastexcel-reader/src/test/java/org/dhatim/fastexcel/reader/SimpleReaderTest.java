@@ -17,6 +17,7 @@ package org.dhatim.fastexcel.reader;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
