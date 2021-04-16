@@ -15,16 +15,15 @@
  */
 package org.dhatim.fastexcel.reader;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class SimpleReaderTest {
 
@@ -41,6 +40,10 @@ class SimpleReaderTest {
             {10, "nec", date(2018, 1, 10), null, false},
     };
 
+    private static LocalDateTime date(int year, int month, int day) {
+        return LocalDateTime.of(year, month, day, 0, 0);
+    }
+
     @Test
     void test() throws IOException {
         try (InputStream is = Resources.open("/xlsx/simple.xlsx"); ReadableWorkbook wb = new ReadableWorkbook(is)) {
@@ -55,15 +58,11 @@ class SimpleReaderTest {
                     Object[] values = VALUES[r.getRowNum() - 1];
                     assertThat(num).isEqualTo(BigDecimal.valueOf((Integer) values[0]));
                     assertThat(str).isEqualTo((String) values[1]);
-                    assertThat(date).isEqualTo((LocalDateTime) values[2]);
+                    assertThat(date).isEqualTo(values[2]);
                     assertThat(bool).isEqualTo(values[4]);
                 });
             }
         }
-    }
-
-    private static LocalDateTime date(int year, int month, int day) {
-        return LocalDateTime.of(year, month, day, 0, 0);
     }
 
 
