@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>fastexcel-parent</artifactId>
-    <version>21.1.10-SR0</version>
+    <version>0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>

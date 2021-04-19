@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.dhatim</groupId>
         <artifactId>fastexcel-parent</artifactId>
-        <version>21.1.10-SR0</version>
+        <version>0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>fastexcel-e2e</artifactId>
@@ -14,12 +14,12 @@
         <dependency>
             <groupId>org.dhatim</groupId>
             <artifactId>fastexcel</artifactId>
-            <version>21.1.10-SR0</version>
+            <version>0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.dhatim</groupId>
             <artifactId>fastexcel-reader</artifactId>
-            <version>21.1.10-SR0</version>
+            <version>0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
