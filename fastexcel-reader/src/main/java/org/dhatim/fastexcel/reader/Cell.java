@@ -30,14 +30,23 @@ public class Cell {
     private final CellType type;
     private final CellAddress address;
     private final String rawValue;
+    private final String dataFormatId;
+    private final String dataFormatString;
 
     Cell(ReadableWorkbook workbook, CellType type, Object value, CellAddress address, String formula, String rawValue) {
+        this(workbook, type, value, address, formula, rawValue, null, null);
+    }
+
+    Cell(ReadableWorkbook workbook, CellType type, Object value, CellAddress address, String formula, String rawValue,
+         String dataFormatId, String dataFormatString) {
         this.workbook = workbook;
         this.type = type;
         this.value = value;
         this.address = address;
         this.formula = formula;
         this.rawValue = rawValue;
+        this.dataFormatId = dataFormatId;
+        this.dataFormatString = dataFormatString;
     }
 
     public CellType getType() {
@@ -133,6 +142,17 @@ public class Cell {
      */
     public String getText() {
         return value == null ? "" : value.toString();
+    }
+
+    public Integer getDataFormatId() {
+        if (dataFormatId == null) {
+            return null;
+        }
+        return Integer.parseInt(dataFormatId);
+    }
+
+    public String getDataFormatString() {
+        return dataFormatString;
     }
 
     /**

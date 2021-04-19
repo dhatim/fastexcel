@@ -105,16 +105,28 @@ class RowSpliterator implements Spliterator<Row> {
         String cellRef = r.getAttribute("r");
         CellAddress addr = new CellAddress(cellRef);
         String type = r.getOptionalAttribute("t").orElse("n");
+        String styleString = r.getAttribute("s");
+        String formatId = null;
+        String formatString = null;
+        if (styleString != null) {
+            int index = Integer.parseInt(styleString);
+            if (index < workbook.getFormats().size()) {
+                formatId = workbook.getFormats().get(index);
+                formatString = workbook.getNumFmtIdToFormat().get(formatId);
+            }
+        }
+
         if ("inlineStr".equals(type)) {
             return parseInlineStr(addr);
         } else if ("s".equals(type)) {
             return parseString(addr);
         } else {
-            return parseOther(addr, type);
+            return parseOther(addr, type, formatId, formatString);
         }
     }
 
-    private Cell parseOther(CellAddress addr, String type) throws XMLStreamException {
+    private Cell parseOther(CellAddress addr, String type, String dataFormatId, String dataFormatString)
+        throws XMLStreamException {
         CellType definedType = parseType(type);
         Function<String, ?> parser = getParserForType(definedType);
 
@@ -146,7 +158,7 @@ class RowSpliterator implements Spliterator<Row> {
             return new Cell(workbook, CellType.EMPTY, null, addr, null, rawValue);
         } else {
             CellType cellType = (formula != null) ? CellType.FORMULA : definedType;
-            return new Cell(workbook, cellType, value, addr, formula, rawValue);
+            return new Cell(workbook, cellType, value, addr, formula, rawValue, dataFormatId, dataFormatString);
         }
     }
 

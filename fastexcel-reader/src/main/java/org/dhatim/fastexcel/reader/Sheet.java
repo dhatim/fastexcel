@@ -26,12 +26,14 @@ public class Sheet {
     private final int index;
     private final String id;
     private final String name;
+    private final SheetVisibility visibility;
 
-    Sheet(ReadableWorkbook workbook, int index, String id, String name) {
+    Sheet(ReadableWorkbook workbook, int index, String id, String name, SheetVisibility visibility) {
         this.workbook = workbook;
         this.index = index;
         this.id = id;
         this.name = name;
+        this.visibility = visibility;
     }
 
     public int getIndex() {
@@ -44,6 +46,10 @@ public class Sheet {
 
     public String getName() {
         return name;
+    }
+
+    public SheetVisibility getVisibility() {
+        return visibility;
     }
 
     public Stream<Row> openStream() throws IOException {
