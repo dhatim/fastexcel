@@ -17,6 +17,7 @@ package org.dhatim.fastexcel.reader;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -103,6 +104,23 @@ class SimpleReaderTest {
     @Test
     public void testDefaultWorkbookPath() throws IOException {
         try (InputStream is = Resources.open("/xlsx/DefaultContentType.xlsx");
+             ReadableWorkbook wb = new ReadableWorkbook(is, new ReadingOptions(false, true))) {
+            Sheet sheet = wb.getFirstSheet();
+            try (Stream<Row> rows = sheet.openStream()) {
+                Iterator<Row> it = rows.iterator();
+                assertTrue(it.hasNext());
+                Iterator<Cell> cellIt = it.next().iterator();
+                assertTrue(cellIt.hasNext());
+                Cell cell = cellIt.next();
+                assertEquals(CellType.NUMBER, cell.getType());
+                assertEquals(BigDecimal.ONE, cell.getValue());
+            }
+        }
+    }
+
+    @Test
+    public void testDefaultWorkbookPath2() throws IOException {
+        try (InputStream is = Resources.open("/xlsx/absolutePath.xlsx");
              ReadableWorkbook wb = new ReadableWorkbook(is, new ReadingOptions(false, true))) {
             Sheet sheet = wb.getFirstSheet();
             try (Stream<Row> rows = sheet.openStream()) {

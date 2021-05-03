@@ -61,11 +61,16 @@ class OPCPackage implements AutoCloseable {
     }
 
     private Map<String, String> readWorkbookPartsIds(String workbookRelsEntryName) throws IOException, XMLStreamException {
+        String xlFolder = workbookRelsEntryName.substring(0, workbookRelsEntryName.indexOf("_rel"));
         Map<String, String> partsIdById = new HashMap<>();
         SimpleXmlReader rels = new SimpleXmlReader(factory, getRequiredEntryContent(workbookRelsEntryName));
         while (rels.goTo("Relationship")) {
             String id = rels.getAttribute("Id");
             String target = rels.getAttribute("Target");
+            // if name does not start with /, it is a relative path
+            if (!target.startsWith("/")) {
+                target = xlFolder + target;
+            } // else it is an absolute path
             partsIdById.put(id, target);
         }
         return partsIdById;
@@ -92,7 +97,7 @@ class OPCPackage implements AutoCloseable {
             if (entries.workbook == null) {
                 // in case of a default workbook path, we got this
                 // <Default Extension="xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml" />
-                entries.workbook = "xl/workbook.xml";
+                entries.workbook = "/xl/workbook.xml";
             }
         }
         return entries;
@@ -178,10 +183,6 @@ class OPCPackage implements AutoCloseable {
                 sheet.getIndex(), sheet.getName(), sheet.getId());
             throw new ExcelReaderException(msg);
         }
-        // if name does not start with /, it is a relative path
-        if (!name.startsWith("/")) {
-            name = "xl/" + name;
-        } // else it is an absolute path
         return getRequiredEntryContent(name);
     }
 
