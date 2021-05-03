@@ -16,7 +16,7 @@ public class WithFormatTest {
   @Test
   void testFile() throws IOException {
     try (InputStream inputStream = open("/xlsx/withStyle.xlsx");
-         ReadableWorkbook excel = new ReadableWorkbook(inputStream, true)) {
+         ReadableWorkbook excel = new ReadableWorkbook(inputStream, new ReadingOptions(true, false))) {
       Optional<Sheet> sheet = excel.getActiveSheet();
       assertTrue(sheet.isPresent());
       Iterator<Row> it = sheet.get().openStream().iterator();

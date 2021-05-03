@@ -14,7 +14,7 @@ public class InvalidOPCPackageTest {
         expectError("/invalid/only-content-types.xlsx", "/xl/_rels/custom1-workbook.xml.rels not found");
         expectError("/invalid/no-workbook-rels.xlsx", "/xl/_rels/custom1-workbook.xml.rels not found");
         expectError("/invalid/no-workbook-xml.xlsx", "/xl/custom1-workbook.xml not found");
-        expectError("/invalid/no-sheet.xlsx", "xl/worksheets/custom3-sheet1.xml not found");
+        expectError("/invalid/no-sheet.xlsx", "/xl/worksheets/custom3-sheet1.xml not found");
         expectError("/invalid/missing-sheet-entry.xlsx", "Sheet#0 'Feuil1' is missing an entry in workbook rels (for id: 'rId42')");
     }
 

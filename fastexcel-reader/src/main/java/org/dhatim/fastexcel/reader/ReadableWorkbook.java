@@ -30,13 +30,14 @@ public class ReadableWorkbook implements Closeable {
 
     private final OPCPackage pkg;
     private final SST sst;
+    private final ReadingOptions readingOptions;
 
     private boolean date1904;
     private final List<Sheet> sheets = new ArrayList<>();
     private Integer activeTab;
 
     public ReadableWorkbook(File inputFile) throws IOException {
-        this(OPCPackage.open(inputFile));
+        this(OPCPackage.open(inputFile), ReadingOptions.DEFAULT_READING_OPTIONS);
     }
 
     /**
@@ -44,18 +45,18 @@ public class ReadableWorkbook implements Closeable {
      * (but will not uncompress it in memory)
      */
     public ReadableWorkbook(InputStream inputStream) throws IOException {
-        this(inputStream, false);
+        this(inputStream, ReadingOptions.DEFAULT_READING_OPTIONS);
     }
 
     /**
      * Note: will load the whole xlsx file into memory,
      * (but will not uncompress it in memory)
      */
-    public ReadableWorkbook(InputStream inputStream, boolean withStyle) throws IOException {
-        this(OPCPackage.open(inputStream, withStyle));
+    public ReadableWorkbook(InputStream inputStream, ReadingOptions readingOptions) throws IOException {
+        this(OPCPackage.open(inputStream, readingOptions.isWithCellFormat()), readingOptions);
     }
 
-    private ReadableWorkbook(OPCPackage pkg) throws IOException {
+    private ReadableWorkbook(OPCPackage pkg, ReadingOptions readingOptions) throws IOException {
 
         try {
             this.pkg = pkg;
@@ -68,6 +69,7 @@ public class ReadableWorkbook implements Closeable {
         } catch (XMLStreamException e) {
             throw new ExcelReaderException(e);
         }
+        this.readingOptions = readingOptions;
     }
 
     @Override
@@ -164,6 +166,10 @@ public class ReadableWorkbook implements Closeable {
 
     public static boolean isOLE2Header(byte[] bytes) {
         return HeaderSignatures.isHeader(bytes, HeaderSignatures.OLE_2_SIGNATURE);
+    }
+
+    ReadingOptions getReadingOptions() {
+        return readingOptions;
     }
 
     private static Runnable asUncheckedRunnable(Closeable c) {

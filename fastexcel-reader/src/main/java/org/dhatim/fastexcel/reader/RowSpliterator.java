@@ -136,7 +136,15 @@ class RowSpliterator implements Spliterator<Row> {
         while (r.goTo(() -> r.isStartElement("v") || r.isEndElement("c") || r.isStartElement("f"))) {
             if ("v".equals(r.getLocalName())) {
                 rawValue = r.getValueUntilEndElement("v");
-                value = "".equals(rawValue) ? null : parser.apply(rawValue);
+                try {
+                    value = "".equals(rawValue) ? null : parser.apply(rawValue);
+                } catch (ExcelReaderException e) {
+                    if (workbook.getReadingOptions().isCellInErrorIfParseError()) {
+                        definedType = CellType.ERROR;
+                    } else {
+                        throw e;
+                    }
+                }
             } else if ("f".equals(r.getLocalName())) {
                 String ref = r.getAttribute("ref");
                 String t = r.getAttribute("t");
