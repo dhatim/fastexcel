@@ -178,7 +178,11 @@ class OPCPackage implements AutoCloseable {
                 sheet.getIndex(), sheet.getName(), sheet.getId());
             throw new ExcelReaderException(msg);
         }
-        return getRequiredEntryContent("xl/" + name);
+        // if name does not start with /, it is a relative path
+        if (!name.startsWith("/")) {
+            name = "xl/" + name;
+        } // else it is an absolute path
+        return getRequiredEntryContent(name);
     }
 
     public List<String> getFormatList() {
