@@ -89,6 +89,9 @@ class OPCPackage implements AutoCloseable {
                     break;
                 }
             }
+            if (entries.workbook == null) {
+                entries.workbook = "xl/workbook.xml";
+            }
         }
         return entries;
     }
