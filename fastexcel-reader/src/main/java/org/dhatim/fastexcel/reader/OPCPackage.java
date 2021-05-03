@@ -90,6 +90,8 @@ class OPCPackage implements AutoCloseable {
                 }
             }
             if (entries.workbook == null) {
+                // in case of a default workbook path, we got this
+                // <Default Extension="xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml" />
                 entries.workbook = "xl/workbook.xml";
             }
         }
