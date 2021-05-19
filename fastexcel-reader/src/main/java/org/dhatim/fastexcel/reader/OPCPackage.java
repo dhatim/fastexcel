@@ -168,13 +168,10 @@ class OPCPackage implements AutoCloseable {
             while (entries.hasMoreElements()) {
                 ZipArchiveEntry e = entries.nextElement();
                 if (e.getName().equalsIgnoreCase(name)) {
-                    entry = e;
-                    break;
+                    return zip.getInputStream(e);
                 }
             }
-            if (entry == null) {
-                return null;
-            }
+            return null;
         }
         return zip.getInputStream(entry);
     }
