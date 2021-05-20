@@ -134,4 +134,21 @@ class SimpleReaderTest {
             }
         }
     }
+
+    @Test
+    public void testCaseInsensitiveInFileNames() throws IOException {
+        try (InputStream is = Resources.open("/xlsx/caseInsensitive.xlsx");
+             ReadableWorkbook wb = new ReadableWorkbook(is, new ReadingOptions(false, true))) {
+            Sheet sheet = wb.getFirstSheet();
+            try (Stream<Row> rows = sheet.openStream()) {
+                Iterator<Row> it = rows.iterator();
+                assertTrue(it.hasNext());
+                Iterator<Cell> cellIt = it.next().iterator();
+                assertTrue(cellIt.hasNext());
+                Cell cell = cellIt.next();
+                assertEquals(CellType.STRING, cell.getType());
+                assertEquals("A", cell.getValue());
+            }
+        }
+    }
 }

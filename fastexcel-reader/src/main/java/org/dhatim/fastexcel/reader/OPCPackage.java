@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -162,6 +163,14 @@ class OPCPackage implements AutoCloseable {
         }
         ZipArchiveEntry entry = zip.getEntry(name);
         if (entry == null) {
+            // to be case insensitive
+            Enumeration<ZipArchiveEntry> entries = zip.getEntries();
+            while (entries.hasMoreElements()) {
+                ZipArchiveEntry e = entries.nextElement();
+                if (e.getName().equalsIgnoreCase(name)) {
+                    return zip.getInputStream(e);
+                }
+            }
             return null;
         }
         return zip.getInputStream(entry);
