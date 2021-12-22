@@ -108,11 +108,21 @@ public class ReaderBenchmark extends BenchmarkLauncher {
     }
 
     @Benchmark
-    public int streamingApachePoi() throws IOException, OpenXML4JException, SAXException {
+    public long streamingApachePoiWithStyles() throws IOException, OpenXML4JException, SAXException {
+        return runStreamingApachePoi(true);
+    }
+
+    @Benchmark
+    public long streamingApachePoiWithoutStyles() throws IOException, OpenXML4JException, SAXException {
+        return runStreamingApachePoi(false);
+    }
+
+    public long runStreamingApachePoi(boolean loadStyles) throws IOException, OpenXML4JException, SAXException {
         try (OPCPackage pkg = OPCPackage.open(openResource(FILE))) {
             ReadOnlySharedStringsTable strings = new ReadOnlySharedStringsTable(pkg);
             XSSFReader reader = new XSSFReader(pkg);
-            StylesTable styles = reader.getStylesTable();
+            //reader.getStylesTable() is not needed because the test does not need styles
+            StylesTable styles = loadStyles ? reader.getStylesTable() : null;
             XSSFReader.SheetIterator iterator = (XSSFReader.SheetIterator) reader.getSheetsData();
             int sheetIndex = 0;
             while (iterator.hasNext()) {
@@ -121,11 +131,11 @@ public class ReaderBenchmark extends BenchmarkLauncher {
                         SheetContentHandler sheetHandler = new SheetContentHandler();
                         processSheet(styles, strings, sheetHandler, sheetStream);
                         assertEquals(RESULT, sheetHandler.result);
+                        return sheetHandler.result;
                     }
                 }
-                sheetIndex++;
             }
-            return sheetIndex;
+            return -1;
         }
     }
 
@@ -148,6 +158,7 @@ public class ReaderBenchmark extends BenchmarkLauncher {
     }
 
 
+    /* this fails with POI 5
     @Benchmark
     public long monitorjbl() throws IOException {
         long sum = 0;
@@ -165,6 +176,7 @@ public class ReaderBenchmark extends BenchmarkLauncher {
         assertEquals(RESULT, sum);
         return sum;
     }
+    */
 
     private static InputStream openResource(String name) {
         InputStream result = ReaderBenchmark.class.getResourceAsStream(name);
