@@ -10,6 +10,10 @@
     <artifactId>fastexcel-e2e</artifactId>
     <name>Fastexcel End-to-End tests</name>
 
+    <properties>
+        <jmh.version>1.33</jmh.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.dhatim</groupId>
@@ -43,13 +47,13 @@
         <dependency>
             <groupId>org.openjdk.jmh</groupId>
             <artifactId>jmh-core</artifactId>
-            <version>1.33</version>
+            <version>${jmh.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.openjdk.jmh</groupId>
             <artifactId>jmh-generator-annprocess</artifactId>
-            <version>1.33</version>
+            <version>${jmh.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
