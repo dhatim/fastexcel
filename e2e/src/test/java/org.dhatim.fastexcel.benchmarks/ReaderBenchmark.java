@@ -15,13 +15,13 @@
  */
 package org.dhatim.fastexcel.benchmarks;
 
-import com.monitorjbl.xlsx.StreamingReader;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.ss.util.CellReference;
+import org.apache.poi.util.XMLHelper;
 import org.apache.poi.xssf.eventusermodel.ReadOnlySharedStringsTable;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.poi.xssf.eventusermodel.XSSFSheetXMLHandler;
@@ -38,7 +38,6 @@ import org.xml.sax.XMLReader;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Spliterator;
@@ -108,11 +107,21 @@ public class ReaderBenchmark extends BenchmarkLauncher {
     }
 
     @Benchmark
-    public int streamingApachePoi() throws IOException, OpenXML4JException, SAXException {
+    public long streamingApachePoiWithStyles() throws IOException, OpenXML4JException, SAXException {
+        return runStreamingApachePoi(true);
+    }
+
+    @Benchmark
+    public long streamingApachePoiWithoutStyles() throws IOException, OpenXML4JException, SAXException {
+        return runStreamingApachePoi(false);
+    }
+
+    public long runStreamingApachePoi(boolean loadStyles) throws IOException, OpenXML4JException, SAXException {
         try (OPCPackage pkg = OPCPackage.open(openResource(FILE))) {
             ReadOnlySharedStringsTable strings = new ReadOnlySharedStringsTable(pkg);
             XSSFReader reader = new XSSFReader(pkg);
-            StylesTable styles = reader.getStylesTable();
+            //reader.getStylesTable() is not needed because the test does not need styles
+            StylesTable styles = loadStyles ? reader.getStylesTable() : null;
             XSSFReader.SheetIterator iterator = (XSSFReader.SheetIterator) reader.getSheetsData();
             int sheetIndex = 0;
             while (iterator.hasNext()) {
@@ -121,11 +130,11 @@ public class ReaderBenchmark extends BenchmarkLauncher {
                         SheetContentHandler sheetHandler = new SheetContentHandler();
                         processSheet(styles, strings, sheetHandler, sheetStream);
                         assertEquals(RESULT, sheetHandler.result);
+                        return sheetHandler.result;
                     }
                 }
-                sheetIndex++;
             }
-            return sheetIndex;
+            return -1;
         }
     }
 
@@ -133,10 +142,8 @@ public class ReaderBenchmark extends BenchmarkLauncher {
                               XSSFSheetXMLHandler.SheetContentsHandler sheetHandler, InputStream sheetInputStream) throws IOException, SAXException {
         DataFormatter formatter = new DataFormatter();
         InputSource sheetSource = new InputSource(sheetInputStream);
-        SAXParserFactory saxFactory = SAXParserFactory.newInstance();
-        saxFactory.setNamespaceAware(true);
         try {
-            SAXParser saxParser = saxFactory.newSAXParser();
+            SAXParser saxParser = XMLHelper.getSaxParserFactory().newSAXParser();
             XMLReader sheetParser = saxParser.getXMLReader();
             ContentHandler handler = new XSSFSheetXMLHandler(
                     styles, null, strings, sheetHandler, formatter, false);
@@ -148,11 +155,12 @@ public class ReaderBenchmark extends BenchmarkLauncher {
     }
 
 
+    /* this fails with POI 5
     @Benchmark
     public long monitorjbl() throws IOException {
         long sum = 0;
         try (InputStream is = openResource(FILE);
-             org.apache.poi.ss.usermodel.Workbook workbook = StreamingReader.builder().open(is)) {
+             org.apache.poi.ss.usermodel.Workbook workbook = com.monitorjbl.xlsx.StreamingReader.builder().open(is)) {
             for (org.apache.poi.ss.usermodel.Sheet sheet : workbook) {
                 for (org.apache.poi.ss.usermodel.Row r : sheet) {
                     if (r.getRowNum() == 0) {
@@ -165,6 +173,7 @@ public class ReaderBenchmark extends BenchmarkLauncher {
         assertEquals(RESULT, sum);
         return sum;
     }
+    */
 
     private static InputStream openResource(String name) {
         InputStream result = ReaderBenchmark.class.getResourceAsStream(name);
