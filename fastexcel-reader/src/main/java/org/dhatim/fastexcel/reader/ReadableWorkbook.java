@@ -40,6 +40,10 @@ public class ReadableWorkbook implements Closeable {
         this(OPCPackage.open(inputFile), ReadingOptions.DEFAULT_READING_OPTIONS);
     }
 
+    public ReadableWorkbook(File inputFile, ReadingOptions readingOptions) throws IOException {
+        this(OPCPackage.open(inputFile), readingOptions);
+    }
+
     /**
      * Note: will load the whole xlsx file into memory,
      * (but will not uncompress it in memory)
