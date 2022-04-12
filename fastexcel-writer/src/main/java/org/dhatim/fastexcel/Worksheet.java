@@ -58,6 +58,10 @@ public class Worksheet {
      */
     private final Set<Range> mergedRanges = new HashSet<>();
     /**
+     * List of conditional formattings for this worksheet
+     */
+    private final List<ConditionalFormatting> conditionalFormattings = new ArrayList<>();
+    /**
      * List of DataValidations for this worksheet
      */
     private final List<DataValidation> dataValidations = new ArrayList<>();
@@ -349,7 +353,7 @@ public class Worksheet {
      * @param fill Shading fill pattern.
      */
     void shadeAlternateRows(Range range, Fill fill) {
-        alternateShadingRanges.add(new AlternateShading(range, getWorkbook().cacheShadingFillColor(fill)));
+        alternateShadingRanges.add(new AlternateShading(range, getWorkbook().cacheDifferentialFormat(new DifferentialFormat(null, null, fill, null, null, null))));
     }
     /**
      * Apply shading to Nth rows in the given range.
@@ -359,7 +363,11 @@ public class Worksheet {
      * @param eachNRows Shading row frequency.
      */
     void shadeRows(Range range, Fill fill, int eachNRows) {
-        shadingRanges.add(new Shading(range, getWorkbook().cacheShadingFillColor(fill), eachNRows));
+        shadingRanges.add(new Shading(range, getWorkbook().cacheDifferentialFormat(new DifferentialFormat(null, null, fill, null, null, null)), eachNRows));
+    }
+
+    void addConditionalFormatting(ConditionalFormatting conditionalFormatting) {
+    	conditionalFormattings.add(conditionalFormatting);
     }
 
     void addValidation(DataValidation validation) {
@@ -785,6 +793,13 @@ public class Worksheet {
                 writer.append("<mergeCell ref=\"").append(r.toString()).append("\"/>");
             }
             writer.append("</mergeCells>");
+        }
+        if (!conditionalFormattings.isEmpty()) {
+        	int priority = 1;
+            for (ConditionalFormatting v: conditionalFormattings) {
+            	v.getConditionalFormattingRule().setPriority(priority++);
+                v.write(writer);
+            }
         }
         if (!dataValidations.isEmpty()) {
             writer.append("<dataValidations count=\"").append(dataValidations.size()).append("\">");
