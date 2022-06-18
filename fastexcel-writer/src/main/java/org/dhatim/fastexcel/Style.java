@@ -108,6 +108,12 @@ class Style {
             w.append("/>");
             return;
         }
+        if (alignment != null) {
+            w.append(" applyAlignment=\"1\"");
+        }
+        if (protection != null) {
+            w.append(" applyProtection=\"1\"");
+        }
 
         w.append('>');
         if (alignment != null) {
