@@ -122,6 +122,10 @@ public class Worksheet {
      */
     private String pageOrientation = "portrait";
     /**
+     * Paper size for the print preview setup.
+     */
+    private PaperSize paperSize = PaperSize.LETTER_PAPER;
+    /**
      * Scaling factor for the print setup.
      */
     private int pageScale = 100;
@@ -821,7 +825,7 @@ public class Worksheet {
 
 	/* set page orientation for the print setup */
         writer.append("<pageSetup")
-            .append(" paperSize=\"1\"")
+            .append(" paperSize=\"" + paperSize.xmlValue + "\"")
             .append(" scale=\"" + pageScale + "\"")
             .append(" fitToWidth=\"" + fitToWidth + "\"")
             .append(" fitToHeight=\"" + fitToHeight + "\"")
@@ -1094,6 +1098,13 @@ public class Worksheet {
      */
     public void pageOrientation(String orientation) {
         this.pageOrientation = orientation;
+    }
+    /**
+     * Set the paper size.
+     * @param size New paper size for this worksheet
+     */
+    public void paperSize(PaperSize size) {
+        this.paperSize = size;
     }
     /**
      * @param scale = scaling factor for the print setup (between 1 and 100)

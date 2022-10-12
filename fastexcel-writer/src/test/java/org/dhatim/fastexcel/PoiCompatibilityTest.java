@@ -4,6 +4,7 @@ import org.apache.poi.ss.usermodel.DataValidation.ErrorStyle;
 import org.apache.poi.ss.usermodel.DataValidationConstraint;
 import org.apache.poi.ss.usermodel.FontUnderline;
 import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.PrintOrientation;
 import org.apache.poi.ss.usermodel.SheetVisibility;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.*;
@@ -47,6 +48,9 @@ class PoiCompatibilityTest {
         BigDecimal bigDecimalValue = BigDecimal.TEN;
         byte[] data = writeWorkbook(wb -> {
             Worksheet ws = wb.newWorksheet(sheetName);
+            ws.paperSize(PaperSize.A4_PAPER);
+            ws.pageOrientation("landscape");
+            ws.pageScale(80);
             ws.width(0, 2);
             int i = 1;
             ws.hideRow(i);
@@ -72,6 +76,9 @@ class PoiCompatibilityTest {
         assertThat(xwb.getActiveSheetIndex()).isEqualTo(0);
         assertThat(xwb.getNumberOfSheets()).isEqualTo(1);
         XSSFSheet xws = xwb.getSheet(sheetName);
+        assertThat(xws.getPrintSetup().getPaperSizeEnum()).isEqualTo(org.apache.poi.ss.usermodel.PaperSize.A4_PAPER);
+        assertThat(xws.getPrintSetup().getOrientation()).isEqualTo(PrintOrientation.LANDSCAPE);
+        assertThat(xws.getPrintSetup().getScale()).isEqualTo((short)80);
         Comparable<XSSFRow> row = xws.getRow(0);
         assertThat(row).isNull();
         int i = 1;
