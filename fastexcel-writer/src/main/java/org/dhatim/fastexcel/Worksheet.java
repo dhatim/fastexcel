@@ -1101,7 +1101,7 @@ public class Worksheet {
     }
     /**
      * Set the paper size.
-     * @param paperSize New page orientation for this worksheet
+     * @param size New paper size for this worksheet
      */
     public void paperSize(PaperSize size) {
         this.paperSize = size;
