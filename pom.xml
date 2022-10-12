@@ -40,7 +40,7 @@
     <properties>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
-        <junit.jupiter.version>5.8.2</junit.jupiter.version>
+        <junit.jupiter.version>5.9.1</junit.jupiter.version>
         <junit.platform.version>1.3.2</junit.platform.version>
         <enforcer.fail>false</enforcer.fail>
     </properties>
@@ -57,13 +57,13 @@
             <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
-                <version>3.22.0</version>
+                <version>3.23.1</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.poi</groupId>
                 <artifactId>poi-ooxml</artifactId>
-                <version>5.2.2</version>
+                <version>5.2.3</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -86,7 +86,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.3.2</version>
+                <version>3.4.1</version>
                 <configuration>
                     <show>public</show>
                 </configuration>
@@ -110,7 +110,7 @@
                     <plugin>
                         <groupId>org.sonatype.plugins</groupId>
                         <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.12</version>
+                        <version>1.6.13</version>
                         <extensions>true</extensions>
                         <configuration>
                             <serverId>ossrh</serverId>
