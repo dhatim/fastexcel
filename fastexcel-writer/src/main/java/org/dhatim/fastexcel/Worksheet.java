@@ -58,6 +58,10 @@ public class Worksheet {
      */
     private final Set<Range> mergedRanges = new HashSet<>();
     /**
+     * List of conditional formattings for this worksheet
+     */
+    private final List<ConditionalFormatting> conditionalFormattings = new ArrayList<>();
+    /**
      * List of DataValidations for this worksheet
      */
     private final List<DataValidation> dataValidations = new ArrayList<>();
@@ -353,7 +357,7 @@ public class Worksheet {
      * @param fill Shading fill pattern.
      */
     void shadeAlternateRows(Range range, Fill fill) {
-        alternateShadingRanges.add(new AlternateShading(range, getWorkbook().cacheShadingFillColor(fill)));
+        alternateShadingRanges.add(new AlternateShading(range, getWorkbook().cacheDifferentialFormat(new DifferentialFormat(null, null, fill, null, null, null))));
     }
     /**
      * Apply shading to Nth rows in the given range.
@@ -363,7 +367,11 @@ public class Worksheet {
      * @param eachNRows Shading row frequency.
      */
     void shadeRows(Range range, Fill fill, int eachNRows) {
-        shadingRanges.add(new Shading(range, getWorkbook().cacheShadingFillColor(fill), eachNRows));
+        shadingRanges.add(new Shading(range, getWorkbook().cacheDifferentialFormat(new DifferentialFormat(null, null, fill, null, null, null)), eachNRows));
+    }
+
+    void addConditionalFormatting(ConditionalFormatting conditionalFormatting) {
+        conditionalFormattings.add(conditionalFormatting);
     }
 
     void addValidation(DataValidation validation) {
@@ -790,6 +798,13 @@ public class Worksheet {
             }
             writer.append("</mergeCells>");
         }
+        if (!conditionalFormattings.isEmpty()) {
+            int priority = 1;
+            for (ConditionalFormatting v: conditionalFormattings) {
+                v.getConditionalFormattingRule().setPriority(priority++);
+                v.write(writer);
+            }
+        }
         if (!dataValidations.isEmpty()) {
             writer.append("<dataValidations count=\"").append(dataValidations.size()).append("\">");
             for (DataValidation v: dataValidations) {
@@ -823,7 +838,7 @@ public class Worksheet {
                          "\" top=\"" + topMargin + "\"/>";
         writer.append(margins);
 
-	/* set page orientation for the print setup */
+    /* set page orientation for the print setup */
         writer.append("<pageSetup")
             .append(" paperSize=\"" + paperSize.xmlValue + "\"")
             .append(" scale=\"" + pageScale + "\"")
@@ -906,7 +921,7 @@ public class Worksheet {
             Cell[] row = rows.get(r);
             if (row != null) {
                 writeRow(writer, r, hiddenRows.contains(r),
-                		rowHeights.get(r), row);
+                        rowHeights.get(r), row);
             }
             rows.set(r, null); // free flushed row data
         }
@@ -966,16 +981,16 @@ public class Worksheet {
      * @throws IOException If an I/O error occurs.
      */
     private static void writeRow(Writer w, int r, boolean isHidden,
-    		 					Double rowHeight, Cell... row) throws IOException {
+                                 Double rowHeight, Cell... row) throws IOException {
         w.append("<row r=\"").append(r + 1).append("\"");
         if (isHidden) {
             w.append(" hidden=\"true\"");
         }
         if(rowHeight != null) {
-        	w.append(" ht=\"")
-        	 .append(rowHeight)
-        	 .append("\"")
-        	 .append(" customHeight=\"1\"");
+            w.append(" ht=\"")
+             .append(rowHeight)
+             .append("\"")
+             .append(" customHeight=\"1\"");
         }
         w.append(">");
         for (int c = 0; c < row.length; ++c) {

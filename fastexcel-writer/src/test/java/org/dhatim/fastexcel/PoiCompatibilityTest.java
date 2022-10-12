@@ -663,5 +663,58 @@ class PoiCompatibilityTest {
         assertTrue(formula.equals("'Worksheet 1'!$A$1:$D$2"));
     }
 
+    @Test
+    void hasValidCellConditionalFormatting() throws Exception {
+        byte[] data = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Worksheet 1");
+            ws.style(0, 0).fillColor("FF8800").set(new ConditionalFormattingExpressionRule("LENB(A1)>1", true));
+        });
+
+        // Check generated workbook with Apache POI
+        XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
+        XSSFSheet xws = xwb.getSheetAt(0);
+        // Fetch the XSSF Conditional Formatting
+        XSSFSheetConditionalFormatting shtCondFmt = xws.getSheetConditionalFormatting();
+        int numCondFmts = shtCondFmt.getNumConditionalFormattings();
+        XSSFConditionalFormatting condFmt = shtCondFmt.getConditionalFormattingAt(0);
+        int numRules = condFmt.getNumberOfRules();
+        XSSFConditionalFormattingRule condFmtRule = condFmt.getRule(0);
+        int numRanges = condFmt.getFormattingRanges().length;
+        CellRangeAddress cellRange = condFmt.getFormattingRanges()[0];
+        
+        assertTrue(numCondFmts == 1);
+        assertTrue(numRules == 1);
+        assertTrue(numRanges == 1);
+        assertTrue(condFmtRule.getFormula1().equals("LENB(A1)>1"));
+        assertTrue(condFmtRule.getPatternFormatting().getFillBackgroundColorColor().getARGBHex().equals("FFFF8800"));
+        assertTrue(cellRange.formatAsString().equals("A1"));
+    }
+
+    @Test
+    void hasValidRangeConditionalFormatting() throws Exception {
+        byte[] data = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Worksheet 1");
+            ws.range(0, 0, 1, 2).style().fillColor("FF8800").set(new ConditionalFormattingExpressionRule("LENB(A1)>1", true));
+        });
+
+        // Check generated workbook with Apache POI
+        XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
+        XSSFSheet xws = xwb.getSheetAt(0);
+        // Fetch the XSSF Conditional Formatting
+        XSSFSheetConditionalFormatting shtCondFmt = xws.getSheetConditionalFormatting();
+        int numCondFmts = shtCondFmt.getNumConditionalFormattings();
+        XSSFConditionalFormatting condFmt = shtCondFmt.getConditionalFormattingAt(0);
+        int numRules = condFmt.getNumberOfRules();
+        XSSFConditionalFormattingRule condFmtRule = condFmt.getRule(0);
+        int numRanges = condFmt.getFormattingRanges().length;
+        CellRangeAddress cellRange = condFmt.getFormattingRanges()[0];
+        
+        assertTrue(numCondFmts == 1);
+        assertTrue(numRules == 1);
+        assertTrue(numRanges == 1);
+        assertTrue(condFmtRule.getFormula1().equals("LENB(A1)>1"));
+        assertTrue(condFmtRule.getPatternFormatting().getFillBackgroundColorColor().getARGBHex().equals("FFFF8800"));
+        assertTrue(cellRange.formatAsString().equals("A1:C2"));
+    }
 
 }

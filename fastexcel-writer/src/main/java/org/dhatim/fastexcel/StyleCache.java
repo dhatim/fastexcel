@@ -36,7 +36,7 @@ final class StyleCache {
     private final ConcurrentMap<Fill, Integer> fills = new ConcurrentHashMap<>();
     private final ConcurrentMap<Border, Integer> borders = new ConcurrentHashMap<>();
     private final ConcurrentMap<Style, Integer> styles = new ConcurrentHashMap<>();
-    private final ConcurrentMap<Fill, Integer> dxfs = new ConcurrentHashMap<>();
+    private final ConcurrentMap<DifferentialFormat, Integer> dxfs = new ConcurrentHashMap<>();
 
     /**
      * Default constructor. Pre-cache Excel-reserved stuff.
@@ -121,7 +121,7 @@ final class StyleCache {
      * @param f Fill pattern.
      * @return Index of the cached fill pattern.
      */
-    int cacheDxf(Fill f) {
+    int cacheDxf(DifferentialFormat f) {
         return cacheStuff(dxfs, f);
     }
 
@@ -166,9 +166,7 @@ final class StyleCache {
         w.append("<cellStyleXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/></cellStyleXfs>");
         writeCache(w, styles, "cellXfs", e -> e.getKey().write(w));
         writeCache(w, dxfs, "dxfs", e -> {
-            w.append("<dxf>");
             e.getKey().write(w);
-            w.append("</dxf>");
         });
         w.append("</styleSheet>");
     }

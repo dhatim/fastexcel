@@ -66,7 +66,7 @@ public class StyleSetter {
      * Italic flag.
      */
     private boolean italic;
-	/**
+    /**
      * Underlined flag.
      */
     private boolean underlined;
@@ -224,8 +224,8 @@ public class StyleSetter {
         this.italic = true;
         return this;
     }
-	
-	/**
+    
+    /**
      * Use underlined text.
      *
      * @return This style setter.
@@ -442,5 +442,33 @@ public class StyleSetter {
         if (shadingFillColor != null) {
             range.shadeRows(Fill.fromColor(shadingFillColor, false), eachNRows);
         }
+    }
+    
+    /**
+     * Apply style elements conditionally
+     * @param conditionalFormattingRule Conditional formatting rule to apply
+     */
+    public void set(ConditionalFormattingRule conditionalFormattingRule) {
+        Alignment alignment = null;
+        if (horizontalAlignment != null || verticalAlignment != null || wrapText) {
+            alignment = new Alignment(horizontalAlignment, verticalAlignment, wrapText);
+        }
+        Font font = null;
+        if (bold || italic || underlined || fontColor != null || fontName != null || fontSize != null) {
+            font = Font.build(bold, italic, underlined, fontName, fontSize, fontColor);
+        }
+        Fill fill = null;
+        if (fillColor != null) {
+            fill = Fill.fromColor(fillColor, false);
+        }
+        Protection protection = null;
+        if (protectionOptions != null) {
+            protection = new Protection(protectionOptions);
+        }
+        
+        int dxfId = range.getWorksheet().getWorkbook().cacheDifferentialFormat(new DifferentialFormat(valueFormatting, font, fill, border, alignment, protection));
+        conditionalFormattingRule.setDxfId(dxfId);
+        ConditionalFormatting conditionalFormatting = new ConditionalFormatting(range, conditionalFormattingRule);
+        range.getWorksheet().addConditionalFormatting(conditionalFormatting);
     }
 }

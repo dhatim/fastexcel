@@ -76,6 +76,10 @@ Apply formatting to a cell containing a timestamp:
 ws.value(0, 0, LocalDateTime.now());
 ws.style(0, 0).format("yyyy-MM-dd H:mm:ss").set();
 ```
+Apply conditional formatting of expression type to a cell:
+```java
+ws.style(0, 0).fillColor("FF8800").set(new ConditionalFormattingExpressionRule("LENB(A1)>1", true));
+```
 
 ### Cell ranges
 

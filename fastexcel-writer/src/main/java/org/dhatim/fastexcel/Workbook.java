@@ -324,13 +324,15 @@ public class Workbook {
     }
 
     /**
-     * Cache shading color for alternate rows.
+     * Cache differential format.
      *
-     * @param fill Fill pattern attributes.
-     * @return Cached fill pattern index.
+     * @param differentialFormat DifferentialFormat object.
+     * @return Cached differential format index.
      */
-    int cacheShadingFillColor(Fill fill) {
-        return styleCache.cacheDxf(fill);
+    int cacheDifferentialFormat(DifferentialFormat differentialFormat) {
+        int numFmtId = styleCache.cacheValueFormatting(differentialFormat.getValueFormatting());
+        differentialFormat.setNumFmtId(numFmtId);
+        return styleCache.cacheDxf(differentialFormat);
     }
 
     /**
