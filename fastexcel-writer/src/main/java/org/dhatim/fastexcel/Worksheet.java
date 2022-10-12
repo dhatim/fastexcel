@@ -367,7 +367,7 @@ public class Worksheet {
     }
 
     void addConditionalFormatting(ConditionalFormatting conditionalFormatting) {
-    	conditionalFormattings.add(conditionalFormatting);
+        conditionalFormattings.add(conditionalFormatting);
     }
 
     void addValidation(DataValidation validation) {
@@ -795,9 +795,9 @@ public class Worksheet {
             writer.append("</mergeCells>");
         }
         if (!conditionalFormattings.isEmpty()) {
-        	int priority = 1;
+            int priority = 1;
             for (ConditionalFormatting v: conditionalFormattings) {
-            	v.getConditionalFormattingRule().setPriority(priority++);
+                v.getConditionalFormattingRule().setPriority(priority++);
                 v.write(writer);
             }
         }
@@ -834,7 +834,7 @@ public class Worksheet {
                          "\" top=\"" + topMargin + "\"/>";
         writer.append(margins);
 
-	/* set page orientation for the print setup */
+    /* set page orientation for the print setup */
         writer.append("<pageSetup")
             .append(" paperSize=\"1\"")
             .append(" scale=\"" + pageScale + "\"")
@@ -917,7 +917,7 @@ public class Worksheet {
             Cell[] row = rows.get(r);
             if (row != null) {
                 writeRow(writer, r, hiddenRows.contains(r),
-                		rowHeights.get(r), row);
+                        rowHeights.get(r), row);
             }
             rows.set(r, null); // free flushed row data
         }
@@ -977,16 +977,16 @@ public class Worksheet {
      * @throws IOException If an I/O error occurs.
      */
     private static void writeRow(Writer w, int r, boolean isHidden,
-    		 					Double rowHeight, Cell... row) throws IOException {
+                                 Double rowHeight, Cell... row) throws IOException {
         w.append("<row r=\"").append(r + 1).append("\"");
         if (isHidden) {
             w.append(" hidden=\"true\"");
         }
         if(rowHeight != null) {
-        	w.append(" ht=\"")
-        	 .append(rowHeight)
-        	 .append("\"")
-        	 .append(" customHeight=\"1\"");
+            w.append(" ht=\"")
+             .append(rowHeight)
+             .append("\"")
+             .append(" customHeight=\"1\"");
         }
         w.append(">");
         for (int c = 0; c < row.length; ++c) {

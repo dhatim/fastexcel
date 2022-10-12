@@ -66,7 +66,7 @@ public class StyleSetter {
      * Italic flag.
      */
     private boolean italic;
-	/**
+    /**
      * Underlined flag.
      */
     private boolean underlined;
@@ -224,8 +224,8 @@ public class StyleSetter {
         this.italic = true;
         return this;
     }
-	
-	/**
+    
+    /**
      * Use underlined text.
      *
      * @return This style setter.
@@ -466,8 +466,8 @@ public class StyleSetter {
             protection = new Protection(protectionOptions);
         }
         
-    	int dxfId = range.getWorksheet().getWorkbook().cacheDifferentialFormat(new DifferentialFormat(valueFormatting, font, fill, border, alignment, protection));
-    	conditionalFormattingRule.setDxfId(dxfId);
+        int dxfId = range.getWorksheet().getWorkbook().cacheDifferentialFormat(new DifferentialFormat(valueFormatting, font, fill, border, alignment, protection));
+        conditionalFormattingRule.setDxfId(dxfId);
         ConditionalFormatting conditionalFormatting = new ConditionalFormatting(range, conditionalFormattingRule);
         range.getWorksheet().addConditionalFormatting(conditionalFormatting);
     }

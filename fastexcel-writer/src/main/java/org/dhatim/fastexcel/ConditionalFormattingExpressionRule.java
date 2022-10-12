@@ -16,7 +16,7 @@ public class ConditionalFormattingExpressionRule extends ConditionalFormattingRu
      * @param stopIfTrue True indicates no rules with lower priority shall be applied over this rule, when this rule evaluates to true
      */
     public ConditionalFormattingExpressionRule(String expression, boolean stopIfTrue) {
-    	super(TYPE, stopIfTrue);
+        super(TYPE, stopIfTrue);
         this.expression = expression;
     }
 

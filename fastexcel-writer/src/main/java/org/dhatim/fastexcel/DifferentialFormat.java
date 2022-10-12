@@ -4,13 +4,13 @@ import java.io.IOException;
 import java.util.Objects;
 
 public class DifferentialFormat {
-	private final String valueFormatting;
-	private final Font font;
-	private final Fill fill;
-	private final Border border;
-	private final Alignment alignment;
+    private final String valueFormatting;
+    private final Font font;
+    private final Fill fill;
+    private final Border border;
+    private final Alignment alignment;
     private final Protection protection;
-	private int numFmtId;
+    private int numFmtId;
     
     /**
      * Constructor.
@@ -23,20 +23,20 @@ public class DifferentialFormat {
      * @param protection Proction to use
      */
     DifferentialFormat(String valueFormatting, Font font, Fill fill, Border border, Alignment alignment, Protection protection) {
-    	this.valueFormatting = valueFormatting;
-    	this.font = font;
-    	this.fill = fill;
-    	this.border = border;
-    	this.alignment = alignment;
-    	this.protection = protection;
+        this.valueFormatting = valueFormatting;
+        this.font = font;
+        this.fill = fill;
+        this.border = border;
+        this.alignment = alignment;
+        this.protection = protection;
     }
     
     public String getValueFormatting() {
-    	return valueFormatting;
+        return valueFormatting;
     }
     
     public void setNumFmtId(int numFmtId) {
-    	this.numFmtId = numFmtId;
+        this.numFmtId = numFmtId;
     }
     
     @Override
@@ -68,18 +68,18 @@ public class DifferentialFormat {
      * @throws IOException If an I/O error occurs.
      */
     void write(Writer w) throws IOException {
-    	w.append("<dxf>");
-    	if (valueFormatting != null) {
-    		w.append("<numFmt numFmtId=\"").append(numFmtId).append("\" formatCode=\"").append(valueFormatting).append("\"/>");
-    	}
-    	if (font != null) {
-    		font.write(w);
-    	}
-    	if (fill != null) {
-    		fill.write(w);
-    	}
+        w.append("<dxf>");
+        if (valueFormatting != null) {
+            w.append("<numFmt numFmtId=\"").append(numFmtId).append("\" formatCode=\"").append(valueFormatting).append("\"/>");
+        }
+        if (font != null) {
+            font.write(w);
+        }
+        if (fill != null) {
+            fill.write(w);
+        }
         if (border != null) {
-        	border.write(w);
+            border.write(w);
         }
         if (alignment != null) {
             alignment.write(w);

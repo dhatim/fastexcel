@@ -332,7 +332,7 @@ public class Workbook {
     int cacheDifferentialFormat(DifferentialFormat differentialFormat) {
         int numFmtId = styleCache.cacheValueFormatting(differentialFormat.getValueFormatting());
         differentialFormat.setNumFmtId(numFmtId);
-    	return styleCache.cacheDxf(differentialFormat);
+        return styleCache.cacheDxf(differentialFormat);
     }
 
     /**

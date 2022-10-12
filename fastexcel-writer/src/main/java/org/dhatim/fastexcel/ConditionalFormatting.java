@@ -12,20 +12,20 @@ public class ConditionalFormatting {
      * @param range                     The Range this validation is applied to
      * @param conditionalFormattingRule The Range of the list this validation references
      */
-	ConditionalFormatting(Range range, ConditionalFormattingRule conditionalFormattingRule) {
-		this.range = range;
+    ConditionalFormatting(Range range, ConditionalFormattingRule conditionalFormattingRule) {
+        this.range = range;
         this.conditionalFormattingRule = conditionalFormattingRule;
     }
-	
+    
     /**
      * Get the conditional formatting rule of this conditional formatting.
      *
      * @return ConditionalFormattingRule conditional formatting rule.
      */
-	ConditionalFormattingRule getConditionalFormattingRule() {
-		return this.conditionalFormattingRule;
-	}
-	
+    ConditionalFormattingRule getConditionalFormattingRule() {
+        return this.conditionalFormattingRule;
+    }
+    
     /**
      * Write this conditionalFormatting as an XML element.
      *

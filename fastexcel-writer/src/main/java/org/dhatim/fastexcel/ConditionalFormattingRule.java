@@ -18,8 +18,8 @@ public abstract class ConditionalFormattingRule {
      * @param stopIfTrue True indicates no rules with lower priority shall be applied over this rule, when this rule evaluates to true
      */
     ConditionalFormattingRule(String type, boolean stopIfTrue) {
-    	this.type = type;
-    	this.stopIfTrue = stopIfTrue;
+        this.type = type;
+        this.stopIfTrue = stopIfTrue;
     }
 
     /**
@@ -28,7 +28,7 @@ public abstract class ConditionalFormattingRule {
      * @param priority The user interface display priority
      */
     void setPriority(int priority) {
-    	this.priority = priority;
+        this.priority = priority;
     }
 
     /**
@@ -37,7 +37,7 @@ public abstract class ConditionalFormattingRule {
      * @param dxfId The id of the style to apply when the conditional formatting rule criteria is met
      */
     void setDxfId(int dxfId) {
-    	this.dxfId = dxfId;
+        this.dxfId = dxfId;
     }
 
     /**
