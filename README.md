@@ -115,8 +115,9 @@ To keep the sheet in active tab:
 ```java
 ws.keepInActiveTab();
 ```
-Set page orientation (visible in print preview mode):
+Set paper size and page orientation (visible in print preview mode):
 ```java
+ws.paperSize(PaperSize.A4_PAPER);
 ws.pageOrientation("landscape");
 ```
 Set bottom, top, left, or right margin:
