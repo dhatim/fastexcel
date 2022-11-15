@@ -11,7 +11,7 @@
     <name>Fastexcel End-to-End tests</name>
 
     <properties>
-        <jmh.version>1.35</jmh.version>
+        <jmh.version>1.36</jmh.version>
     </properties>
 
     <dependencies>
