@@ -6,6 +6,10 @@
   "packageRules": [
     {
       "automerge": true
+    },
+    {
+      "packagePatterns": [ "^org\\.dhatim\\.fastexcel-.+"],
+      "enabled": false
     }
   ]
 }
