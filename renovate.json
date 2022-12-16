@@ -8,7 +8,7 @@
       "automerge": true
     },
     {
-      "packagePatterns": [ "^org\\.dhatim\\.fastexcel-.+"],
+      "packagePatterns": [ "^org\\.dhatim\\.fastexcel.*"],
       "enabled": false
     }
   ]
