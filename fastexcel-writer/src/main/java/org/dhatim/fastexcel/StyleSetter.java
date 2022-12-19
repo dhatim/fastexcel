@@ -117,7 +117,7 @@ public class StyleSetter {
      * Set numbering format.
      *
      * @param numberingFormat Numbering format. For more information, refer to
-     * <a href="https://msdn.microsoft.com/en-us/library/documentformat.openxml.spreadsheet.numberingformat(v=office.14).aspx">this
+     * <a href="https://learn.microsoft.com/en-us/previous-versions/office/developer/office-2010/ee857658(v=office.14)?redirectedfrom=MSDN">this
      * page</a>.
      * @return This style setter.
      */
@@ -239,7 +239,7 @@ public class StyleSetter {
      * Define horizontal alignment.
      *
      * @param alignment Horizontal alignment. Possible values are defined
-     * <a href="https://msdn.microsoft.com/en-us/library/documentformat.openxml.spreadsheet.horizontalalignmentvalues(v=office.14).aspx">here</a>.
+     * <a href="https://learn.microsoft.com/en-us/previous-versions/office/developer/office-2010/cc880467(v=office.14)?redirectedfrom=MSDN">here</a>.
      * @return This style setter.
      */
     public StyleSetter horizontalAlignment(String alignment) {
@@ -251,7 +251,7 @@ public class StyleSetter {
      * Define vertical alignment.
      *
      * @param alignment Vertical alignment. Possible values are defined
-     * <a href="https://msdn.microsoft.com/en-us/library/documentformat.openxml.spreadsheet.verticalalignmentvalues(v=office.14).aspx">here</a>.
+     * <a href="https://learn.microsoft.com/en-us/previous-versions/office/developer/office-2010/cc802119(v=office.14)?redirectedfrom=MSDN">here</a>.
      * @return This style setter.
      */
     public StyleSetter verticalAlignment(String alignment) {
@@ -300,7 +300,7 @@ public class StyleSetter {
      * Apply cell border style on all sides, except diagonal.
      *
      * @param borderStyle Border style. Possible values are defined
-     * <a href="https://msdn.microsoft.com/en-us/library/documentformat.openxml.spreadsheet.borderstylevalues(v=office.14).aspx">here</a>.
+     * <a href="https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.spreadsheet.borderstylevalues?view=openxml-2.8.1">here</a>.
      * @return This style setter.
      */
     public StyleSetter borderStyle(String borderStyle) {
@@ -328,7 +328,7 @@ public class StyleSetter {
      *
      * @param side Border side where to apply the given style.
      * @param borderStyle Border style. Possible values are defined
-     * <a href="https://msdn.microsoft.com/en-us/library/documentformat.openxml.spreadsheet.borderstylevalues(v=office.14).aspx">here</a>.
+     * <a href="https://learn.microsoft.com/en-us/previous-versions/office/developer/office-2010/cc844549(v=office.14)?redirectedfrom=MSDN">here</a>.
      * @return This style setter.
      */
     public StyleSetter borderStyle(BorderSide side, String borderStyle) {

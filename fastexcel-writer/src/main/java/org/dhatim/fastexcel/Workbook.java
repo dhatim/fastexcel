@@ -50,7 +50,7 @@ public class Workbook {
      * workbook.
      * @param applicationVersion Version of the application. Ignored if
      * {@code null}. Refer to
-     * <a href="https://msdn.microsoft.com/en-us/library/documentformat.openxml.extendedproperties.applicationversion(v=office.14).aspx">this
+     * <a href="https://learn.microsoft.com/en-us/previous-versions/office/developer/office-2010/ee881787(v=office.14)?redirectedfrom=MSDN">this
      * page</a> for details.
      */
     public Workbook(OutputStream os, String applicationName, String applicationVersion) {

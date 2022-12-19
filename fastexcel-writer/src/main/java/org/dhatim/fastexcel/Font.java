@@ -22,7 +22,7 @@ import java.util.Objects;
 
 /**
  * Font definition. For details, check
- * <a href="https://msdn.microsoft.com/en-us/library/documentformat.openxml.spreadsheet.font(v=office.14).aspx">this
+ * <a href="https://learn.microsoft.com/en-us/previous-versions/office/developer/office-2010/cc862295(v=office.14)?redirectedfrom=MSDN">this
  * page</a>.
  */
 class Font {
