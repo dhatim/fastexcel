@@ -81,7 +81,7 @@ class Border {
      * Create a border where all sides have the same style and color.
      *
      * @param style Border style. Possible values are defined
-     * <a href="https://msdn.microsoft.com/en-us/library/documentformat.openxml.spreadsheet.borderstylevalues(v=office.14).aspx">here</a>.
+     * <a href="https://learn.microsoft.com/en-us/previous-versions/office/developer/office-2010/cc844549(v=office.14)?redirectedfrom=MSDN">here</a>.
      * @param color RGB border color.
      * @return A new border object.
      */

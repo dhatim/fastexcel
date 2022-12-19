@@ -50,7 +50,7 @@ class Fill {
      * Constructor.
      *
      * @param patternType Pattern type. Possible values are defined
-     * <a href="https://msdn.microsoft.com/en-us/library/documentformat.openxml.spreadsheet.patternvalues(v=office.14).aspx">here</a>.
+     * <a href="https://learn.microsoft.com/en-us/previous-versions/office/developer/office-2010/cc820608(v=office.14)?redirectedfrom=MSDN">here</a>.
      * @param colorRgb RGB pattern color.
      * @param fg Foreground/background selection: {@code true} for solid cell
      * fills and {@code false} for pattern cell fills.

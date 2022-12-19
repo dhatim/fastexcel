@@ -20,7 +20,7 @@ import java.util.Objects;
 
 /**
  * Alignment attributes. For more information refer to
- * <a href="https://msdn.microsoft.com/en-us/library/documentformat.openxml.spreadsheet.alignment(v=office.14).aspx">this</a>.
+ * <a href="https://learn.microsoft.com/en-us/previous-versions/office/developer/office-2010/cc801104(v=office.14)?redirectedfrom=MSDN">this</a>.
  */
 class Alignment {
 
@@ -33,9 +33,9 @@ class Alignment {
      *
      * @param horizontal Horizontal alignment attribute. Possible values are
      * defined
-     * <a href="https://msdn.microsoft.com/en-us/library/documentformat.openxml.spreadsheet.horizontalalignmentvalues(v=office.14).aspx">here</a>.
+     * <a href="https://learn.microsoft.com/en-us/previous-versions/office/developer/office-2010/cc880467(v=office.14)?redirectedfrom=MSDN">here</a>.
      * @param vertical Vertical alignment attribute. Possible values are defined
-     * <a href="https://msdn.microsoft.com/en-us/library/documentformat.openxml.spreadsheet.verticalalignmentvalues(v=office.14).aspx">here</a>.
+     * <a href="https://learn.microsoft.com/en-us/previous-versions/office/developer/office-2010/cc802119(v=office.14)?redirectedfrom=MSDN">here</a>.
      * @param wrapText Enable or disable text wrapping in cells.
      */
     Alignment(String horizontal, String vertical, boolean wrapText) {
