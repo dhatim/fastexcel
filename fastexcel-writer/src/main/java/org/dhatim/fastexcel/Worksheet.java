@@ -689,20 +689,6 @@ public class Worksheet {
     }
 
     /**
-     * Check if the given cell is within merged ranges.
-     *
-     * @param r Zero-based row number.
-     * @param c Zero-based column number.
-     * @return {@code true} if the cell is within merged ranges, {@code false}
-     * otherwise.
-     * @deprecated By poor performance
-     */
-    @Deprecated
-    private boolean isCellInMergedRanges(int r, int c) {
-        return mergedRanges.stream().anyMatch(range -> range.contains(r, c));
-    }
-
-    /**
      * Write column definitions of this worksheet as an XML element.
      *
      * @param w Output writer.
