@@ -1,5 +1,12 @@
 package org.dhatim.fastexcel;
 
+/**
+ * PaperSize. Possible values are defined
+ * <a href="https://learn.microsoft.com/en-us/previous-versions/office/developer/office-2010/cc880467(v=office.14)?redirectedfrom=MSDN">here</a>.
+ *
+ * @author apptaro
+ * @date 2022/10/11
+ */
 public enum PaperSize {
 	LETTER_PAPER(1),
 	LETTER_SMALL_PAPER(2),
