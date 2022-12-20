@@ -975,7 +975,6 @@ public class Worksheet {
      * @param w Output writer.
      * @param r Zero-based row number.
      * @param isHidden Whether or not this row is hidden
-     * @param customHeight Whether custom row height is set
      * @param rowHeight Row height value in points to be set if customHeight is true
      * @param row Cells in the row.
      * @throws IOException If an I/O error occurs.
