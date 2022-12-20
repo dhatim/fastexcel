@@ -695,7 +695,9 @@ public class Worksheet {
      * @param c Zero-based column number.
      * @return {@code true} if the cell is within merged ranges, {@code false}
      * otherwise.
+     * @deprecated By poor performance
      */
+    @Deprecated
     private boolean isCellInMergedRanges(int r, int c) {
         return mergedRanges.stream().anyMatch(range -> range.contains(r, c));
     }
@@ -708,6 +710,29 @@ public class Worksheet {
      * @throws IOException If an I/O error occurs.
      */
     private void writeCols(Writer w, int nbCols) throws IOException {
+        // Get merged range bitMatrix
+        int maxRows = (mergedRanges.stream().filter(Objects::nonNull).map(Range::getBottom).reduce(0, Math::max)) + 1;
+        int maxCols = (mergedRanges.stream().filter(Objects::nonNull).map(Range::getRight).reduce(0, Math::max)) + 1;
+        if (rows.size() > maxRows) {
+            maxRows = rows.size();
+        }
+        if (nbCols > maxCols) {
+            maxCols = nbCols;
+        }
+        int rowSize = (maxCols + 31) / 32;
+        int[] bits = new int[rowSize * maxRows];
+        mergedRanges.forEach(r -> {
+            int top = r.getTop();
+            int left = r.getLeft();
+            int right = r.getRight();
+            int bottom = r.getBottom();
+            for (int y = top; y < bottom; y++) {
+                int offset = y * rowSize;
+                for (int x = left; x < right; x++) {
+                    bits[offset + (x / 32)] |= 1 << (x & 0x1f);
+                }
+            }
+        });
         // Adjust column widths
         boolean started = false;
         for (int c = 0; c < nbCols; ++c) {
@@ -718,8 +743,10 @@ public class Worksheet {
                 maxWidth = colWidths.get(c);
             } else {
                 for (int r = 0; r < rows.size(); ++r) {
+                    int offset = r * rowSize + (c / 32);
+                    boolean isCellInMergedRanges = ((bits[offset] >>> (c & 0x1f)) & 1) != 0;
                     // Exclude merged cells from computation && hidden rows
-                    Object o = hiddenRows.contains(r) || isCellInMergedRanges(r, c) ? null : value(r, c);
+                    Object o = hiddenRows.contains(r) || isCellInMergedRanges ? null : value(r, c);
                     if (o != null && !(o instanceof Formula)) {
                         int length = o.toString().length();
                         maxWidth = Math.max(maxWidth, (int) ((length * 7 + 10) / 7.0 * 256) / 256.0);
@@ -738,6 +765,7 @@ public class Worksheet {
             w.append("</cols>");
         }
     }
+
 
     /**
      * Write a column as an XML element.
@@ -1265,10 +1293,10 @@ public class Worksheet {
      * list of named ranges under the provided name.
      * It will be visible when this sheet is open in the
      * cell range dropdown menu under the specified name.
-     * 
+     *
      * @param range Range of cells that needs to be named.
      * @param name String representing the given cell range's name.
-     * 
+     *
      */
     public void addNamedRange(Range range, String name) {
         this.namedRanges.put(name, range);
