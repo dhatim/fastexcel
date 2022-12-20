@@ -25,7 +25,6 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.function.Consumer;
-import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -194,6 +193,25 @@ class CorrectnessTest {
             ws.range(1, 0, 1, 2).merge();
             ws.style(1, 0).horizontalAlignment("center").set();
         });
+    }
+
+    @Test
+    void testForGithubIssue185() throws Exception {
+        long start = System.currentTimeMillis();
+        writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Worksheet 1");
+            for (int i = 0; i < 10000; i++) {
+                if ((i + 1) % 100 == 0) {
+                    ws.range(i, 0, i, 19).merge();
+                    continue;
+                }
+                for (int j = 0; j < 20; j++) {
+                    ws.value(i, j, "*****");
+                }
+            }
+        });
+        long end = System.currentTimeMillis();
+        System.out.println("cost:" + (end - start) + "ms");
     }
 
     @Test
