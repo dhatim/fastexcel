@@ -791,6 +791,16 @@ public class Worksheet {
                     .append("\">").append("</autoFilter>");
         }
 
+        if (passwordHash != null) {
+            writer.append("<sheetProtection password=\"").append(passwordHash).append("\" ");
+            for (SheetProtectionOption option : SheetProtectionOption.values()) {
+                if (option.getDefaultValue() != sheetProtectionOptions.contains(option)) {
+                    writer.append(option.getName()).append("=\"").append(Boolean.toString(!option.getDefaultValue())).append("\" ");
+                }
+            }
+            writer.append("/>");
+        }
+
         if (!mergedRanges.isEmpty()) {
             writer.append("<mergeCells>");
             for (Range r : mergedRanges) {
@@ -817,16 +827,6 @@ public class Worksheet {
         }
         for (Shading s : shadingRanges) {
             s.write(writer);
-        }
-
-        if (passwordHash != null) {
-            writer.append("<sheetProtection password=\"").append(passwordHash).append("\" ");
-            for (SheetProtectionOption option : SheetProtectionOption.values()) {
-                if (option.getDefaultValue() != sheetProtectionOptions.contains(option)) {
-                    writer.append(option.getName()).append("=\"").append(Boolean.toString(!option.getDefaultValue())).append("\" ");
-                }
-            }
-            writer.append("/>");
         }
 
         /* set page margins for the print setup (see in print preview) */
