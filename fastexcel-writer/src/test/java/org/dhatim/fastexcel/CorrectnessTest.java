@@ -19,7 +19,9 @@ import org.apache.commons.io.output.NullOutputStream;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -212,6 +214,18 @@ class CorrectnessTest {
         });
         long end = System.currentTimeMillis();
         System.out.println("cost:" + (end - start) + "ms");
+    }
+
+    @Test
+    void testForGithubIssue163() throws Exception {
+        // try (FileOutputStream fileOutputStream = new FileOutputStream("D://globalDefaultFontTest.xlsx")) {
+            byte[] bytes = writeWorkbook(wb -> {
+                wb.setGlobalDefaultFont(Font.build(true, true, true, "Arial", BigDecimal.valueOf(15), "FF000000"));
+                Worksheet ws = wb.newWorksheet("Worksheet 1");
+                ws.value(0,0,"Hello fastexcel");
+            });
+            // fileOutputStream.write(bytes);
+        // }
     }
 
     @Test
