@@ -131,6 +131,11 @@ final class StyleCache {
         return cacheStuff(styles, s);
     }
 
+    void replaceDefaultFont(Font font) {
+        fonts.entrySet().removeIf(entry->entry.getValue()==0);
+        fonts.putIfAbsent(font,0);
+    }
+
     /**
      * Write a cache as an XML element.
      *

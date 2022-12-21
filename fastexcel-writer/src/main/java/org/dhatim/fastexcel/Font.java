@@ -68,6 +68,9 @@ class Font {
      * @param rgbColor RGB font color.
      */
     Font(boolean bold, boolean italic, boolean underlined, String name, BigDecimal size, String rgbColor) {
+        if (size.compareTo(BigDecimal.valueOf(409)) > 0 || size.compareTo(BigDecimal.valueOf(1)) < 0) {
+            throw new IllegalStateException("Font size must be between 1 and 409 points: " + size);
+        }
         this.bold = bold;
         this.italic = italic;
 		this.underlined = underlined;
@@ -87,7 +90,7 @@ class Font {
      * @param rgbColor RGB font color. Defaults to "FF000000".
      * @return New font object.
      */
-    static Font build(boolean bold, boolean italic, boolean underlined, String name, BigDecimal size, String rgbColor) {
+    public static Font build(boolean bold, boolean italic, boolean underlined, String name, BigDecimal size, String rgbColor) {
         return new Font(bold, italic, underlined, name == null ? "Calibri" : name, size == null ? BigDecimal.valueOf(11.0) : size, rgbColor == null ? "FF000000" : rgbColor);
     }
 
