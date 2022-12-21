@@ -82,7 +82,7 @@ ws.style(0, 0).fillColor("FF8800").set(new ConditionalFormattingExpressionRule("
 ```
 Set global default font:
 ```java
-wb.setGlobalDefaultFont(Font.build(true, true, true, "Arial", BigDecimal.valueOf(15), "FF000000"));
+wb.setGlobalDefaultFont("Arial", 15.5);
 ```
 
 ### Cell ranges
