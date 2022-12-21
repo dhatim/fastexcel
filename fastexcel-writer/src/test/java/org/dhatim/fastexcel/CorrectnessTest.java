@@ -220,7 +220,7 @@ class CorrectnessTest {
     void testForGithubIssue163() throws Exception {
         // try (FileOutputStream fileOutputStream = new FileOutputStream("D://globalDefaultFontTest.xlsx")) {
             byte[] bytes = writeWorkbook(wb -> {
-                wb.setGlobalDefaultFont(Font.build(true, true, true, "Arial", BigDecimal.valueOf(15), "FF000000"));
+                wb.setGlobalDefaultFont("Arial", 15.5);
                 Worksheet ws = wb.newWorksheet("Worksheet 1");
                 ws.value(0,0,"Hello fastexcel");
             });
