@@ -80,6 +80,10 @@ Apply conditional formatting of expression type to a cell:
 ```java
 ws.style(0, 0).fillColor("FF8800").set(new ConditionalFormattingExpressionRule("LENB(A1)>1", true));
 ```
+Set global default font:
+```java
+wb.setGlobalDefaultFont(Font.build(true, true, true, "Arial", BigDecimal.valueOf(15), "FF000000"));
+```
 
 ### Cell ranges
 
