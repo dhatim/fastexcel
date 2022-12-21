@@ -68,6 +68,9 @@ class Font {
      * @param rgbColor RGB font color.
      */
     Font(boolean bold, boolean italic, boolean underlined, String name, BigDecimal size, String rgbColor) {
+        if (size.compareTo(BigDecimal.valueOf(409)) > 0 || size.compareTo(BigDecimal.valueOf(1)) < 0) {
+            throw new IllegalStateException("Font size must be between 1 and 409 points: " + size);
+        }
         this.bold = bold;
         this.italic = italic;
 		this.underlined = underlined;
