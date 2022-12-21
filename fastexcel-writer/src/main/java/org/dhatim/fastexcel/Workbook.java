@@ -19,6 +19,7 @@ import com.github.rzymek.opczip.OpcOutputStream;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -87,6 +88,9 @@ public class Workbook {
         this.activeTab = tabIndex;
     }
 
+    public void setGlobalDefaultFont(String fontName, double fontSize) {
+        this.setGlobalDefaultFont(Font.build(false,false,false,fontName, BigDecimal.valueOf(fontSize),null));
+    }
     public void setGlobalDefaultFont(Font font) {
         this.styleCache.replaceDefaultFont(font);
     }
