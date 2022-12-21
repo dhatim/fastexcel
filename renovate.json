@@ -5,7 +5,7 @@
   ],
   "packageRules": [
     {
-      "packagePatterns": [ "^org\\.dhatim\\.fastexcel.*"],
+      "matchPackagePatterns": [ "^org\\.dhatim\\.fastexcel.*"],
       "enabled": false
     },
     {

@@ -18,12 +18,10 @@
         <dependency>
             <groupId>org.dhatim</groupId>
             <artifactId>fastexcel</artifactId>
-            <version>0.14.2</version>
         </dependency>
         <dependency>
             <groupId>org.dhatim</groupId>
             <artifactId>fastexcel-reader</artifactId>
-            <version>0.14.2</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
