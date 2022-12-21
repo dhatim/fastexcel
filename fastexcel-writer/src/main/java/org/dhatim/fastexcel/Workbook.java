@@ -87,6 +87,10 @@ public class Workbook {
         this.activeTab = tabIndex;
     }
 
+    public void setGlobalDefaultFont(Font font) {
+        this.styleCache.replaceDefaultFont(font);
+    }
+
     /**
      * Sort the current worksheets with the given Comparator
      *
