@@ -231,7 +231,7 @@ class CorrectnessTest {
 
     @Test
     void testForGithubIssue164() throws Exception {
-        try (FileOutputStream fileOutputStream = new FileOutputStream("D://globalDefaultFontTest.xlsx")) {
+        // try (FileOutputStream fileOutputStream = new FileOutputStream("D://globalDefaultFontTest.xlsx")) {
             byte[] bytes = writeWorkbook(wb -> {
                 wb.setGlobalDefaultFont("Arial", 15.5);
                 //General properties
@@ -257,8 +257,8 @@ class CorrectnessTest {
                 Worksheet ws = wb.newWorksheet("Worksheet 1");
                 ws.value(0, 0, "Hello fastexcel");
             });
-            fileOutputStream.write(bytes);
-        }
+            // fileOutputStream.write(bytes);
+        // }
     }
 
     @Test
