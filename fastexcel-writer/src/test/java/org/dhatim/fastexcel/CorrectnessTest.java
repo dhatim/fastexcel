@@ -234,20 +234,26 @@ class CorrectnessTest {
         try (FileOutputStream fileOutputStream = new FileOutputStream("D://globalDefaultFontTest.xlsx")) {
             byte[] bytes = writeWorkbook(wb -> {
                 wb.setGlobalDefaultFont("Arial", 15.5);
+                //General properties
                 wb.properties()
-                        .setTitle("tttt")
-                        .setCategory("ccc")
-                        .setSubject("sss")
-                        .setKeywords("kkk")
-                        .setDescription("jjjj")
-                        .setManager("mmm")
-                        .setCompany("xccm")
-                        .setHyperlinkBase("hhhhh")
-                        .setCategory("哈哈哈ccc")
-                        .setTextProperty("Test Text", "Lucy")
-                        .setDateProperty("Test Date", Instant.parse("2022-12-22T10:00:00Z"))
-                        .setNumberProperty("Test Number", BigDecimal.valueOf(202222.23364646D))
-                        .setBoolProperty("Test Bool", true);
+                        .setTitle("title property")
+                        .setCategory("categrovy property")
+                        .setSubject("subject property")
+                        .setKeywords("keywords property")
+                        .setDescription("description property")
+                        .setManager("manager property")
+                        .setCompany("company property")
+                        .setHyperlinkBase("hyperlinkBase property");
+                //Custom properties
+                wb.properties()
+                        .setTextProperty("Test TextA", "Lucy")
+                        .setTextProperty("Test TextB", "Tony")
+                        .setDateProperty("Test DateA", Instant.parse("2022-12-22T10:00:00.123456789Z"))
+                        .setDateProperty("Test DateB", Instant.parse("1999-09-09T09:09:09Z"))
+                        .setNumberProperty("Test NumberA", BigDecimal.valueOf(202222.23364646D))
+                        .setNumberProperty("Test NumberB", BigDecimal.valueOf(3.1415926535894D))
+                        .setBoolProperty("Test BoolA", true)
+                        .setBoolProperty("Test BoolB", false);
                 Worksheet ws = wb.newWorksheet("Worksheet 1");
                 ws.value(0, 0, "Hello fastexcel");
             });
