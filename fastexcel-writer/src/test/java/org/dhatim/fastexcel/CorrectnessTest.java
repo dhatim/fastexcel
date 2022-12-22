@@ -22,6 +22,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -230,7 +231,7 @@ class CorrectnessTest {
 
     @Test
     void testForGithubIssue164() throws Exception {
-        // try (FileOutputStream fileOutputStream = new FileOutputStream("D://globalDefaultFontTest.xlsx")) {
+        try (FileOutputStream fileOutputStream = new FileOutputStream("D://globalDefaultFontTest.xlsx")) {
             byte[] bytes = writeWorkbook(wb -> {
                 wb.setGlobalDefaultFont("Arial", 15.5);
                 wb.properties()
@@ -243,15 +244,15 @@ class CorrectnessTest {
                         .setCompany("xccm")
                         .setHyperlinkBase("hhhhh")
                         .setCategory("哈哈哈ccc")
-                        .setCustomProperties("Test Created By","Lucy", Properties.CustomPropertyType.TEXT)
-                        .setCustomProperties("Test Created Date","2022-12-22T10:00:00Z", Properties.CustomPropertyType.DATE)
-                        .setCustomProperties("Test Number","202222.23364646", Properties.CustomPropertyType.NUMBER)
-                        .setCustomProperties("Test Yes or No","true", Properties.CustomPropertyType.YES_OR_NO);
+                        .setTextProperty("Test Text", "Lucy")
+                        .setDateProperty("Test Date", Instant.parse("2022-12-22T10:00:00Z"))
+                        .setNumberProperty("Test Number", BigDecimal.valueOf(202222.23364646D))
+                        .setBoolProperty("Test Bool", true);
                 Worksheet ws = wb.newWorksheet("Worksheet 1");
-                ws.value(0,0,"Hello fastexcel");
+                ws.value(0, 0, "Hello fastexcel");
             });
-            // fileOutputStream.write(bytes);
-        // }
+            fileOutputStream.write(bytes);
+        }
     }
 
     @Test

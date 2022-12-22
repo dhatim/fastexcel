@@ -140,14 +140,14 @@ public class Workbook {
             }
             w.append("<Override PartName=\"/docProps/core.xml\" ContentType=\"application/vnd.openxmlformats-package.core-properties+xml\"/>");
             w.append("<Override PartName=\"/docProps/app.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.extended-properties+xml\"/>");
-            if (hasCustomProperties()) {
+            if (properties.hasCustomProperties()) {
                 w.append("<Override PartName=\"/docProps/custom.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.custom-properties+xml\"/>");
             }
             w.append("</Types>");
         });
         writeProperties();
-        if(hasCustomProperties()){
-            writeCustomProperties();
+        if(properties.hasCustomProperties()){
+            writeFile("docProps/custom.xml", properties::writeCustomProperties);
         }
 
         writeFile("_rels/.rels", w -> {
@@ -156,7 +156,7 @@ public class Workbook {
             w.append("<Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties\" Target=\"docProps/app.xml\"/>");
             w.append("<Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties\" Target=\"docProps/core.xml\"/>");
             w.append("<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"xl/workbook.xml\"/>");
-            if (hasCustomProperties()) {
+            if (properties.hasCustomProperties()) {
                 w.append("<Relationship Id=\"rId4\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/custom-properties\" Target=\"docProps/custom.xml\"/>");
             }
             w.append("</Relationships>");
@@ -174,43 +174,6 @@ public class Workbook {
         writeFile("xl/sharedStrings.xml", stringCache::write);
         writeFile("xl/styles.xml", styleCache::write);
         this.os.finish();
-    }
-
-    private boolean hasCustomProperties() {
-        return properties.getCustomProperties().size()>0;
-    }
-
-    private void writeCustomProperties() throws IOException {
-        writeFile("docProps/custom.xml", w -> {
-            w.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>");
-            w.append("<Properties xmlns=\"http://schemas.openxmlformats.org/officeDocument/2006/custom-properties\" xmlns:vt=\"http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes\">");
-            Set<Map.Entry<String, CustumPropertyValue>> entries = properties.getCustomProperties().entrySet();
-            Iterator<Map.Entry<String, CustumPropertyValue>> iterator = entries.iterator();
-            for (int i = 0; i < entries.size(); i++) {
-                int pidValue = i + 2;
-                Map.Entry<String, CustumPropertyValue> entry = iterator.next();
-                String key = entry.getKey();
-                CustumPropertyValue value = entry.getValue();
-                Properties.CustomPropertyType type = value.getType();
-                switch (type) {
-                    case TEXT:
-                        w.append("<property fmtid=\"{D5CDD505-2E9C-101B-9397-08002B2CF9AE}\" pid=\""+pidValue+"\" name=\""+key+"\"><vt:lpwstr>"+value.getValue()+"</vt:lpwstr></property>");
-                        break;
-                    case DATE:
-                        w.append("<property fmtid=\"{D5CDD505-2E9C-101B-9397-08002B2CF9AE}\" pid=\""+pidValue+"\" name=\""+key+"\"><vt:filetime>"+value.getValue()+"</vt:filetime></property>");
-                        break;
-                    case NUMBER:
-                        w.append("<property fmtid=\"{D5CDD505-2E9C-101B-9397-08002B2CF9AE}\" pid=\""+pidValue+"\" name=\""+key+"\"><vt:r8>"+value.getValue()+"</vt:r8></property>");
-                        break;
-                    case YES_OR_NO:
-                        w.append("<property fmtid=\"{D5CDD505-2E9C-101B-9397-08002B2CF9AE}\" pid=\""+pidValue+"\" name=\"Status\"><vt:bool>"+value.getValue()+"</vt:bool></property>");
-                        break;
-                    default:
-                        throw new IllegalStateException("Wrong type: " + type);
-                }
-            }
-            w.append("</Properties>");
-        });
     }
 
     private void writeProperties() throws IOException {
