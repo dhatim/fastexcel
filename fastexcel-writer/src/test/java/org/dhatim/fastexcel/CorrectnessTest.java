@@ -229,6 +229,32 @@ class CorrectnessTest {
     }
 
     @Test
+    void testForGithubIssue164() throws Exception {
+        // try (FileOutputStream fileOutputStream = new FileOutputStream("D://globalDefaultFontTest.xlsx")) {
+            byte[] bytes = writeWorkbook(wb -> {
+                wb.setGlobalDefaultFont("Arial", 15.5);
+                wb.properties()
+                        .setTitle("tttt")
+                        .setCategory("ccc")
+                        .setSubject("sss")
+                        .setKeywords("kkk")
+                        .setDescription("jjjj")
+                        .setManager("mmm")
+                        .setCompany("xccm")
+                        .setHyperlinkBase("hhhhh")
+                        .setCategory("哈哈哈ccc")
+                        .setCustomProperties("Test Created By","Lucy", Properties.CustomPropertyType.TEXT)
+                        .setCustomProperties("Test Created Date","2022-12-22T10:00:00Z", Properties.CustomPropertyType.DATE)
+                        .setCustomProperties("Test Number","202222.23364646", Properties.CustomPropertyType.NUMBER)
+                        .setCustomProperties("Test Yes or No","true", Properties.CustomPropertyType.YES_OR_NO);
+                Worksheet ws = wb.newWorksheet("Worksheet 1");
+                ws.value(0,0,"Hello fastexcel");
+            });
+            // fileOutputStream.write(bytes);
+        // }
+    }
+
+    @Test
     void shouldBeAbleToNullifyCell() throws IOException {
         writeWorkbook(wb ->{
             Worksheet ws = wb.newWorksheet("Sheet 1");
