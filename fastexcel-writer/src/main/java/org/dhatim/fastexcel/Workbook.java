@@ -40,6 +40,7 @@ public class Workbook {
     private final List<Worksheet> worksheets = new ArrayList<>();
     private final StringCache stringCache = new StringCache();
     private final StyleCache styleCache = new StyleCache();
+    private final Properties properties = new Properties();
     private final OpcOutputStream os;
     private final Writer writer;
 
@@ -94,6 +95,9 @@ public class Workbook {
     public void setGlobalDefaultFont(Font font) {
         this.styleCache.replaceDefaultFont(font);
     }
+    public Properties properties() {
+        return this.properties;
+    }
 
     /**
      * Sort the current worksheets with the given Comparator
@@ -134,11 +138,29 @@ public class Workbook {
                     w.append("<Override ContentType=\"application/vnd.openxmlformats-officedocument.drawing+xml\" PartName=\"/xl/drawings/drawing").append(index).append(".xml\"/>");
                 }
             }
-            w.append("<Override PartName=\"/docProps/core.xml\" ContentType=\"application/vnd.openxmlformats-package.core-properties+xml\"/><Override PartName=\"/docProps/app.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.extended-properties+xml\"/></Types>");
+            w.append("<Override PartName=\"/docProps/core.xml\" ContentType=\"application/vnd.openxmlformats-package.core-properties+xml\"/>");
+            w.append("<Override PartName=\"/docProps/app.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.extended-properties+xml\"/>");
+            if (properties.hasCustomProperties()) {
+                w.append("<Override PartName=\"/docProps/custom.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.custom-properties+xml\"/>");
+            }
+            w.append("</Types>");
         });
-        writeFile("docProps/app.xml", w -> w.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Properties xmlns=\"http://schemas.openxmlformats.org/officeDocument/2006/extended-properties\"><Application>").appendEscaped(applicationName).append("</Application>").append(applicationVersion == null ? "" : ("<AppVersion>" + applicationVersion + "</AppVersion>")).append("</Properties>"));
-        writeFile("docProps/core.xml", w -> w.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?><cp:coreProperties xmlns:cp=\"http://schemas.openxmlformats.org/package/2006/metadata/core-properties\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:dcterms=\"http://purl.org/dc/terms/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><dcterms:created xsi:type=\"dcterms:W3CDTF\">").append(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX").withZone(ZoneId.of("UTC")).format(Instant.now())).append("</dcterms:created><dc:creator>").appendEscaped(applicationName).append("</dc:creator></cp:coreProperties>"));
-        writeFile("_rels/.rels", w -> w.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties\" Target=\"docProps/app.xml\"/><Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties\" Target=\"docProps/core.xml\"/><Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"xl/workbook.xml\"/></Relationships>"));
+        writeProperties();
+        if(properties.hasCustomProperties()){
+            writeFile("docProps/custom.xml", properties::writeCustomProperties);
+        }
+
+        writeFile("_rels/.rels", w -> {
+            w.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>");
+            w.append("<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">");
+            w.append("<Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties\" Target=\"docProps/app.xml\"/>");
+            w.append("<Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties\" Target=\"docProps/core.xml\"/>");
+            w.append("<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"xl/workbook.xml\"/>");
+            if (properties.hasCustomProperties()) {
+                w.append("<Relationship Id=\"rId4\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/custom-properties\" Target=\"docProps/custom.xml\"/>");
+            }
+            w.append("</Relationships>");
+        });
 
         writeWorkbookFile();
 
@@ -152,6 +174,35 @@ public class Workbook {
         writeFile("xl/sharedStrings.xml", stringCache::write);
         writeFile("xl/styles.xml", styleCache::write);
         this.os.finish();
+    }
+
+    private void writeProperties() throws IOException {
+        writeFile("docProps/app.xml", w -> {
+            w.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+            w.append("<Properties xmlns=\"http://schemas.openxmlformats.org/officeDocument/2006/extended-properties\">");
+            w.append("<Application>").appendEscaped(applicationName).append("</Application>");
+            w.append(properties.getManager() == null ? "" : ("<Manager>" + properties.getManager() + "</Manager>"));
+            w.append(properties.getCompany() == null ? "" : ("<Company>" + properties.getCompany() + "</Company>"));
+            w.append(properties.getHyperlinkBase() == null ? "" : ("<HyperlinkBase>" + properties.getHyperlinkBase() + "</HyperlinkBase>"));
+            w.append(applicationVersion == null ? "" : ("<AppVersion>" + applicationVersion + "</AppVersion>"));
+            w.append("</Properties>");
+        });
+        writeFile("docProps/core.xml", w -> {
+            w.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>");
+            w.append("<cp:coreProperties xmlns:cp=\"http://schemas.openxmlformats.org/package/2006/metadata/core-properties\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:dcterms=\"http://purl.org/dc/terms/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">");
+            w.append(properties.getTitle() == null ? "" : ("<dc:title>" + properties.getTitle() + "</dc:title>"));
+            w.append(properties.getSubject() == null ? "" : ("<dc:subject>" + properties.getSubject() + "</dc:subject>"));
+            w.append("<dc:creator>");
+            w.appendEscaped(applicationName);
+            w.append("</dc:creator>");
+            w.append(properties.getKeywords() == null ? "" : ("<cp:keywords>" + properties.getKeywords() + "</cp:keywords>"));
+            w.append(properties.getDescription() == null ? "" : ("<dc:description>" + properties.getDescription() + "</dc:description>"));
+            w.append("<dcterms:created xsi:type=\"dcterms:W3CDTF\">");
+            w.append(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX").withZone(ZoneId.of("UTC")).format(Instant.now()));
+            w.append("</dcterms:created>");
+            w.append(properties.getCategory() == null ? "" : ("<cp:category>" + properties.getCategory() + "</cp:category>"));
+            w.append("</cp:coreProperties>");
+        });
     }
 
     /**
