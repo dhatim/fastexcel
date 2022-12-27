@@ -16,7 +16,7 @@ jobs:
                     java-version: '8'
             -   name: get tag
                 id: get_tag
-                run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+                run: echo name=tag::${GITHUB_REF#refs/*/} >> $GITHUB_OUTPUT
             -   name: maven build
                 env:
                     TAG: ${{ steps.get_tag.outputs.tag }}
