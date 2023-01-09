@@ -40,7 +40,7 @@ Note heap memory usage is measured just before flushing the workbook to the outp
 <dependency>
     <groupId>org.dhatim</groupId>
     <artifactId>fastexcel</artifactId>
-    <version>0.14.2</version>
+    <version>0.14.4</version>
 </dependency>
 ```
 
@@ -263,7 +263,7 @@ In between there a more developer friendly wrapper around Apache Poi called [Exc
 <dependency>
     <groupId>org.dhatim</groupId>
     <artifactId>fastexcel-reader</artifactId>
-    <version>0.12.3</version>
+    <version>0.14.4</version>
 </dependency>
 ```
 
@@ -302,3 +302,11 @@ row.forEach(cell -> {
     ...
 });
 ```
+## More Information
+### Reading and Writing of encryption-protected documents
+
+This project does not implement read-write encryption 
+protected excel documents, but it can be realized by combining `poi` and `poi-ooxml`.
+These two test classes are reference implementations: 
+[ProtectWriteTest](./fastexcel-writer/src/test/java/org/dhatim/fastexcel/ProtectWriteTest.java) 、
+[ProtectedReadTest](./fastexcel-reader/src/test/java/org/dhatim/fastexcel/reader/ProtectedReadTest.java)
