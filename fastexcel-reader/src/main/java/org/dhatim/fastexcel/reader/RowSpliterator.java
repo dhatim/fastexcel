@@ -29,7 +29,8 @@ class RowSpliterator implements Spliterator<Row> {
     private final SimpleXmlReader r;
     private final ReadableWorkbook workbook;
 
-    private final HashMap<CellRangeAddress, String> sharedFormula = new HashMap<>();
+    private final HashMap<Integer, BaseFormulaCell> sharedFormula = new HashMap<>();
+    private final HashMap<CellRangeAddress, String> arrayFormula = new HashMap<>();
     private int rowCapacity = 16;
 
     public RowSpliterator(ReadableWorkbook workbook, InputStream inputStream) throws XMLStreamException {
@@ -126,7 +127,7 @@ class RowSpliterator implements Spliterator<Row> {
     }
 
     private Cell parseOther(CellAddress addr, String type, String dataFormatId, String dataFormatString)
-        throws XMLStreamException {
+            throws XMLStreamException {
         CellType definedType = parseType(type);
         Function<String, ?> parser = getParserForType(definedType);
 
@@ -148,18 +149,28 @@ class RowSpliterator implements Spliterator<Row> {
             } else if ("f".equals(r.getLocalName())) {
                 String ref = r.getAttribute("ref");
                 String t = r.getAttribute("t");
+                String si = r.getAttribute("si");
+                Integer siInt = si == null ? null : Integer.parseInt(si);
                 formula = r.getValueUntilEndElement("f");
                 if ("array".equals(t) && ref != null) {
                     CellRangeAddress range = CellRangeAddress.valueOf(ref);
-                    sharedFormula.put(range, formula);
+                    arrayFormula.put(range, formula);
+                }
+                if ("shared".equals(t)) {
+                    if (ref != null) {
+                        CellRangeAddress range = CellRangeAddress.valueOf(ref);
+                        sharedFormula.put(siInt, new BaseFormulaCell(addr, formula, range));
+                    } else {
+                        formula = parseSharedFormula(siInt, addr);
+                    }
                 }
             } else {
                 break;
             }
         }
 
-        if (formula == null) {
-            formula = getSharedFormula(addr).orElse(null);
+        if (formula == null || "".equals(formula)) {
+            formula = getArrayFormula(addr).orElse(null);
         }
 
         if (formula == null && value == null && definedType == CellType.NUMBER) {
@@ -169,6 +180,82 @@ class RowSpliterator implements Spliterator<Row> {
             return new Cell(workbook, cellType, value, addr, formula, rawValue, dataFormatId, dataFormatString);
         }
     }
+
+    private String parseSharedFormula(Integer si, CellAddress addr) {
+        BaseFormulaCell baseFormulaCell = sharedFormula.get(si);
+        int dRow = addr.getRow() - baseFormulaCell.getBaseCelAddr().getRow();
+        int dCol = addr.getColumn() - baseFormulaCell.getBaseCelAddr().getColumn();
+        String baseFormula = baseFormulaCell.getFormula();
+        return parseSharedFormula(dCol, dRow, baseFormula);
+    }
+
+    private String parseSharedFormula(Integer dCol, Integer dRow, String baseFormula) {
+        String res = "";
+        int start = 0;
+        boolean stringLiteral = false;
+        for (int end = 0; end < baseFormula.length(); end++) {
+            char c = baseFormula.charAt(end);
+            if ('"' == c) {
+                stringLiteral = !stringLiteral;
+            }
+            if (stringLiteral) {
+                continue;// Skip characters in quotes
+            }
+            if (c >= 'A' && c <= 'Z' || c == '$') {
+
+                res += baseFormula.substring(start, end);
+                start = end;
+                end++;
+                boolean foundNum = false;
+                for (; end < baseFormula.length(); end++) {
+                    char idc = baseFormula.charAt(end);
+                    if (idc >= '0' && idc <= '9' || idc == '$') {
+                        foundNum = true;
+                    } else if (idc >= 'A' && idc <= 'Z') {
+                        if (foundNum) {
+                            break;
+                        }
+                    } else {
+                        break;
+                    }
+                }
+                if (foundNum) {
+                    String cellID = baseFormula.substring(start, end);
+                    res += shiftCell(cellID, dCol, dRow);
+                    start = end;
+                }
+            }
+        }
+
+        if (start < baseFormula.length()) {
+            res += baseFormula.substring(start);
+        }
+
+        return res;
+    }
+
+    private String shiftCell(String cellID, Integer dCol, Integer dRow) {
+        CellAddress cellAddress = new CellAddress(cellID);
+        int fCol = cellAddress.getColumn();
+        int fRow = cellAddress.getRow();
+
+        String signCol = "", signRow = "";
+        if (cellID.indexOf("$") == 0) {
+            signCol = "$";
+        } else {
+            // Shift column
+            fCol += dCol;
+        }
+        if (cellID.lastIndexOf("$") > 0) {
+            signRow = "$";
+        } else {
+            // Shift row
+            fRow += dRow;
+        }
+        String colName = CellAddress.convertNumToColString(fCol);
+        return signCol + colName + signRow + (++fRow);
+    }
+
 
     private Cell parseString(CellAddress addr) throws XMLStreamException {
         r.goTo(() -> r.isStartElement("v") || r.isEndElement("c"));
@@ -209,8 +296,8 @@ class RowSpliterator implements Spliterator<Row> {
         return new Cell(workbook, cellType, value, addr, formula, rawValue);
     }
 
-    private Optional<String> getSharedFormula(CellAddress addr) {
-        for (Map.Entry<CellRangeAddress, String> entry : sharedFormula.entrySet()) {
+    private Optional<String> getArrayFormula(CellAddress addr) {
+        for (Map.Entry<CellRangeAddress, String> entry : arrayFormula.entrySet()) {
             if (entry.getKey().isInRange(addr.getRow(), addr.getColumn())) {
                 return Optional.of(entry.getValue());
             }

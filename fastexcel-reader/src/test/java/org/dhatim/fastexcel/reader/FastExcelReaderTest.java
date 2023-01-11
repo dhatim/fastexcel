@@ -15,25 +15,28 @@
  */
 package org.dhatim.fastexcel.reader;
 
-import static java.util.stream.Collectors.toList;
-import static org.assertj.core.api.Assertions.*;
-import static org.dhatim.fastexcel.reader.Resources.open;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.logging.Logger;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+import static java.util.stream.Collectors.toList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.dhatim.fastexcel.reader.Resources.open;
 
 class FastExcelReaderTest {
 
@@ -139,6 +142,7 @@ class FastExcelReaderTest {
             "/xlsx/world.xlsx",
             "/xlsx/write.xlsx",
             "/xlsx/issue143.xlsx",
+            "/xlsx/issue161.xlsx",
             // "/xlsx/xlsx-stream-d-date-cell.xlsx"
     })
     void testFile(String file) {
@@ -178,6 +182,10 @@ class FastExcelReaderTest {
                                     } else if (cell.getType() == CellType.STRING) {
                                         String s = cell.asString();
                                         String expS = expCell.getStringCellValue();
+                                        assertThat(s).as("String " + cellAddr).isEqualTo(expS);
+                                    } else if (cell.getType() == CellType.FORMULA) {
+                                        String s = cell.getFormula();
+                                        String expS = expCell.getCellFormula();
                                         assertThat(s).as("String " + cellAddr).isEqualTo(expS);
                                     }
                                 }
