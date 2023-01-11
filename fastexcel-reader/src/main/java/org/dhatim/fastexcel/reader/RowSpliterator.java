@@ -189,6 +189,9 @@ class RowSpliterator implements Spliterator<Row> {
         return parseSharedFormula(dCol, dRow, baseFormula);
     }
 
+    /**
+     * @see <a href="https://github.com/qax-os/excelize/blob/master/cell.go">here</a>
+     */
     private String parseSharedFormula(Integer dCol, Integer dRow, String baseFormula) {
         String res = "";
         int start = 0;
@@ -234,6 +237,9 @@ class RowSpliterator implements Spliterator<Row> {
         return res;
     }
 
+    /**
+     * @see <a href="https://github.com/qax-os/excelize/blob/master/cell.go">here</a>
+     */
     private String shiftCell(String cellID, Integer dCol, Integer dRow) {
         CellAddress cellAddress = new CellAddress(cellID);
         int fCol = cellAddress.getColumn();
