@@ -307,6 +307,5 @@ row.forEach(cell -> {
 
 This project does not implement read-write encryption 
 protected excel documents, but it can be realized by combining `poi` and `poi-ooxml`.
-These two test classes are reference implementations: 
-[ProtectWriteTest](./fastexcel-writer/src/test/java/org/dhatim/fastexcel/ProtectWriteTest.java) 、
-[ProtectedReadTest](./fastexcel-reader/src/test/java/org/dhatim/fastexcel/reader/ProtectedReadTest.java)
+This test class is a reference implementation :
+[EncryptionTest](./e2e/src/test/java/org/dhatim/fastexcel/EncryptionTest.java) 
