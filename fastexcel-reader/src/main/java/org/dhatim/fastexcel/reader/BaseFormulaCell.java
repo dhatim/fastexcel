@@ -1,10 +1,10 @@
 package org.dhatim.fastexcel.reader;
 
 public class BaseFormulaCell {
-    private CellAddress baseCelAddr;
+    private final CellAddress baseCelAddr;
 
-    private String formula;
-    private CellRangeAddress ref;
+    private final String formula;
+    private final CellRangeAddress ref;
 
 
     public BaseFormulaCell(CellAddress baseCelAddr, String formula, CellRangeAddress ref) {
