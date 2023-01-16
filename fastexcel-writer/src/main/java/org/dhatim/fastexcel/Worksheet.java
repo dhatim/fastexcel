@@ -212,10 +212,14 @@ public class Worksheet {
      * Range of row where will be inserted auto filter
      */
     private Range autoFilterRange = null;
+
+    private Relationships relationships = new Relationships(this);
     /**
      * List of named ranges.
      */
-    private Map<String, Range> namedRanges = new LinkedHashMap();
+    private Map<String, Range> namedRanges = new LinkedHashMap<>();
+
+    private Map<HyperLink, Range> hyperlinkRanges = new LinkedHashMap<>();
 
     /**
      * The set of protection options that are applied on the sheet.
@@ -822,6 +826,20 @@ public class Worksheet {
             }
             writer.append("</mergeCells>");
         }
+
+        if (!hyperlinkRanges.isEmpty()) {
+            writer.append("<hyperlinks>");
+            for (Map.Entry<HyperLink, Range> hr : hyperlinkRanges.entrySet()) {
+                HyperLink hyperLink = hr.getKey();
+                Range range = hr.getValue();
+                int rId = relationships.setHyperLinkRels(hyperLink.getLinkStr(), "External");
+                writer.append("<hyperlink ");
+                writer.append("ref=\"" + range.toString()+"\" ");
+                writer.append("r:id=\"rId" + rId +"\" ");
+                writer.append("/>");
+            }
+            writer.append("</hyperlinks>");
+        }
         if (!conditionalFormattings.isEmpty()) {
             int priority = 1;
             for (ConditionalFormatting v: conditionalFormattings) {
@@ -887,6 +905,8 @@ public class Worksheet {
 
         // Free memory; we no longer need this data
         rows.clear();
+        int index = workbook.getIndex(this);
+        workbook.writeFile("xl/worksheets/_rels/sheet"+index+".xml.rels",relationships::write);
         finished = true;
     }
 
@@ -1285,5 +1305,13 @@ public class Worksheet {
      */
     public void addNamedRange(Range range, String name) {
         this.namedRanges.put(name, range);
+    }
+
+    public void addHyperlink(Range range, HyperLink hyperLink) {
+        this.hyperlinkRanges.put(hyperLink, range);
+    }
+
+    Relationships relationships(){
+        return relationships;
     }
 }

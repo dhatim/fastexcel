@@ -226,16 +226,8 @@ public class Workbook {
             writeFile("xl/comments" + index + ".xml", ws.comments::writeComments);
             writeFile("xl/drawings/vmlDrawing" + index + ".vml", ws.comments::writeVmlDrawing);
             writeFile("xl/drawings/drawing" + index + ".xml", ws.comments::writeDrawing);
-
-            writeFile("xl/worksheets/_rels/sheet" + index + ".xml.rels", w -> {
-                w.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>");
-                w.append("<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">");
-                w.append("<Relationship Id=\"d\" Target=\"../drawings/drawing" + index + ".xml\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing\"/>");
-                w.append("<Relationship Id=\"c\" Target=\"../comments" + index + ".xml\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments\"/>");
-                w.append("<Relationship Id=\"v\" Target=\"../drawings/vmlDrawing" + index + ".vml\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/vmlDrawing\"/>");
-                w.append("</Relationships>");
-            });
-
+            Relationships relationships = ws.relationships();
+            relationships.setCommentsRels(index);
         }
     }
 
@@ -284,31 +276,27 @@ public class Workbook {
                     String rangeName = nr.getKey();
                     Range range = nr.getValue();
                     w.append("<definedName function=\"false\" " +
-                                "hidden=\"false\" localSheetId=\"" +
-                                worksheetIndex + "\" name=\"")
-                        .append(rangeName)
-                        .append("\" vbProcedure=\"false\">&apos;")
-                        .append(ws.getName())
-                        .append("&apos;")
-                        .append("!")
-                        .append("$" + Range.colToString(range.getLeft()) + "$" + (1 + range.getTop()))
-                        .append(":")
-                        .append("$" + Range.colToString(range.getRight()) + "$" + (1 + range.getBottom()))
-                        .append("</definedName>");
+                                    "hidden=\"false\" localSheetId=\"" +
+                                    worksheetIndex + "\" name=\"")
+                            .append(rangeName)
+                            .append("\" vbProcedure=\"false\">&apos;")
+                            .append(ws.getName())
+                            .append("&apos;")
+                            .append("!")
+                            .append(range.toAbsoluteString())
+                            .append("</definedName>");
                 }
                 Range af = ws.getAutoFilterRange();
                 if (af != null) {
                     w.append("<definedName function=\"false\" hidden=\"true\" localSheetId=\"")
-                    .append(worksheetIndex)
-                    .append("\" name=\"_xlnm._FilterDatabase\" vbProcedure=\"false\">")
-                    .append("&apos;")
-                    .append(ws.getName())
-                    .append("&apos;")
-                    .append("!")
-                    .append("$" + Range.colToString(af.getLeft()) + "$" + (1 + af.getTop()))
-                    .append(":")
-                    .append("$" + Range.colToString(af.getRight()) + "$" + (1 + af.getBottom()))
-                    .append("</definedName>");
+                            .append(worksheetIndex)
+                            .append("\" name=\"_xlnm._FilterDatabase\" vbProcedure=\"false\">")
+                            .append("&apos;")
+                            .append(ws.getName())
+                            .append("&apos;")
+                            .append("!")
+                            .append(af.toAbsoluteString())
+                            .append("</definedName>");
                 }
             }
             w.append("</definedNames>");

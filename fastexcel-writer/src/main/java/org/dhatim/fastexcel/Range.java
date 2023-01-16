@@ -20,7 +20,7 @@ import java.util.*;
 /**
  * Definition of a range of cells.
  */
-public class Range {
+public class Range implements Ref {
 
     /**
      * Worksheet where this range is defined.
@@ -131,21 +131,6 @@ public class Range {
         return result;
     }
 
-    /**
-     * Convert a column index to a column name.
-     *
-     * @param c Zero-based column index.
-     * @return Column name.
-     */
-    public static String colToString(int c) {
-        StringBuilder sb = new StringBuilder();
-        while (c >= 0) {
-            sb.append((char) ('A' + (c % 26)));
-            c = (c / 26) - 1;
-        }
-        return sb.reverse().toString();
-    }
-
     @Override
     public String toString() {
         return colToString(left) + (top + 1) + ':' + colToString(right) + (bottom + 1);
@@ -252,5 +237,12 @@ public class Range {
                 cell.setStyle(styles.get(cell.getStyle()));
             }
         }
+    }
+    public void setHyperlink(String linkStr){
+        setHyperlink(linkStr,linkStr);
+    }
+    public void setHyperlink(String linkStr,String displayStr){
+        this.worksheet.value(top,left,displayStr);
+        this.worksheet.addHyperlink(this,new HyperLink(linkStr,displayStr));
     }
 }
