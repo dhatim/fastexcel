@@ -149,6 +149,15 @@ ws.formula(10, 0, "SUM(A1:A10)");
 ws.formula(10, 0, "SUM(" + ws.range(0, 0, 9, 0).toString() + ")");
 ```
 
+### Formulas
+
+Insert a hyperlink to a cell or range of cells.
+
+```java
+ws.hyperlink(0, 0, new HyperLink("https://github.com/dhatim/fastexcel", "Baidu"));
+ws.range(1, 0, 1, 1).setHyperlink(new HyperLink("./dev_soft/test.pdf", "dev_folder"));
+```
+
 ### Additional worksheet features
 
 To keep the sheet in active tab:
