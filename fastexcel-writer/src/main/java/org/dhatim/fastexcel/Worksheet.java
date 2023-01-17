@@ -839,15 +839,15 @@ public class Worksheet {
         for (AlternateShading a : alternateShadingRanges) {
             a.write(writer);
         }
+        for (Shading s : shadingRanges) {
+            s.write(writer);
+        }
         if (!dataValidations.isEmpty()) {
             writer.append("<dataValidations count=\"").append(dataValidations.size()).append("\">");
             for (DataValidation v: dataValidations) {
                 v.write(writer);
             }
             writer.append("</dataValidations>");
-        }
-        for (Shading s : shadingRanges) {
-            s.write(writer);
         }
         if (!hyperlinkRanges.isEmpty()) {
             writer.append("<hyperlinks>");
