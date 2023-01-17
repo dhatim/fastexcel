@@ -5,6 +5,11 @@ public class HyperLink {
 
     private final String linkStr;
 
+    public HyperLink(String linkStr) {
+        this.linkStr = linkStr;
+        this.displayStr = linkStr;
+    }
+
     public HyperLink(String linkStr, String displayStr) {
         this.linkStr = linkStr;
         this.displayStr = displayStr;

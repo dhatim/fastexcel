@@ -16,11 +16,16 @@
 package org.dhatim.fastexcel;
 
 import org.apache.commons.io.output.NullOutputStream;
+import org.apache.poi.common.usermodel.HyperlinkType;
+import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.poifs.crypt.EncryptionInfo;
+import org.apache.poi.poifs.crypt.EncryptionMode;
+import org.apache.poi.poifs.crypt.Encryptor;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.xssf.usermodel.*;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -44,9 +49,9 @@ class CorrectnessTest {
 
     @Test
     void colToName() {
-        assertThat(Range.colToString(26)).isEqualTo("AA");
-        assertThat(Range.colToString(702)).isEqualTo("AAA");
-        assertThat(Range.colToString(Worksheet.MAX_COLS - 1)).isEqualTo("XFD");
+        assertThat(new Ref(){}.colToString(26)).isEqualTo("AA");
+        assertThat(new Ref(){}.colToString(702)).isEqualTo("AAA");
+        assertThat(new Ref(){}.colToString(Worksheet.MAX_COLS - 1)).isEqualTo("XFD");
     }
 
     @Test
@@ -287,4 +292,18 @@ class CorrectnessTest {
             }
         });
     }
+
+    @Test
+    void testForGithubIssue72() throws Exception {
+        try (FileOutputStream fileOutputStream = new FileOutputStream("D://fast_hyperlink.xlsx")) {
+            byte[] bytes = writeWorkbook(wb -> {
+                wb.setGlobalDefaultFont("Arial", 15.5);
+                Worksheet ws = wb.newWorksheet("Worksheet 1");
+                ws.hyperlink(0, 0, new HyperLink("https://www.baidu.com","Baidu"));
+                ws.range(1, 0,1,1).setHyperlink(new HyperLink("./dev_soft","UP"));
+            });
+            fileOutputStream.write(bytes);
+        }
+    }
+
 }

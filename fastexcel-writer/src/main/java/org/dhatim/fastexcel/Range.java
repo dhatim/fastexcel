@@ -238,11 +238,8 @@ public class Range implements Ref {
             }
         }
     }
-    public void setHyperlink(String linkStr){
-        setHyperlink(linkStr,linkStr);
-    }
-    public void setHyperlink(String linkStr,String displayStr){
-        this.worksheet.value(top,left,displayStr);
-        this.worksheet.addHyperlink(this,new HyperLink(linkStr,displayStr));
+    public void setHyperlink(HyperLink hyperLink){
+        this.worksheet.value(top,left,hyperLink.getDisplayStr());
+        this.worksheet.addHyperlink(this,hyperLink);
     }
 }

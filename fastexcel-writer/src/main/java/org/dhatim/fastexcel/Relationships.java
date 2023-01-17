@@ -49,7 +49,7 @@ public class Relationships {
     }
 
     void write( Writer relsWr) throws IOException {
-            relsWr.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>");
+            relsWr.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>");
             relsWr.append("<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">");
             for (Relationship rs : relationship) {
                 relsWr.append("<Relationship Id=\"" + rs.id + "\" ");
@@ -57,7 +57,7 @@ public class Relationships {
                 if (rs.targetMode!=null) {
                     relsWr.append("TargetMode=\""+rs.targetMode+"\" " );
                 }
-                relsWr.append("Type=\" "+rs.type+"\" ");
+                relsWr.append("Type=\""+rs.type+"\" ");
                 relsWr.append( "/>");
             }
             relsWr.append("</Relationships>");

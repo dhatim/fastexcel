@@ -219,7 +219,7 @@ public class Worksheet {
      */
     private Map<String, Range> namedRanges = new LinkedHashMap<>();
 
-    private Map<HyperLink, Range> hyperlinkRanges = new LinkedHashMap<>();
+    private Map<HyperLink, Ref> hyperlinkRanges = new LinkedHashMap<>();
 
     /**
      * The set of protection options that are applied on the sheet.
@@ -655,6 +655,11 @@ public class Worksheet {
         return cell == null ? null : cell.getValue();
     }
 
+    public void hyperlink(int r, int c,HyperLink hyperLink) {
+        value(r,c,hyperLink.getDisplayStr());
+        this.addHyperlink(new Location(r,c),hyperLink);
+    }
+
     /**
      * Set the cell formula at the given coordinates.
      *
@@ -829,12 +834,12 @@ public class Worksheet {
 
         if (!hyperlinkRanges.isEmpty()) {
             writer.append("<hyperlinks>");
-            for (Map.Entry<HyperLink, Range> hr : hyperlinkRanges.entrySet()) {
+            for (Map.Entry<HyperLink, Ref> hr : hyperlinkRanges.entrySet()) {
                 HyperLink hyperLink = hr.getKey();
-                Range range = hr.getValue();
+                Ref ref = hr.getValue();
                 int rId = relationships.setHyperLinkRels(hyperLink.getLinkStr(), "External");
                 writer.append("<hyperlink ");
-                writer.append("ref=\"" + range.toString()+"\" ");
+                writer.append("ref=\"" + ref.toString()+"\" ");
                 writer.append("r:id=\"rId" + rId +"\" ");
                 writer.append("/>");
             }
@@ -1307,8 +1312,8 @@ public class Worksheet {
         this.namedRanges.put(name, range);
     }
 
-    public void addHyperlink(Range range, HyperLink hyperLink) {
-        this.hyperlinkRanges.put(hyperLink, range);
+    void addHyperlink(Ref ref, HyperLink hyperLink) {
+        this.hyperlinkRanges.put(hyperLink, ref);
     }
 
     Relationships relationships(){
