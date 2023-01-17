@@ -386,7 +386,7 @@ class PoiCompatibilityTest {
         assertThat(cellRangeAddress.getLastRow()).isEqualTo(100);
 
         DataValidationConstraint validationConstraint = dataValidation.getValidationConstraint();
-        assertThat(validationConstraint.getFormula1().toLowerCase()).isEqualToIgnoringCase("Lists!$A$1:$A$2");
+        assertThat(validationConstraint.getFormula1().toLowerCase()).isEqualToIgnoringCase("'Lists'!$A$1:$A$2");
     }
 
     @Test
