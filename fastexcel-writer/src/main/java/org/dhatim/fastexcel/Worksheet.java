@@ -808,12 +808,6 @@ public class Worksheet {
         flush();
         writer.append("</sheetData>");
 
-        if (autoFilterRange != null) {
-            writer.append("<autoFilter ref=\"")
-                    .append(autoFilterRange.toString())
-                    .append("\">").append("</autoFilter>");
-        }
-
         if (passwordHash != null) {
             writer.append("<sheetProtection password=\"").append(passwordHash).append("\" ");
             for (SheetProtectionOption option : SheetProtectionOption.values()) {
@@ -823,7 +817,11 @@ public class Worksheet {
             }
             writer.append("/>");
         }
-
+        if (autoFilterRange != null) {
+            writer.append("<autoFilter ref=\"")
+                    .append(autoFilterRange.toString())
+                    .append("\">").append("</autoFilter>");
+        }
         if (!mergedRanges.isEmpty()) {
             writer.append("<mergeCells>");
             for (Range r : mergedRanges) {
