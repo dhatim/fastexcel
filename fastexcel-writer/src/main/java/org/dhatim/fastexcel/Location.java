@@ -30,4 +30,14 @@ class Location implements Comparable<Location>, Ref {
     public String toString() {
         return colToString(col) + (row + 1);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj != null) {
+            if (obj instanceof Location) {
+                return this.compareTo((Location)obj) == 0;
+            }
+        }
+        return false;
+    }
 }

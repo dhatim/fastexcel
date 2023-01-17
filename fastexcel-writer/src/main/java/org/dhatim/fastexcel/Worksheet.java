@@ -831,20 +831,6 @@ public class Worksheet {
             }
             writer.append("</mergeCells>");
         }
-
-        if (!hyperlinkRanges.isEmpty()) {
-            writer.append("<hyperlinks>");
-            for (Map.Entry<HyperLink, Ref> hr : hyperlinkRanges.entrySet()) {
-                HyperLink hyperLink = hr.getKey();
-                Ref ref = hr.getValue();
-                int rId = relationships.setHyperLinkRels(hyperLink.getLinkStr(), "External");
-                writer.append("<hyperlink ");
-                writer.append("ref=\"" + ref.toString()+"\" ");
-                writer.append("r:id=\"rId" + rId +"\" ");
-                writer.append("/>");
-            }
-            writer.append("</hyperlinks>");
-        }
         if (!conditionalFormattings.isEmpty()) {
             int priority = 1;
             for (ConditionalFormatting v: conditionalFormattings) {
@@ -865,7 +851,19 @@ public class Worksheet {
         for (Shading s : shadingRanges) {
             s.write(writer);
         }
-
+        if (!hyperlinkRanges.isEmpty()) {
+            writer.append("<hyperlinks>");
+            for (Map.Entry<HyperLink, Ref> hr : hyperlinkRanges.entrySet()) {
+                HyperLink hyperLink = hr.getKey();
+                Ref ref = hr.getValue();
+                int rId = relationships.setHyperLinkRels(hyperLink.getLinkStr(), "External");
+                writer.append("<hyperlink ");
+                writer.append("ref=\"" + ref.toString()+"\" ");
+                writer.append("r:id=\"rId" + rId +"\" ");
+                writer.append("/>");
+            }
+            writer.append("</hyperlinks>");
+        }
         /* set page margins for the print setup (see in print preview) */
         String margins = "<pageMargins bottom=\"" + bottomMargin +
                          "\" footer=\"" + footerMargin +

@@ -118,11 +118,11 @@ public class Workbook {
         if (worksheets.isEmpty()) {
             throw new IllegalArgumentException("A workbook must contain at least one worksheet.");
         }
+        writeComments();
+
         for (Worksheet ws : worksheets) {
             ws.finish();
         }
-
-        writeComments();
 
         writeFile("[Content_Types].xml", w -> {
             w.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"><Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/><Default Extension=\"xml\" ContentType=\"application/xml\"/>");
