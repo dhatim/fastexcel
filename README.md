@@ -149,7 +149,7 @@ ws.formula(10, 0, "SUM(A1:A10)");
 ws.formula(10, 0, "SUM(" + ws.range(0, 0, 9, 0).toString() + ")");
 ```
 
-### Formulas
+### Hyperlink 
 
 Insert a hyperlink to a cell or range of cells.
 
@@ -157,6 +157,19 @@ Insert a hyperlink to a cell or range of cells.
 ws.hyperlink(0, 0, new HyperLink("https://github.com/dhatim/fastexcel", "Baidu"));
 ws.range(1, 0, 1, 1).setHyperlink(new HyperLink("./dev_soft/test.pdf", "dev_folder"));
 ```
+
+### Data Table
+
+```java
+ws.range(0, 0, 5, 2).createTable()
+                        .setDisplayName("TableDisplayName")
+                        .setName("TableName")
+                        .styleInfo()
+                        .setStyleName("TableStyleMedium1")
+                        .setShowLastColumn(true);
+```
+
+
 
 ### Additional worksheet features
 
