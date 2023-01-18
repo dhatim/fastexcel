@@ -12,6 +12,7 @@
     <artifactId>fastexcel</artifactId>
     <name>Fastexcel Writer</name>
     <packaging>jar</packaging>
+    <url>https://github.com/dhatim/fastexcel</url>
 
     <dependencies>
         <dependency>
