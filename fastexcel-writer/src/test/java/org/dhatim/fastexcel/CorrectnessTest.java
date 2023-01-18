@@ -382,6 +382,8 @@ class CorrectnessTest {
                 ws.value(24,1,"GHGH");
                 ws.range(25,0,25,1).validateWithList(ws.range(23,0,24,1));
 
+                //table
+                ws.range(0, 0, 5, 2).createTable();
             });
 
             //fileOutputStream.write(bytes);
@@ -396,6 +398,18 @@ class CorrectnessTest {
             Worksheet ws = wb.newWorksheet("Worksheet 1");
             ws.hyperlink(0, 0, new HyperLink("https://github.com/dhatim/fastexcel", "Baidu"));
             ws.range(1, 0, 1, 1).setHyperlink(new HyperLink("./dev_soft/test.pdf", "dev_folder"));
+        });
+        //fileOutputStream.write(bytes);
+        //}
+    }
+
+    @Test
+    void testForGithubIssue182() throws Exception {
+        //try (FileOutputStream fileOutputStream = new FileOutputStream("D://fast_table.xlsx")) {
+        byte[] bytes = writeWorkbook(wb -> {
+            wb.setGlobalDefaultFont("Arial", 15.5);
+            Worksheet ws = wb.newWorksheet("Worksheet 1");
+            ws.range(0, 0, 5, 2).createTable();
         });
         //fileOutputStream.write(bytes);
         //}
