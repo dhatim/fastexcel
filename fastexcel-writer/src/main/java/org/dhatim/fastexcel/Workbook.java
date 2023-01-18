@@ -118,7 +118,6 @@ public class Workbook {
         if (worksheets.isEmpty()) {
             throw new IllegalArgumentException("A workbook must contain at least one worksheet.");
         }
-        writeComments();
 
         for (Worksheet ws : worksheets) {
             ws.finish();
@@ -215,20 +214,6 @@ public class Workbook {
             }
         }
         return false;
-    }
-
-    private void writeComments() throws IOException {
-        for (Worksheet ws : worksheets) {
-            if (ws.comments.isEmpty()) {
-                continue;
-            }
-            int index = getIndex(ws);
-            writeFile("xl/comments" + index + ".xml", ws.comments::writeComments);
-            writeFile("xl/drawings/vmlDrawing" + index + ".vml", ws.comments::writeVmlDrawing);
-            writeFile("xl/drawings/drawing" + index + ".xml", ws.comments::writeDrawing);
-            Relationships relationships = ws.relationships();
-            relationships.setCommentsRels(index);
-        }
     }
 
     /**

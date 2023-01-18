@@ -806,6 +806,7 @@ public class Worksheet {
             return;
         }
         flush();
+        int index = workbook.getIndex(this);
         writer.append("</sheetData>");
 
         if (passwordHash != null) {
@@ -854,10 +855,10 @@ public class Worksheet {
             for (Map.Entry<HyperLink, Ref> hr : hyperlinkRanges.entrySet()) {
                 HyperLink hyperLink = hr.getKey();
                 Ref ref = hr.getValue();
-                int rId = relationships.setHyperLinkRels(hyperLink.getLinkStr(), "External");
+                String rId = relationships.setHyperLinkRels(hyperLink.getLinkStr(), "External");
                 writer.append("<hyperlink ");
                 writer.append("ref=\"" + ref.toString()+"\" ");
-                writer.append("r:id=\"rId" + rId +"\" ");
+                writer.append("r:id=\"" + rId +"\" ");
                 writer.append("/>");
             }
             writer.append("</hyperlinks>");
@@ -871,7 +872,7 @@ public class Worksheet {
                          "\" top=\"" + topMargin + "\"/>";
         writer.append(margins);
 
-    /* set page orientation for the print setup */
+        /* set page orientation for the print setup */
         writer.append("<pageSetup")
             .append(" paperSize=\"" + paperSize.xmlValue + "\"")
             .append(" scale=\"" + pageScale + "\"")
@@ -904,10 +905,20 @@ public class Worksheet {
         writer.append("</worksheet>");
         workbook.endFile();
 
+        /* write comment files */
+        if (!comments.isEmpty()) {
+            workbook.writeFile("xl/comments" + index + ".xml", comments::writeComments);
+            workbook.writeFile("xl/drawings/vmlDrawing" + index + ".vml", comments::writeVmlDrawing);
+            workbook.writeFile("xl/drawings/drawing" + index + ".xml", comments::writeDrawing);
+            relationships.setCommentsRels(index);
+        }
+
+        // write relationship files
+        if (!relationships.isEmpty()) {
+            workbook.writeFile("xl/worksheets/_rels/sheet"+index+".xml.rels",relationships::write);
+        }
         // Free memory; we no longer need this data
         rows.clear();
-        int index = workbook.getIndex(this);
-        workbook.writeFile("xl/worksheets/_rels/sheet"+index+".xml.rels",relationships::write);
         finished = true;
     }
 

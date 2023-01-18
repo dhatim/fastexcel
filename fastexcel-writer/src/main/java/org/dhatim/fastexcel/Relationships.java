@@ -20,15 +20,20 @@ public class Relationships {
         this.worksheet = worksheet;
     }
 
-    int setHyperLinkRels(String target, String targetMode){
-        relationship.add(new Relationship("rId"+(maxRid+=1), TYPE_OF_HYPERLINK, target, targetMode));
-        return maxRid;
+    String setHyperLinkRels(String target, String targetMode) {
+        String id = "rId" + (maxRid += 1);
+        relationship.add(new Relationship(id, TYPE_OF_HYPERLINK, target, targetMode));
+        return id;
     }
 
-    void setCommentsRels(int index){
+    void setCommentsRels(int index) {
         relationship.add(new Relationship("d", TYPE_OF_DRAWING, "../drawings/drawing" + index + ".xml", null));
         relationship.add(new Relationship("c", TYPE_OF_COMMENTS, "../comments" + index + ".xml", null));
         relationship.add(new Relationship("v", TYPE_OF_VMLDRAWING, "../drawings/vmlDrawing" + index + ".vml", null));
+    }
+
+    boolean isEmpty() {
+        return relationship.isEmpty();
     }
 
 
