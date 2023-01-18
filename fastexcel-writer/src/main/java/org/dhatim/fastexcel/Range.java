@@ -16,6 +16,7 @@
 package org.dhatim.fastexcel;
 
 import java.util.*;
+import java.util.stream.IntStream;
 
 /**
  * Definition of a range of cells.
@@ -241,5 +242,18 @@ public class Range implements Ref {
     public void setHyperlink(HyperLink hyperLink){
         this.worksheet.value(top,left,hyperLink.getDisplayStr());
         this.worksheet.addHyperlink(this,hyperLink);
+    }
+
+    public Table createTable() {
+        int columnCount = this.right - this.left + 1;
+        String[] headers = IntStream.rangeClosed(1, columnCount).mapToObj(i -> "Column" + i).toArray(String[]::new);
+        return createTable(headers);
+    }
+    public Table createTable(String... headers){
+        int tableIndex = worksheet.getWorkbook().nextTableIndex();
+        String rId = worksheet.relationships().setTableRels(tableIndex);
+        Table table = new Table(tableIndex,this, headers);
+        worksheet.addTable(rId,table);
+        return table;
     }
 }

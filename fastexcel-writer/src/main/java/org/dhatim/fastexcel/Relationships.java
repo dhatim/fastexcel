@@ -2,6 +2,7 @@ package org.dhatim.fastexcel;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Relationships {
 
@@ -9,8 +10,9 @@ public class Relationships {
     private static final String TYPE_OF_DRAWING= "http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing";
     private static final String TYPE_OF_COMMENTS= "http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments";
     private static final String TYPE_OF_VMLDRAWING= "http://schemas.openxmlformats.org/officeDocument/2006/relationships/vmlDrawing";
+    private static final String TYPE_OF_TABLE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/table";
 
-    private int maxRid = 0;
+    private final AtomicInteger maxIndex = new AtomicInteger(1);
 
     final Worksheet worksheet;
 
@@ -21,8 +23,14 @@ public class Relationships {
     }
 
     String setHyperLinkRels(String target, String targetMode) {
-        String id = "rId" + (maxRid += 1);
+        String id = "rId" + (maxIndex.getAndIncrement());
         relationship.add(new Relationship(id, TYPE_OF_HYPERLINK, target, targetMode));
+        return id;
+    }
+
+    String setTableRels(int index) {
+        String id = "rId" + (maxIndex.getAndIncrement());
+        relationship.add(new Relationship(id,TYPE_OF_TABLE , "../tables/table"+index+".xml", null));
         return id;
     }
 

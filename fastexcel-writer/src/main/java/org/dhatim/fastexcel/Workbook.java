@@ -24,6 +24,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -43,6 +44,7 @@ public class Workbook {
     private final Properties properties = new Properties();
     private final OpcOutputStream os;
     private final Writer writer;
+    private final AtomicInteger maxTableIndex = new AtomicInteger(1);
 
     /**
      * Constructor.
@@ -135,6 +137,12 @@ public class Workbook {
                 if(!ws.comments.isEmpty()) {
                     w.append("<Override ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.comments+xml\" PartName=\"/xl/comments").append(index).append(".xml\"/>");
                     w.append("<Override ContentType=\"application/vnd.openxmlformats-officedocument.drawing+xml\" PartName=\"/xl/drawings/drawing").append(index).append(".xml\"/>");
+                }
+                if (!ws.tables.isEmpty()) {
+                    for (Map.Entry<String, Table> entry : ws.tables.entrySet()) {
+                        Table table = entry.getValue();
+                        w.append("<Override PartName=\"/xl/tables/table"+table.index+".xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.table+xml\"/>");
+                    }
                 }
             }
             w.append("<Override PartName=\"/docProps/core.xml\" ContentType=\"application/vnd.openxmlformats-package.core-properties+xml\"/>");
@@ -412,5 +420,9 @@ public class Workbook {
             worksheets.add(worksheet);
             return worksheet;
         }
+    }
+
+    int nextTableIndex() {
+        return maxTableIndex.getAndIncrement();
     }
 }

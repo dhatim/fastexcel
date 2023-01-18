@@ -95,6 +95,8 @@ public class Worksheet {
 
     final Comments comments = new Comments();
 
+    final Map<String,Table> tables = new LinkedHashMap<>();
+
     /**
      * Is this worksheet construction completed?
      */
@@ -902,6 +904,14 @@ public class Worksheet {
             writer.append("<drawing r:id=\"d\"/>");
             writer.append("<legacyDrawing r:id=\"v\"/>");
         }
+        if (!tables.isEmpty()){
+            writer.append("<tableParts count=\""+tables.size()+"\">");
+            for (Map.Entry<String, Table> entry : tables.entrySet()) {
+                writer.append("<tablePart r:id=\""+entry.getKey()+"\"/>");
+            }
+            writer.append("</tableParts>");
+        }
+
         writer.append("</worksheet>");
         workbook.endFile();
 
@@ -911,6 +921,11 @@ public class Worksheet {
             workbook.writeFile("xl/drawings/vmlDrawing" + index + ".vml", comments::writeVmlDrawing);
             workbook.writeFile("xl/drawings/drawing" + index + ".xml", comments::writeDrawing);
             relationships.setCommentsRels(index);
+        }
+        //write table files
+        for (Map.Entry<String, Table> entry : tables.entrySet()) {
+            Table table = entry.getValue();
+            workbook.writeFile("xl/tables/table" + table.index + ".xml",table::write);
         }
 
         // write relationship files
@@ -1325,5 +1340,9 @@ public class Worksheet {
 
     Relationships relationships(){
         return relationships;
+    }
+
+    void addTable(String rId,Table table) {
+        tables.put(rId,table);
     }
 }
