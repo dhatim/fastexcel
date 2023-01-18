@@ -49,30 +49,44 @@ public class Table{
         TableStyleInfo(Table table){
             this.table = table;
         }
-        private String name = "TableStyleMedium2";
+        private String name ;
         private boolean showFirstColumn = false;
         private boolean showLastColumn = false;
         private boolean showRowStripes = true;
         private boolean showColumnStripes = false;
 
-        public void setName(String name) {
+        public TableStyleInfo setStyleName(String name) {
             this.name = name;
+            return this;
         }
 
-        public void setShowFirstColumn(boolean showFirstColumn) {
+        public TableStyleInfo setShowFirstColumn(boolean showFirstColumn) {
             this.showFirstColumn = showFirstColumn;
+            return this;
         }
 
-        public void setShowLastColumn(boolean showLastColumn) {
+        public TableStyleInfo setShowLastColumn(boolean showLastColumn) {
             this.showLastColumn = showLastColumn;
+            return this;
         }
 
-        public void setShowRowStripes(boolean showRowStripes) {
+        public TableStyleInfo setShowRowStripes(boolean showRowStripes) {
             this.showRowStripes = showRowStripes;
+            return this;
         }
 
-        public void setShowColumnStripes(boolean showColumnStripes) {
+        public TableStyleInfo setShowColumnStripes(boolean showColumnStripes) {
             this.showColumnStripes = showColumnStripes;
+            return this;
+        }
+
+        public void write(Writer w) throws IOException {
+            w.append("<tableStyleInfo name=\""+(name==null||"".equals(name)?"TableStyleMedium2":styleInfo.name)+"\" ");
+            w.append("showFirstColumn=\""+(showFirstColumn?1:0)+"\" ");
+            w.append("showLastColumn=\""+(showLastColumn?1:0)+"\" ");
+            w.append("showRowStripes=\""+(showRowStripes?1:0)+"\" ");
+            w.append("showColumnStripes=\""+(showColumnStripes?1:0)+"\"/>");
+            w.append("</table>");
         }
     }
 
@@ -80,8 +94,8 @@ public class Table{
         w.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>");
         w.append("<table xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" ");
         w.append("id=\"" + index + "\" ");
-        w.append("name=\""+(name==null?"Table"+index:name)+"\" ");
-        w.append("displayName=\"" + (displayName==null?"Table"+index:displayName) + "\" ");
+        w.append("name=\""+(name==null||"".equals(name)?"Table"+index:name)+"\" ");
+        w.append("displayName=\"" + (displayName==null||"".equals(displayName)?"Table"+index:displayName) + "\" ");
         w.append("ref=\"" + range.toString() + "\" ");
         w.append("totalsRowShown=\"" + (totalsRowShown ? 1 : 0) + "\">");
         w.append("<autoFilter ref=\"" + range.toString() + "\"/>");
@@ -91,12 +105,7 @@ public class Table{
             w.append("<tableColumn id=\"" + (i + 1) + "\" name=\"" + headers[i] + "\"/>");
         }
         w.append("</tableColumns>");
-        w.append("<tableStyleInfo name=\""+styleInfo.name+"\" ");
-        w.append("showFirstColumn=\""+(styleInfo.showFirstColumn?1:0)+"\" ");
-        w.append("showLastColumn=\""+(styleInfo.showLastColumn?1:0)+"\" ");
-        w.append("showRowStripes=\""+(styleInfo.showRowStripes?1:0)+"\" ");
-        w.append("showColumnStripes=\""+(styleInfo.showColumnStripes?1:0)+"\"/>");
-        w.append("</table>");
+        styleInfo.write(w);
     }
 
 }
