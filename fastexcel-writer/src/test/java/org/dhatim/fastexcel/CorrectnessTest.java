@@ -406,12 +406,17 @@ class CorrectnessTest {
     @Test
     void testForGithubIssue182() throws Exception {
         //try (FileOutputStream fileOutputStream = new FileOutputStream("D://fast_table.xlsx")) {
-        byte[] bytes = writeWorkbook(wb -> {
-            wb.setGlobalDefaultFont("Arial", 15.5);
-            Worksheet ws = wb.newWorksheet("Worksheet 1");
-            ws.range(0, 0, 5, 2).createTable();
-        });
-        //fileOutputStream.write(bytes);
+            byte[] bytes = writeWorkbook(wb -> {
+                wb.setGlobalDefaultFont("Arial", 15.5);
+                Worksheet ws = wb.newWorksheet("Worksheet 1");
+                ws.range(0, 0, 5, 2).createTable()
+                        .setDisplayName("TableDisplayName")
+                        .setName("TableName")
+                        .styleInfo()
+                        .setStyleName("TableStyleMedium1")
+                        .setShowLastColumn(true);
+            });
+            //fileOutputStream.write(bytes);
         //}
     }
 
