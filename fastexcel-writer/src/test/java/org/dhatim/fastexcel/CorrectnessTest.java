@@ -19,6 +19,7 @@ import org.apache.commons.io.output.NullOutputStream;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -407,7 +408,6 @@ class CorrectnessTest {
     void testForGithubIssue182() throws Exception {
         //try (FileOutputStream fileOutputStream = new FileOutputStream("D://fast_table.xlsx")) {
             byte[] bytes = writeWorkbook(wb -> {
-                wb.setGlobalDefaultFont("Arial", 15.5);
                 Worksheet ws = wb.newWorksheet("Worksheet 1");
                 ws.range(0, 0, 5, 2).createTable()
                         .setDisplayName("TableDisplayName")
@@ -418,6 +418,20 @@ class CorrectnessTest {
             });
             //fileOutputStream.write(bytes);
         //}
+    }
+
+    @Test
+    void testForGithubIssue254() throws Exception {
+        assertThrows(IllegalArgumentException.class, () -> {
+            //try (FileOutputStream fileOutputStream = new FileOutputStream("D://merge_conflicted.xlsx")) {
+                byte[] bytes = writeWorkbook(wb -> {
+                    Worksheet ws = wb.newWorksheet("Worksheet 1");
+                    ws.range(0, 0, 2, 2).merge();
+                    ws.range(1, 1, 3, 3).merge();
+                });
+                //fileOutputStream.write(bytes);
+            //}
+        });
     }
 
 }
