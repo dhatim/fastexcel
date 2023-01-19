@@ -10,7 +10,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class DynamicBitMatrix {
     static final int UNIT_WEITH = 1 << 6, UNIT_HIGHT = 1 << 10;
 
-    CopyOnWriteArrayList<CopyOnWriteArrayList<BitMatrix>> bitMatrixData = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<CopyOnWriteArrayList<BitMatrix>> bitMatrixData = new CopyOnWriteArrayList<>();
 
     void setRegion(int top, int left, int bottom, int right) {
         if (right >= Worksheet.MAX_COLS || bottom >= Worksheet.MAX_ROWS) {
@@ -52,6 +52,23 @@ public class DynamicBitMatrix {
 
         }
 
+    }
+
+    boolean isConflict(int top, int left, int bottom, int right) {
+        if (get(top, left) || get(top, right) || get(bottom, left) || get(bottom, right)) {
+            return true;
+        }
+        for (int c = left; c <= right; c++) {
+            for (int r = 0; r <= bottom; r++) {
+                if ((c == left && (r == top || r == bottom)) || (c == right && (r == top || r == bottom))) {
+                    continue;
+                }
+                if (get(r, c)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     boolean get(int row, int col) {

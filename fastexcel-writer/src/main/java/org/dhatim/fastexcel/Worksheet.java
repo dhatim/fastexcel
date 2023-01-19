@@ -58,6 +58,10 @@ public class Worksheet {
      */
     private final Set<Range> mergedRanges = new HashSet<>();
     /**
+     * Matrix of merged cells.
+     */
+    private final DynamicBitMatrix mergedMatrix = new DynamicBitMatrix();
+    /**
      * List of conditional formattings for this worksheet
      */
     private final List<ConditionalFormatting> conditionalFormattings = new ArrayList<>();
@@ -353,7 +357,13 @@ public class Worksheet {
      * @param range Range of cells.
      */
     void merge(Range range) {
-        mergedRanges.add(range);
+        if (!mergedMatrix.isConflict(range.getTop(),range.getLeft(),range.getBottom(),range.getRight())){
+            if (mergedRanges.add(range)) {
+                mergedMatrix.setRegion(range.getTop(),range.getLeft(),range.getBottom(),range.getRight());
+            }
+        }else {
+            throw new IllegalArgumentException("Merge conflicted:" +range);
+        }
     }
 
     /**
@@ -707,29 +717,6 @@ public class Worksheet {
      * @throws IOException If an I/O error occurs.
      */
     private void writeCols(Writer w, int nbCols) throws IOException {
-        // Get merged range bitMatrix
-        int maxRows = (mergedRanges.stream().filter(Objects::nonNull).map(Range::getBottom).reduce(0, Math::max)) + 1;
-        int maxCols = (mergedRanges.stream().filter(Objects::nonNull).map(Range::getRight).reduce(0, Math::max)) + 1;
-        if (rows.size() > maxRows) {
-            maxRows = rows.size();
-        }
-        if (nbCols > maxCols) {
-            maxCols = nbCols;
-        }
-        int rowSize = (maxCols + 31) / 32;
-        int[] bits = new int[rowSize * maxRows];
-        mergedRanges.forEach(r -> {
-            int top = r.getTop();
-            int left = r.getLeft();
-            int right = r.getRight();
-            int bottom = r.getBottom();
-            for (int y = top; y < bottom; y++) {
-                int offset = y * rowSize;
-                for (int x = left; x < right; x++) {
-                    bits[offset + (x / 32)] |= 1 << (x & 0x1f);
-                }
-            }
-        });
         // Adjust column widths
         boolean started = false;
         for (int c = 0; c < nbCols; ++c) {
@@ -740,8 +727,7 @@ public class Worksheet {
                 maxWidth = colWidths.get(c);
             } else {
                 for (int r = 0; r < rows.size(); ++r) {
-                    int offset = r * rowSize + (c / 32);
-                    boolean isCellInMergedRanges = ((bits[offset] >>> (c & 0x1f)) & 1) != 0;
+                    boolean isCellInMergedRanges = mergedMatrix.get(r,c);
                     // Exclude merged cells from computation && hidden rows
                     Object o = hiddenRows.contains(r) || isCellInMergedRanges ? null : value(r, c);
                     if (o != null && !(o instanceof Formula)) {
