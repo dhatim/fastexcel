@@ -101,6 +101,8 @@ public class Worksheet {
 
     final Map<String,Table> tables = new LinkedHashMap<>();
 
+    private final DynamicBitMatrix tablesMatrix = new DynamicBitMatrix();
+
     /**
      * Is this worksheet construction completed?
      */
@@ -1324,11 +1326,17 @@ public class Worksheet {
         this.hyperlinkRanges.put(hyperLink, ref);
     }
 
-    Relationships relationships(){
-        return relationships;
-    }
 
-    void addTable(String rId,Table table) {
-        tables.put(rId,table);
+    Table addTable(Range range, String... headers) {
+        if (!tablesMatrix.isConflict(range.getTop(), range.getLeft(), range.getBottom(), range.getRight())) {
+            int tableIndex = getWorkbook().nextTableIndex();
+            String rId = relationships.setTableRels(tableIndex);
+            Table table = new Table(tableIndex, range, headers);
+            tables.put(rId, table);
+            tablesMatrix.setRegion(range.getTop(), range.getLeft(), range.getBottom(), range.getRight());
+            return table;
+        } else {
+            throw new IllegalArgumentException("Table conflicted:" + range);
+        }
     }
 }

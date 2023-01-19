@@ -435,4 +435,19 @@ class CorrectnessTest {
         });
     }
 
+
+    @Test
+    void testForTableConflict() throws Exception {
+        assertThrows(IllegalArgumentException.class, () -> {
+            //try (FileOutputStream fileOutputStream = new FileOutputStream("D://table_conflicted.xlsx")) {
+                byte[] bytes = writeWorkbook(wb -> {
+                    Worksheet ws = wb.newWorksheet("Worksheet 1");
+                    ws.range(0, 0, 2, 2).createTable();
+                    ws.range(1, 1, 3, 3).createTable();
+                });
+                //fileOutputStream.write(bytes);
+            //}
+        });
+    }
+
 }

@@ -249,11 +249,8 @@ public class Range implements Ref {
         String[] headers = IntStream.rangeClosed(1, columnCount).mapToObj(i -> "Column" + i).toArray(String[]::new);
         return createTable(headers);
     }
-    public Table createTable(String... headers){
-        int tableIndex = worksheet.getWorkbook().nextTableIndex();
-        String rId = worksheet.relationships().setTableRels(tableIndex);
-        Table table = new Table(tableIndex,this, headers);
-        worksheet.addTable(rId,table);
-        return table;
+
+    public Table createTable(String... headers) {
+        return worksheet.addTable(this, headers);
     }
 }
