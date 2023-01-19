@@ -1,8 +1,12 @@
 package org.dhatim.fastexcel;
 
-import java.util.OptionalInt;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * This is a dynamically expanding matrix structure that saves space and has good performance
+ *
+ * @author meiMingle
+ */
 public class DynamicBitMatrix {
     static final int UNIT_WEITH = 1 << 6, UNIT_HIGHT = 1 << 10;
 
