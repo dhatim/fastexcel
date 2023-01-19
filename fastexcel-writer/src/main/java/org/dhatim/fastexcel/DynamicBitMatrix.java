@@ -59,7 +59,7 @@ public class DynamicBitMatrix {
             return true;
         }
         for (int c = left; c <= right; c++) {
-            for (int r = 0; r <= bottom; r++) {
+            for (int r = top; r <= bottom; r++) {
                 if ((c == left && (r == top || r == bottom)) || (c == right && (r == top || r == bottom))) {
                     continue;
                 }

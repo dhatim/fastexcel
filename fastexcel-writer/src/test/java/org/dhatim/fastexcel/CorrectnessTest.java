@@ -191,9 +191,10 @@ class CorrectnessTest {
             ws.value(0, 0, "One");
             ws.value(0, 1, "Two");
             ws.value(0, 2, "Three");
-            ws.value(1, 0, "Merged");
+            ws.value(1, 0, "Merged1");
+            ws.value(2, 0, "Merged2");
             ws.range(1, 0, 1, 2).style().merge().set();
-            ws.range(1, 0, 1, 2).merge();
+            ws.range(2, 0, 2, 2).merge();
             ws.style(1, 0).horizontalAlignment("center").set();
         });
     }
