@@ -8,6 +8,7 @@ import org.apache.poi.poifs.crypt.EncryptionMode;
 import org.apache.poi.poifs.crypt.Encryptor;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.util.IOUtils;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -64,6 +65,9 @@ public class EncryptionTest {
             }
             // parse dataStream
             try (InputStream dataStream = d.getDataStream(fileSystem); ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+                /* TODO:The dataStream obtained here is broken and cannot be read normally by programs other than POI, which is probably a bug of POI.
+                     See https://bz.apache.org/bugzilla/show_bug.cgi?id=66436
+                     This problem can be avoided by saving after being wrapped by OPCPackage */
                 OPCPackage open = OPCPackage.open(dataStream);
                 open.save(bos);
                 byte[] bytes = bos.toByteArray();
@@ -156,6 +160,58 @@ public class EncryptionTest {
     public void poiWrite_poiRead() throws Exception {
         poiWriteProtectTest();
         poiReadProtectTest();
+    }
+
+
+
+    @Test
+    void ProtectTest() throws IOException, InvalidFormatException, GeneralSecurityException {
+
+        final String secretKey = "foobaa";
+
+        final String temp_excel_poi = "D://temp_excel_poi.xlsx";
+        final String temp_excel_poi_encrypt = "D://temp_excel_poi_encrypt.xlsx";
+        final String temp_excel_poi_decrypt = "D://temp_excel_poi_decrypt.xlsx";
+
+        /* create new excel by poi */
+        try (XSSFWorkbook workbook = new XSSFWorkbook();FileOutputStream foss =new FileOutputStream(temp_excel_poi)) {
+            XSSFSheet sheet = workbook.createSheet();
+            XSSFRow row = sheet.createRow(0);
+            XSSFCell cell = row.createCell(0);
+            cell.setCellValue("Hello Apache POI");
+            workbook.write(foss);
+        }
+
+        /* encrypt excel by poi */
+        try ( POIFSFileSystem fs = new POIFSFileSystem()) {
+            EncryptionInfo info = new EncryptionInfo(EncryptionMode.agile);
+            // EncryptionInfo info = new EncryptionInfo(EncryptionMode.agile, CipherAlgorithm.aes192, HashAlgorithm.sha384, -1, -1, null);
+            Encryptor enc = info.getEncryptor();
+            enc.confirmPassword(secretKey);
+            // Read in an existing OOXML file and write to encrypted output stream
+            // don't forget to close the output stream otherwise the padding bytes aren't added
+            try (OPCPackage opc = OPCPackage.open(temp_excel_poi); OutputStream os = enc.getDataStream(fs)) {
+                opc.save(os);
+            }
+            // Write out the encrypted version
+            try (FileOutputStream fos = new FileOutputStream(temp_excel_poi_encrypt)) {
+                fs.writeFilesystem(fos);
+            }
+        }
+        /* decrypt excel by poi */
+        try (POIFSFileSystem fileSystem = new POIFSFileSystem(new File(temp_excel_poi_encrypt))) {
+            EncryptionInfo info = new EncryptionInfo(fileSystem);
+            Decryptor d = Decryptor.getInstance(info);
+            if (!d.verifyPassword(secretKey)) {
+                throw new RuntimeException("Unable to process: document is encrypted");
+            }
+            // parse dataStream
+            try (InputStream dataStream = d.getDataStream(fileSystem);FileOutputStream fos = new FileOutputStream(temp_excel_poi_decrypt)) {
+                IOUtils.copy(dataStream, fos);
+            }
+        } catch (GeneralSecurityException ex) {
+            throw new RuntimeException("Unable to process encrypted document", ex);
+        }
     }
 
 }
