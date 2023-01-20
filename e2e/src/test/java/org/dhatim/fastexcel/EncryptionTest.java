@@ -55,7 +55,7 @@ public class EncryptionTest {
 
     }
 
-    void fastexcelReadProtectTest() throws IOException {
+    void fastexcelReadProtectTest() throws IOException, InvalidFormatException {
         try (POIFSFileSystem fileSystem = new POIFSFileSystem(testFile)) {
             EncryptionInfo info = new EncryptionInfo(fileSystem);
             Decryptor d = Decryptor.getInstance(info);
@@ -63,7 +63,11 @@ public class EncryptionTest {
                 throw new RuntimeException("Unable to process: document is encrypted");
             }
             // parse dataStream
-            try (InputStream dataStream = d.getDataStream(fileSystem); ReadableWorkbook fworkbook = new ReadableWorkbook(dataStream)) {
+            try (InputStream dataStream = d.getDataStream(fileSystem); ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+                OPCPackage open = OPCPackage.open(dataStream);
+                open.save(bos);
+                byte[] bytes = bos.toByteArray();
+                ReadableWorkbook fworkbook = new ReadableWorkbook(new ByteArrayInputStream(bytes));
                 Sheet sheet = fworkbook.getSheet(0).orElse(null);
                 assert sheet != null;
                 sheet.openStream().forEach(r -> {
@@ -145,7 +149,6 @@ public class EncryptionTest {
     @Disabled
     @Test
     public void poiWrite_fastexcelRead() throws Exception {
-        //TODO: This test case will fail, but the exact reason is unclear.
         poiWriteProtectTest();
         fastexcelReadProtectTest();
     }
