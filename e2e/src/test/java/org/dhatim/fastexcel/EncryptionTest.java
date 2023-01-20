@@ -146,7 +146,6 @@ public class EncryptionTest {
         poiReadProtectTest();
     }
 
-    @Disabled
     @Test
     public void poiWrite_fastexcelRead() throws Exception {
         poiWriteProtectTest();
