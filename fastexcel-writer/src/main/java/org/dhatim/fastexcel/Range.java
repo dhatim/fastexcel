@@ -16,11 +16,12 @@
 package org.dhatim.fastexcel;
 
 import java.util.*;
+import java.util.stream.IntStream;
 
 /**
  * Definition of a range of cells.
  */
-public class Range {
+public class Range implements Ref {
 
     /**
      * Worksheet where this range is defined.
@@ -131,21 +132,6 @@ public class Range {
         return result;
     }
 
-    /**
-     * Convert a column index to a column name.
-     *
-     * @param c Zero-based column index.
-     * @return Column name.
-     */
-    public static String colToString(int c) {
-        StringBuilder sb = new StringBuilder();
-        while (c >= 0) {
-            sb.append((char) ('A' + (c % 26)));
-            c = (c / 26) - 1;
-        }
-        return sb.reverse().toString();
-    }
-
     @Override
     public String toString() {
         return colToString(left) + (top + 1) + ':' + colToString(right) + (bottom + 1);
@@ -252,5 +238,19 @@ public class Range {
                 cell.setStyle(styles.get(cell.getStyle()));
             }
         }
+    }
+    public void setHyperlink(HyperLink hyperLink){
+        this.worksheet.value(top,left,hyperLink.getDisplayStr());
+        this.worksheet.addHyperlink(this,hyperLink);
+    }
+
+    public Table createTable() {
+        int columnCount = this.right - this.left + 1;
+        String[] headers = IntStream.rangeClosed(1, columnCount).mapToObj(i -> "Column" + i).toArray(String[]::new);
+        return createTable(headers);
+    }
+
+    public Table createTable(String... headers) {
+        return worksheet.addTable(this, headers);
     }
 }

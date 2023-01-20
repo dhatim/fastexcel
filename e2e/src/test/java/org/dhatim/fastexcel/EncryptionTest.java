@@ -15,7 +15,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.dhatim.fastexcel.reader.ReadableWorkbook;
 import org.dhatim.fastexcel.reader.Sheet;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.*;
@@ -55,7 +54,7 @@ public class EncryptionTest {
 
     }
 
-    void fastexcelReadProtectTest() throws IOException {
+    void fastexcelReadProtectTest() throws IOException, InvalidFormatException {
         try (POIFSFileSystem fileSystem = new POIFSFileSystem(testFile)) {
             EncryptionInfo info = new EncryptionInfo(fileSystem);
             Decryptor d = Decryptor.getInstance(info);
@@ -63,7 +62,14 @@ public class EncryptionTest {
                 throw new RuntimeException("Unable to process: document is encrypted");
             }
             // parse dataStream
-            try (InputStream dataStream = d.getDataStream(fileSystem); ReadableWorkbook fworkbook = new ReadableWorkbook(dataStream)) {
+            try (InputStream dataStream = d.getDataStream(fileSystem); ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+                /* TODO:The dataStream obtained here is broken and cannot be read normally by programs other than POI, which is probably a bug of POI.
+                     See https://bz.apache.org/bugzilla/show_bug.cgi?id=66436
+                     This problem can be avoided by saving after being wrapped by OPCPackage */
+                OPCPackage open = OPCPackage.open(dataStream);
+                open.save(bos);
+                byte[] bytes = bos.toByteArray();
+                ReadableWorkbook fworkbook = new ReadableWorkbook(new ByteArrayInputStream(bytes));
                 Sheet sheet = fworkbook.getSheet(0).orElse(null);
                 assert sheet != null;
                 sheet.openStream().forEach(r -> {
@@ -142,10 +148,8 @@ public class EncryptionTest {
         poiReadProtectTest();
     }
 
-    @Disabled
     @Test
     public void poiWrite_fastexcelRead() throws Exception {
-        //TODO: This test case will fail, but the exact reason is unclear.
         poiWriteProtectTest();
         fastexcelReadProtectTest();
     }

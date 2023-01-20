@@ -8,6 +8,7 @@
     </parent>
     <artifactId>fastexcel-reader</artifactId>
     <name>Fastexcel Reader</name>
+    <url>https://github.com/dhatim/fastexcel</url>
 
     <dependencies>
         <dependency>

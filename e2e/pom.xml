@@ -9,6 +9,7 @@
     </parent>
     <artifactId>fastexcel-e2e</artifactId>
     <name>Fastexcel End-to-End tests</name>
+    <url>https://github.com/dhatim/fastexcel</url>
 
     <properties>
         <jmh.version>1.36</jmh.version>

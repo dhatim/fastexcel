@@ -17,7 +17,7 @@ package org.dhatim.fastexcel;
 
 /** This class represents a range of columns for the 
  *      repeating columns feature in the print setup. */
-class RepeatColRange { 
+class RepeatColRange implements Ref {
     
     final int from;
     final int to;
@@ -30,7 +30,8 @@ class RepeatColRange {
     /**
      * Column indexes need to be transformed to the letter form.
      */
+    @Override
     public String toString() {
-        return "$" + Range.colToString(from) + ":$" + Range.colToString(to);
+        return "$" + colToString(from) + ":$" + colToString(to);
     }
 }

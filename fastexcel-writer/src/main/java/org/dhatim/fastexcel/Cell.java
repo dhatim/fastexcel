@@ -25,7 +25,7 @@ import java.util.Date;
 /**
  * A cell contains a value and a cached style index.
  */
-class Cell {
+class Cell implements Ref {
 
     /**
      * Cell value.
@@ -47,7 +47,7 @@ class Cell {
      */
     void write(Writer w, int r, int c) throws IOException {
         if (value != null || style != 0) {
-            w.append("<c r=\"").append(Range.colToString(c)).append(r + 1).append('\"');
+            w.append("<c r=\"").append(colToString(c)).append(r + 1).append('\"');
             if (style != 0) {
                 w.append(" s=\"").append(style).append('\"');
             }

@@ -58,6 +58,10 @@ public class Worksheet {
      */
     private final Set<Range> mergedRanges = new HashSet<>();
     /**
+     * Matrix of merged cells.
+     */
+    private final DynamicBitMatrix mergedMatrix = new DynamicBitMatrix();
+    /**
      * List of conditional formattings for this worksheet
      */
     private final List<ConditionalFormatting> conditionalFormattings = new ArrayList<>();
@@ -94,6 +98,10 @@ public class Worksheet {
     private final Map<Integer, Double> rowHeights = new HashMap<>();
 
     final Comments comments = new Comments();
+
+    final Map<String,Table> tables = new LinkedHashMap<>();
+
+    private final DynamicBitMatrix tablesMatrix = new DynamicBitMatrix();
 
     /**
      * Is this worksheet construction completed?
@@ -212,10 +220,14 @@ public class Worksheet {
      * Range of row where will be inserted auto filter
      */
     private Range autoFilterRange = null;
+
+    private Relationships relationships = new Relationships(this);
     /**
      * List of named ranges.
      */
-    private Map<String, Range> namedRanges = new LinkedHashMap();
+    private Map<String, Range> namedRanges = new LinkedHashMap<>();
+
+    private Map<HyperLink, Ref> hyperlinkRanges = new LinkedHashMap<>();
 
     /**
      * The set of protection options that are applied on the sheet.
@@ -347,7 +359,13 @@ public class Worksheet {
      * @param range Range of cells.
      */
     void merge(Range range) {
-        mergedRanges.add(range);
+        if (!mergedMatrix.isConflict(range.getTop(),range.getLeft(),range.getBottom(),range.getRight())){
+            if (mergedRanges.add(range)) {
+                mergedMatrix.setRegion(range.getTop(),range.getLeft(),range.getBottom(),range.getRight());
+            }
+        }else {
+            throw new IllegalArgumentException("Merge conflicted:" +range);
+        }
     }
 
     /**
@@ -651,6 +669,11 @@ public class Worksheet {
         return cell == null ? null : cell.getValue();
     }
 
+    public void hyperlink(int r, int c,HyperLink hyperLink) {
+        value(r,c,hyperLink.getDisplayStr());
+        this.addHyperlink(new Location(r,c),hyperLink);
+    }
+
     /**
      * Set the cell formula at the given coordinates.
      *
@@ -696,29 +719,6 @@ public class Worksheet {
      * @throws IOException If an I/O error occurs.
      */
     private void writeCols(Writer w, int nbCols) throws IOException {
-        // Get merged range bitMatrix
-        int maxRows = (mergedRanges.stream().filter(Objects::nonNull).map(Range::getBottom).reduce(0, Math::max)) + 1;
-        int maxCols = (mergedRanges.stream().filter(Objects::nonNull).map(Range::getRight).reduce(0, Math::max)) + 1;
-        if (rows.size() > maxRows) {
-            maxRows = rows.size();
-        }
-        if (nbCols > maxCols) {
-            maxCols = nbCols;
-        }
-        int rowSize = (maxCols + 31) / 32;
-        int[] bits = new int[rowSize * maxRows];
-        mergedRanges.forEach(r -> {
-            int top = r.getTop();
-            int left = r.getLeft();
-            int right = r.getRight();
-            int bottom = r.getBottom();
-            for (int y = top; y < bottom; y++) {
-                int offset = y * rowSize;
-                for (int x = left; x < right; x++) {
-                    bits[offset + (x / 32)] |= 1 << (x & 0x1f);
-                }
-            }
-        });
         // Adjust column widths
         boolean started = false;
         for (int c = 0; c < nbCols; ++c) {
@@ -729,8 +729,7 @@ public class Worksheet {
                 maxWidth = colWidths.get(c);
             } else {
                 for (int r = 0; r < rows.size(); ++r) {
-                    int offset = r * rowSize + (c / 32);
-                    boolean isCellInMergedRanges = ((bits[offset] >>> (c & 0x1f)) & 1) != 0;
+                    boolean isCellInMergedRanges = mergedMatrix.get(r,c);
                     // Exclude merged cells from computation && hidden rows
                     Object o = hiddenRows.contains(r) || isCellInMergedRanges ? null : value(r, c);
                     if (o != null && !(o instanceof Formula)) {
@@ -797,13 +796,8 @@ public class Worksheet {
             return;
         }
         flush();
+        int index = workbook.getIndex(this);
         writer.append("</sheetData>");
-
-        if (autoFilterRange != null) {
-            writer.append("<autoFilter ref=\"")
-                    .append(autoFilterRange.toString())
-                    .append("\">").append("</autoFilter>");
-        }
 
         if (passwordHash != null) {
             writer.append("<sheetProtection password=\"").append(passwordHash).append("\" ");
@@ -814,7 +808,11 @@ public class Worksheet {
             }
             writer.append("/>");
         }
-
+        if (autoFilterRange != null) {
+            writer.append("<autoFilter ref=\"")
+                    .append(autoFilterRange.toString())
+                    .append("\">").append("</autoFilter>");
+        }
         if (!mergedRanges.isEmpty()) {
             writer.append("<mergeCells>");
             for (Range r : mergedRanges) {
@@ -829,6 +827,12 @@ public class Worksheet {
                 v.write(writer);
             }
         }
+        for (AlternateShading a : alternateShadingRanges) {
+            a.write(writer);
+        }
+        for (Shading s : shadingRanges) {
+            s.write(writer);
+        }
         if (!dataValidations.isEmpty()) {
             writer.append("<dataValidations count=\"").append(dataValidations.size()).append("\">");
             for (DataValidation v: dataValidations) {
@@ -836,13 +840,19 @@ public class Worksheet {
             }
             writer.append("</dataValidations>");
         }
-        for (AlternateShading a : alternateShadingRanges) {
-            a.write(writer);
+        if (!hyperlinkRanges.isEmpty()) {
+            writer.append("<hyperlinks>");
+            for (Map.Entry<HyperLink, Ref> hr : hyperlinkRanges.entrySet()) {
+                HyperLink hyperLink = hr.getKey();
+                Ref ref = hr.getValue();
+                String rId = relationships.setHyperLinkRels(hyperLink.getLinkStr(), "External");
+                writer.append("<hyperlink ");
+                writer.append("ref=\"" + ref.toString()+"\" ");
+                writer.append("r:id=\"" + rId +"\" ");
+                writer.append("/>");
+            }
+            writer.append("</hyperlinks>");
         }
-        for (Shading s : shadingRanges) {
-            s.write(writer);
-        }
-
         /* set page margins for the print setup (see in print preview) */
         String margins = "<pageMargins bottom=\"" + bottomMargin +
                          "\" footer=\"" + footerMargin +
@@ -852,7 +862,7 @@ public class Worksheet {
                          "\" top=\"" + topMargin + "\"/>";
         writer.append(margins);
 
-    /* set page orientation for the print setup */
+        /* set page orientation for the print setup */
         writer.append("<pageSetup")
             .append(" paperSize=\"" + paperSize.xmlValue + "\"")
             .append(" scale=\"" + pageScale + "\"")
@@ -882,9 +892,34 @@ public class Worksheet {
             writer.append("<drawing r:id=\"d\"/>");
             writer.append("<legacyDrawing r:id=\"v\"/>");
         }
+        if (!tables.isEmpty()){
+            writer.append("<tableParts count=\""+tables.size()+"\">");
+            for (Map.Entry<String, Table> entry : tables.entrySet()) {
+                writer.append("<tablePart r:id=\""+entry.getKey()+"\"/>");
+            }
+            writer.append("</tableParts>");
+        }
+
         writer.append("</worksheet>");
         workbook.endFile();
 
+        /* write comment files */
+        if (!comments.isEmpty()) {
+            workbook.writeFile("xl/comments" + index + ".xml", comments::writeComments);
+            workbook.writeFile("xl/drawings/vmlDrawing" + index + ".vml", comments::writeVmlDrawing);
+            workbook.writeFile("xl/drawings/drawing" + index + ".xml", comments::writeDrawing);
+            relationships.setCommentsRels(index);
+        }
+        //write table files
+        for (Map.Entry<String, Table> entry : tables.entrySet()) {
+            Table table = entry.getValue();
+            workbook.writeFile("xl/tables/table" + table.index + ".xml",table::write);
+        }
+
+        // write relationship files
+        if (!relationships.isEmpty()) {
+            workbook.writeFile("xl/worksheets/_rels/sheet"+index+".xml.rels",relationships::write);
+        }
         // Free memory; we no longer need this data
         rows.clear();
         finished = true;
@@ -1285,5 +1320,23 @@ public class Worksheet {
      */
     public void addNamedRange(Range range, String name) {
         this.namedRanges.put(name, range);
+    }
+
+    void addHyperlink(Ref ref, HyperLink hyperLink) {
+        this.hyperlinkRanges.put(hyperLink, ref);
+    }
+
+
+    Table addTable(Range range, String... headers) {
+        if (!tablesMatrix.isConflict(range.getTop(), range.getLeft(), range.getBottom(), range.getRight())) {
+            int tableIndex = getWorkbook().nextTableIndex();
+            String rId = relationships.setTableRels(tableIndex);
+            Table table = new Table(tableIndex, range, headers);
+            tables.put(rId, table);
+            tablesMatrix.setRegion(range.getTop(), range.getLeft(), range.getBottom(), range.getRight());
+            return table;
+        } else {
+            throw new IllegalArgumentException("Table conflicted:" + range);
+        }
     }
 }

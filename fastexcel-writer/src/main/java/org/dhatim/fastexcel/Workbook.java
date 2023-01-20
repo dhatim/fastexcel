@@ -24,6 +24,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -43,6 +44,7 @@ public class Workbook {
     private final Properties properties = new Properties();
     private final OpcOutputStream os;
     private final Writer writer;
+    private final AtomicInteger maxTableIndex = new AtomicInteger(1);
 
     /**
      * Constructor.
@@ -118,11 +120,10 @@ public class Workbook {
         if (worksheets.isEmpty()) {
             throw new IllegalArgumentException("A workbook must contain at least one worksheet.");
         }
+
         for (Worksheet ws : worksheets) {
             ws.finish();
         }
-
-        writeComments();
 
         writeFile("[Content_Types].xml", w -> {
             w.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"><Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/><Default Extension=\"xml\" ContentType=\"application/xml\"/>");
@@ -136,6 +137,12 @@ public class Workbook {
                 if(!ws.comments.isEmpty()) {
                     w.append("<Override ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.comments+xml\" PartName=\"/xl/comments").append(index).append(".xml\"/>");
                     w.append("<Override ContentType=\"application/vnd.openxmlformats-officedocument.drawing+xml\" PartName=\"/xl/drawings/drawing").append(index).append(".xml\"/>");
+                }
+                if (!ws.tables.isEmpty()) {
+                    for (Map.Entry<String, Table> entry : ws.tables.entrySet()) {
+                        Table table = entry.getValue();
+                        w.append("<Override PartName=\"/xl/tables/table"+table.index+".xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.table+xml\"/>");
+                    }
                 }
             }
             w.append("<Override PartName=\"/docProps/core.xml\" ContentType=\"application/vnd.openxmlformats-package.core-properties+xml\"/>");
@@ -217,28 +224,6 @@ public class Workbook {
         return false;
     }
 
-    private void writeComments() throws IOException {
-        for (Worksheet ws : worksheets) {
-            if (ws.comments.isEmpty()) {
-                continue;
-            }
-            int index = getIndex(ws);
-            writeFile("xl/comments" + index + ".xml", ws.comments::writeComments);
-            writeFile("xl/drawings/vmlDrawing" + index + ".vml", ws.comments::writeVmlDrawing);
-            writeFile("xl/drawings/drawing" + index + ".xml", ws.comments::writeDrawing);
-
-            writeFile("xl/worksheets/_rels/sheet" + index + ".xml.rels", w -> {
-                w.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>");
-                w.append("<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">");
-                w.append("<Relationship Id=\"d\" Target=\"../drawings/drawing" + index + ".xml\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing\"/>");
-                w.append("<Relationship Id=\"c\" Target=\"../comments" + index + ".xml\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments\"/>");
-                w.append("<Relationship Id=\"v\" Target=\"../drawings/vmlDrawing" + index + ".vml\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/vmlDrawing\"/>");
-                w.append("</Relationships>");
-            });
-
-        }
-    }
-
     /**
      * Writes the {@code xl/workbook.xml} file to the zip.
      * @throws IOException If an I/O error occurs.
@@ -284,31 +269,27 @@ public class Workbook {
                     String rangeName = nr.getKey();
                     Range range = nr.getValue();
                     w.append("<definedName function=\"false\" " +
-                                "hidden=\"false\" localSheetId=\"" +
-                                worksheetIndex + "\" name=\"")
-                        .append(rangeName)
-                        .append("\" vbProcedure=\"false\">&apos;")
-                        .append(ws.getName())
-                        .append("&apos;")
-                        .append("!")
-                        .append("$" + Range.colToString(range.getLeft()) + "$" + (1 + range.getTop()))
-                        .append(":")
-                        .append("$" + Range.colToString(range.getRight()) + "$" + (1 + range.getBottom()))
-                        .append("</definedName>");
+                                    "hidden=\"false\" localSheetId=\"" +
+                                    worksheetIndex + "\" name=\"")
+                            .append(rangeName)
+                            .append("\" vbProcedure=\"false\">&apos;")
+                            .append(ws.getName())
+                            .append("&apos;")
+                            .append("!")
+                            .append(range.toAbsoluteString())
+                            .append("</definedName>");
                 }
                 Range af = ws.getAutoFilterRange();
                 if (af != null) {
                     w.append("<definedName function=\"false\" hidden=\"true\" localSheetId=\"")
-                    .append(worksheetIndex)
-                    .append("\" name=\"_xlnm._FilterDatabase\" vbProcedure=\"false\">")
-                    .append("&apos;")
-                    .append(ws.getName())
-                    .append("&apos;")
-                    .append("!")
-                    .append("$" + Range.colToString(af.getLeft()) + "$" + (1 + af.getTop()))
-                    .append(":")
-                    .append("$" + Range.colToString(af.getRight()) + "$" + (1 + af.getBottom()))
-                    .append("</definedName>");
+                            .append(worksheetIndex)
+                            .append("\" name=\"_xlnm._FilterDatabase\" vbProcedure=\"false\">")
+                            .append("&apos;")
+                            .append(ws.getName())
+                            .append("&apos;")
+                            .append("!")
+                            .append(af.toAbsoluteString())
+                            .append("</definedName>");
                 }
             }
             w.append("</definedNames>");
@@ -439,5 +420,9 @@ public class Workbook {
             worksheets.add(worksheet);
             return worksheet;
         }
+    }
+
+    int nextTableIndex() {
+        return maxTableIndex.getAndIncrement();
     }
 }
