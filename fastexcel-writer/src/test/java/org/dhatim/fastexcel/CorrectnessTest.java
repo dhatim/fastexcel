@@ -15,22 +15,24 @@
  */
 package org.dhatim.fastexcel;
 
-import org.apache.commons.io.output.NullOutputStream;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.function.Consumer;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.apache.commons.io.output.NullOutputStream;
+import org.junit.jupiter.api.Test;
 
 class CorrectnessTest {
 
@@ -449,5 +451,67 @@ class CorrectnessTest {
             //}
         });
     }
+    
+    @Test 
+    void testForOffBy1ErrorFor1900_localDateTime() {
+    	LocalDateTime ldt1 = LocalDateTime.of(1900, Month.JANUARY, 1, 0, 0);
+    	LocalDateTime ldt2 = LocalDateTime.of(1901, Month.JANUARY, 1, 0, 0);
+    	LocalDateTime ldt3 = LocalDateTime.of(2000, Month.JANUARY, 1, 0, 0);
+    	LocalDateTime ldt4 = LocalDateTime.of(2023, Month.JANUARY, 1, 0, 0);
+    	LocalDateTime ldt5 = LocalDateTime.of(1960, Month.JANUARY, 1, 0, 0);
+    	assertThat(TimestampUtil.convertDate(Date.from(ldt1.atZone(ZoneId.systemDefault()).toInstant())))
+    			.isEqualTo(1.0);
+    	assertThat(TimestampUtil.convertDate(Date.from(ldt2.atZone(ZoneId.systemDefault()).toInstant())))
+				.isEqualTo(367.0);
+    	assertThat(TimestampUtil.convertDate(Date.from(ldt3.atZone(ZoneId.systemDefault()).toInstant())))
+				.isEqualTo(36526.0);
+    	assertThat(TimestampUtil.convertDate(Date.from(ldt4.atZone(ZoneId.systemDefault()).toInstant())))
+				.isEqualTo(44927.0);
+    	assertThat(TimestampUtil.convertDate(Date.from(ldt5.atZone(ZoneId.systemDefault()).toInstant())))
+				.isEqualTo(21916.0);
+    }
+    
+    @Test 
+    void testForOffBy1ErrorFor1900_localDate() {
+    	LocalDate ldt1 = LocalDate.of(1900, Month.JANUARY, 1);
+    	
+    	LocalDate ldt2 = LocalDate.of(1901, Month.JANUARY, 1);
+    	LocalDate ldt3 = LocalDate.of(2000, Month.JANUARY, 1);
+    	LocalDate ldt4 = LocalDate.of(2023, Month.JANUARY, 1);
+    	LocalDate ldt5 = LocalDate.of(1960, Month.JANUARY, 1);
+    	assertThat(TimestampUtil.convertDate(ldt1)).isEqualTo(1.0);
+    	assertThat(TimestampUtil.convertDate(ldt2)).isEqualTo(367.0);
+    	assertThat(TimestampUtil.convertDate(ldt3)).isEqualTo(36526.0);
+    	assertThat(TimestampUtil.convertDate(ldt4)).isEqualTo(44927.0);
+    	assertThat(TimestampUtil.convertDate(ldt5)).isEqualTo(21916.0);
+    }
+    
+    @Test 
+    void testForOffBy1ErrorFor1900_utilDate() {
+    	Date d1 = getCalendarDate(1900, 1, 1);
+    	System.out.println(d1);
+    	Date d2 = getCalendarDate(1901, 1, 1);
+    	Date d3 = getCalendarDate(2000, 1, 1);
+    	Date d4 = getCalendarDate(2023, 1, 1);
+    	Date d5 = getCalendarDate(1960, 1, 1);
+    	assertThat(TimestampUtil.convertDate(d1)).isEqualTo(1.5);
+    	assertThat(TimestampUtil.convertDate(d2)).isEqualTo(367.5);
+    	assertThat(TimestampUtil.convertDate(d3)).isEqualTo(36526.5);
+    	assertThat(TimestampUtil.convertDate(d4)).isEqualTo(44927.5);
+    	assertThat(TimestampUtil.convertDate(d5)).isEqualTo(21916.5);
+    }
+    
+    private static Date getCalendarDate(int year, int month, int day) {
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.YEAR, year);
+		cal.set(Calendar.MONTH, month-1);
+		cal.set(Calendar.DAY_OF_MONTH, day);
+		cal.set(Calendar.HOUR, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Date time = cal.getTime();
+		return time;
+	}
 
 }

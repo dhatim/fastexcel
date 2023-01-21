@@ -60,7 +60,8 @@ public final class TimestampUtil {
      * @return Serial number value.
      */
     public static Double convertDate(LocalDate date) {
-        return ChronoUnit.DAYS.between(EPOCH_1900.toLocalDate(), date) + 2.0;
+    	double e = date.getYear() == 1900 ? 1.0 : 2.0;
+        return ChronoUnit.DAYS.between(EPOCH_1900.toLocalDate(), date) + e;
     }
 
     /**
@@ -83,7 +84,8 @@ public final class TimestampUtil {
     private static Double convertDate(Date date, ZoneId timezone) {
         LocalDateTime ldt = LocalDateTime.ofInstant(Instant.ofEpochMilli(date.getTime()), timezone);
         Duration duration = Duration.between(EPOCH_1900, ldt);
-        return duration.getSeconds() / 86400.0 + duration.getNano() / 86400000000000.0 + 2;   // 2 to compensate for Excel bugs
+        int e = ldt.getYear() == 1900 ? 1 : 2;		// 2 to compensate for Excel bugs
+        return duration.getSeconds() / 86400.0 + duration.getNano() / 86400000000000.0 + e;   
     }
 
 }
