@@ -14,24 +14,20 @@ jobs:
                 with:
                     distribution: 'zulu'
                     java-version: '8'
-            -   name: get tag
-                id: get_tag
-                run: echo name=tag::${GITHUB_REF#refs/*/} >> $GITHUB_OUTPUT
             -   name: maven build
                 env:
-                    TAG: ${{ steps.get_tag.outputs.tag }}
                     GPG_SECRET_KEY: ${{ secrets.GPG_SECRET_KEY }}
                     GPG_OWNERTRUST: ${{ secrets.GPG_OWNERTRUST }}
                     GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
                     SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
                     SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
                 run: |
-                    if echo "${TAG}" | egrep '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9]+)?$'
+                    if echo "${GITHUB_REF_NAME}" | egrep '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9]+)?$'
                     then
                         # the tag looks like a version number: proceed with release
                         echo ${GPG_SECRET_KEY} | base64 --decode | gpg --import --no-tty --batch --yes
                         echo ${GPG_OWNERTRUST} | base64 --decode | gpg --import-ownertrust --no-tty --batch --yes
-                        mvn -ntp versions:set -DnewVersion=${TAG}
+                        mvn -ntp versions:set -DnewVersion=${GITHUB_REF_NAME}
                         mvn -ntp -s .github/settings.xml -Prelease deploy
                     else
                         # this is a regular build
