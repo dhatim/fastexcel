@@ -489,7 +489,6 @@ class CorrectnessTest {
     @Test 
     void testForOffBy1ErrorFor1900_utilDate() {
     	Date d1 = getCalendarDate(1900, 1, 1);
-    	System.out.println(d1);
     	Date d2 = getCalendarDate(1901, 1, 1);
     	Date d3 = getCalendarDate(2000, 1, 1);
     	Date d4 = getCalendarDate(2023, 1, 1);
