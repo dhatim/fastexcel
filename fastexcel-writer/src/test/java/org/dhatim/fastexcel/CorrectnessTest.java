@@ -15,24 +15,20 @@
  */
 package org.dhatim.fastexcel;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.apache.commons.io.output.NullOutputStream;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.Month;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 import java.util.function.Consumer;
 
-import org.apache.commons.io.output.NullOutputStream;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class CorrectnessTest {
 
@@ -46,9 +42,12 @@ class CorrectnessTest {
 
     @Test
     void colToName() {
-        assertThat(new Ref(){}.colToString(26)).isEqualTo("AA");
-        assertThat(new Ref(){}.colToString(702)).isEqualTo("AAA");
-        assertThat(new Ref(){}.colToString(Worksheet.MAX_COLS - 1)).isEqualTo("XFD");
+        assertThat(new Ref() {
+        }.colToString(26)).isEqualTo("AA");
+        assertThat(new Ref() {
+        }.colToString(702)).isEqualTo("AAA");
+        assertThat(new Ref() {
+        }.colToString(Worksheet.MAX_COLS - 1)).isEqualTo("XFD");
     }
 
     @Test
@@ -223,70 +222,70 @@ class CorrectnessTest {
     @Test
     void testForGithubIssue163() throws Exception {
         // try (FileOutputStream fileOutputStream = new FileOutputStream("D://globalDefaultFontTest.xlsx")) {
-            byte[] bytes = writeWorkbook(wb -> {
-                wb.setGlobalDefaultFont("Arial", 15.5);
-                Worksheet ws = wb.newWorksheet("Worksheet 1");
-                ws.value(0,0,"Hello fastexcel");
-            });
-            // fileOutputStream.write(bytes);
+        byte[] bytes = writeWorkbook(wb -> {
+            wb.setGlobalDefaultFont("Arial", 15.5);
+            Worksheet ws = wb.newWorksheet("Worksheet 1");
+            ws.value(0, 0, "Hello fastexcel");
+        });
+        // fileOutputStream.write(bytes);
         // }
     }
 
     @Test
     void testForGithubIssue164() throws Exception {
         // try (FileOutputStream fileOutputStream = new FileOutputStream("D://globalDefaultFontTest.xlsx")) {
-            byte[] bytes = writeWorkbook(wb -> {
-                wb.setGlobalDefaultFont("Arial", 15.5);
-                //General properties
-                wb.properties()
-                        .setTitle("title property")
-                        .setCategory("categrovy property")
-                        .setSubject("subject property")
-                        .setKeywords("keywords property")
-                        .setDescription("description property")
-                        .setManager("manager property")
-                        .setCompany("company property")
-                        .setHyperlinkBase("hyperlinkBase property");
-                //Custom properties
-                wb.properties()
-                        .setTextProperty("Test TextA", "Lucy")
-                        .setTextProperty("Test TextB", "Tony")
-                        .setDateProperty("Test DateA", Instant.parse("2022-12-22T10:00:00.123456789Z"))
-                        .setDateProperty("Test DateB", Instant.parse("1999-09-09T09:09:09Z"))
-                        .setNumberProperty("Test NumberA", BigDecimal.valueOf(202222.23364646D))
-                        .setNumberProperty("Test NumberB", BigDecimal.valueOf(3.1415926535894D))
-                        .setBoolProperty("Test BoolA", true)
-                        .setBoolProperty("Test BoolB", false);
-                Worksheet ws = wb.newWorksheet("Worksheet 1");
-                ws.value(0, 0, "Hello fastexcel");
-            });
-            // fileOutputStream.write(bytes);
+        byte[] bytes = writeWorkbook(wb -> {
+            wb.setGlobalDefaultFont("Arial", 15.5);
+            //General properties
+            wb.properties()
+                    .setTitle("title property")
+                    .setCategory("categrovy property")
+                    .setSubject("subject property")
+                    .setKeywords("keywords property")
+                    .setDescription("description property")
+                    .setManager("manager property")
+                    .setCompany("company property")
+                    .setHyperlinkBase("hyperlinkBase property");
+            //Custom properties
+            wb.properties()
+                    .setTextProperty("Test TextA", "Lucy")
+                    .setTextProperty("Test TextB", "Tony")
+                    .setDateProperty("Test DateA", Instant.parse("2022-12-22T10:00:00.123456789Z"))
+                    .setDateProperty("Test DateB", Instant.parse("1999-09-09T09:09:09Z"))
+                    .setNumberProperty("Test NumberA", BigDecimal.valueOf(202222.23364646D))
+                    .setNumberProperty("Test NumberB", BigDecimal.valueOf(3.1415926535894D))
+                    .setBoolProperty("Test BoolA", true)
+                    .setBoolProperty("Test BoolB", false);
+            Worksheet ws = wb.newWorksheet("Worksheet 1");
+            ws.value(0, 0, "Hello fastexcel");
+        });
+        // fileOutputStream.write(bytes);
         // }
     }
 
     @Test
     void shouldBeAbleToNullifyCell() throws IOException {
-        writeWorkbook(wb ->{
+        writeWorkbook(wb -> {
             Worksheet ws = wb.newWorksheet("Sheet 1");
-            ws.value(0,0, "One");
-            ws.value(1,0, 42);
-            ws.value(2,0, true);
-            ws.value(3,0, new Date());
-            ws.value(4,0, LocalDate.now());
-            ws.value(5,0, LocalDateTime.now());
-            ws.value(6,0, ZonedDateTime.now());
+            ws.value(0, 0, "One");
+            ws.value(1, 0, 42);
+            ws.value(2, 0, true);
+            ws.value(3, 0, new Date());
+            ws.value(4, 0, LocalDate.now());
+            ws.value(5, 0, LocalDateTime.now());
+            ws.value(6, 0, ZonedDateTime.now());
             for (int r = 0; r <= 6; r++) {
-              assertThat(ws.cell(r, 0).getValue()).isNotNull();
+                assertThat(ws.cell(r, 0).getValue()).isNotNull();
             }
-            ws.value(0,0, (Boolean) null);
-            ws.value(1,0, (Number) null);
-            ws.value(2,0, (String) null);
-            ws.value(3,0, (LocalDate) null);
-            ws.value(4,0, (ZonedDateTime) null);
-            ws.value(5,0, (LocalDateTime) null);
-            ws.value(6,0, (LocalDate) null);
+            ws.value(0, 0, (Boolean) null);
+            ws.value(1, 0, (Number) null);
+            ws.value(2, 0, (String) null);
+            ws.value(3, 0, (LocalDate) null);
+            ws.value(4, 0, (ZonedDateTime) null);
+            ws.value(5, 0, (LocalDateTime) null);
+            ws.value(6, 0, (LocalDate) null);
             for (int r = 0; r <= 6; r++) {
-              assertThat(ws.cell(r, 0).getValue()).isNull();
+                assertThat(ws.cell(r, 0).getValue()).isNull();
             }
         });
     }
@@ -295,102 +294,102 @@ class CorrectnessTest {
     void testForAllFeatures() throws Exception {
         //The files generated by this test case should always be able to be opened normally with Office software!!
         //try (FileOutputStream fileOutputStream = new FileOutputStream("D://all_features_test.xlsx")) {
-            byte[] bytes = writeWorkbook(wb -> {
-                //global font
-                wb.setGlobalDefaultFont("Arial", 15.5);
-                //set property
-                wb.properties().setCompany("Test_Company");
-                //set custom property
-                wb.properties().setTextProperty("Custom_Property_Name", "Custom_Property_Value");
-                //create new sheet
-                Worksheet ws = wb.newWorksheet("Worksheet 1");
-                //hide sheet
-                Worksheet invisibleSheet = wb.newWorksheet("Invisible Sheet");
-                invisibleSheet.setVisibilityState(VisibilityState.HIDDEN);
+        byte[] bytes = writeWorkbook(wb -> {
+            //global font
+            wb.setGlobalDefaultFont("Arial", 15.5);
+            //set property
+            wb.properties().setCompany("Test_Company");
+            //set custom property
+            wb.properties().setTextProperty("Custom_Property_Name", "Custom_Property_Value");
+            //create new sheet
+            Worksheet ws = wb.newWorksheet("Worksheet 1");
+            //hide sheet
+            Worksheet invisibleSheet = wb.newWorksheet("Invisible Sheet");
+            invisibleSheet.setVisibilityState(VisibilityState.HIDDEN);
 
-                //set values for cell
-                ws.value(0, 0, "Hello fastexcel");
-                ws.value(1, 0, 1024.2048);
-                ws.value(2, 0, true);
-                ws.value(3, 0, new Date());
-                ws.value(4, 0, LocalDateTime.now());
-                ws.value(5, 0, LocalDate.now());
-                ws.value(6, 0, ZonedDateTime.now());
-                //set hyperlink for cell
-                ws.hyperlink(7, 0, new HyperLink("https://github.com/dhatim/fastexcel", "Test_Hyperlink_For_Cell"));
-                //set comment for cell
-                ws.comment(8, 0, "Test_Comment");
-                //set header and footer
-                ws.header("Test_Header", Position.CENTER);
-                ws.footer("Test_Footer", Position.LEFT);
-                //set hide row
-                ws.value(9, 0, "You can't see this row");
-                ws.hideRow(9);
-                //set column width
-                ws.width(1, 20);
-                //set zoom
-                ws.setZoom(120);
-                //set formula
-                ws.value(10, 0, 44444);
-                ws.value(10, 1, 55555);
-                ws.formula(10, 2, "=SUM(A11,B11)");
-                //set style for cell
-                ws.value(11, 0, "Test_Cell_Style");
-                ws.style(11, 0)
-                        .borderStyle(BorderSide.DIAGONAL, BorderStyle.MEDIUM)
-                        .fontSize(20)
-                        .fontColor(Color.RED)
-                        .italic()
-                        .bold()
-                        .fillColor(Color.YELLOW)
-                        .fontName("Cooper Black")
-                        .borderColor(Color.SEA_BLUE)
-                        .underlined()
-                        .set();
-                //merge cells
-                ws.range(12, 0, 12, 3).merge();
-                //set hyperlink for range
-                ws.range(13, 0, 13, 3).setHyperlink(new HyperLink("https://github.com/dhatim/fastexcel", "Test_Hyperlink_For_Range"));
-                //set name for range
-                ws.range(14, 0, 14, 3).setName("Test_Set_Name");
-                //set style for range
-                ws.value(15, 0, "Test_Range_Style");
-                ws.range(15, 0, 19, 3).style()
-                        .borderStyle(BorderSide.DIAGONAL, BorderStyle.MEDIUM)
-                        .fontSize(20)
-                        .fontColor(Color.RED)
-                        .italic()
-                        .bold()
-                        .fillColor(Color.YELLOW)
-                        .fontName("Cooper Black")
-                        .borderColor(Color.SEA_BLUE)
-                        .underlined()
-                        .shadeAlternateRows(Color.SEA_BLUE)
-                        .shadeRows(Color.RED, 1)
-                        .set();
-                //protect the sheet
-                ws.protect("1234");
-                //autoFilter
-                ws.value(21,0,"A");
-                ws.value(21,1,"A");
-                ws.value(21,2,"A");
-                ws.value(22,0,"B");
-                ws.value(22,1,"B");
-                ws.value(22,2,"B");
-                ws.setAutoFilter(20,0,22,2);
+            //set values for cell
+            ws.value(0, 0, "Hello fastexcel");
+            ws.value(1, 0, 1024.2048);
+            ws.value(2, 0, true);
+            ws.value(3, 0, new Date());
+            ws.value(4, 0, LocalDateTime.now());
+            ws.value(5, 0, LocalDate.now());
+            ws.value(6, 0, ZonedDateTime.now());
+            //set hyperlink for cell
+            ws.hyperlink(7, 0, new HyperLink("https://github.com/dhatim/fastexcel", "Test_Hyperlink_For_Cell"));
+            //set comment for cell
+            ws.comment(8, 0, "Test_Comment");
+            //set header and footer
+            ws.header("Test_Header", Position.CENTER);
+            ws.footer("Test_Footer", Position.LEFT);
+            //set hide row
+            ws.value(9, 0, "You can't see this row");
+            ws.hideRow(9);
+            //set column width
+            ws.width(1, 20);
+            //set zoom
+            ws.setZoom(120);
+            //set formula
+            ws.value(10, 0, 44444);
+            ws.value(10, 1, 55555);
+            ws.formula(10, 2, "=SUM(A11,B11)");
+            //set style for cell
+            ws.value(11, 0, "Test_Cell_Style");
+            ws.style(11, 0)
+                    .borderStyle(BorderSide.DIAGONAL, BorderStyle.MEDIUM)
+                    .fontSize(20)
+                    .fontColor(Color.RED)
+                    .italic()
+                    .bold()
+                    .fillColor(Color.YELLOW)
+                    .fontName("Cooper Black")
+                    .borderColor(Color.SEA_BLUE)
+                    .underlined()
+                    .set();
+            //merge cells
+            ws.range(12, 0, 12, 3).merge();
+            //set hyperlink for range
+            ws.range(13, 0, 13, 3).setHyperlink(new HyperLink("https://github.com/dhatim/fastexcel", "Test_Hyperlink_For_Range"));
+            //set name for range
+            ws.range(14, 0, 14, 3).setName("Test_Set_Name");
+            //set style for range
+            ws.value(15, 0, "Test_Range_Style");
+            ws.range(15, 0, 19, 3).style()
+                    .borderStyle(BorderSide.DIAGONAL, BorderStyle.MEDIUM)
+                    .fontSize(20)
+                    .fontColor(Color.RED)
+                    .italic()
+                    .bold()
+                    .fillColor(Color.YELLOW)
+                    .fontName("Cooper Black")
+                    .borderColor(Color.SEA_BLUE)
+                    .underlined()
+                    .shadeAlternateRows(Color.SEA_BLUE)
+                    .shadeRows(Color.RED, 1)
+                    .set();
+            //protect the sheet
+            ws.protect("1234");
+            //autoFilter
+            ws.value(21, 0, "A");
+            ws.value(21, 1, "A");
+            ws.value(21, 2, "A");
+            ws.value(22, 0, "B");
+            ws.value(22, 1, "B");
+            ws.value(22, 2, "B");
+            ws.setAutoFilter(20, 0, 22, 2);
 
-                //validation
-                ws.value(23,0,"ABAB");
-                ws.value(23,1,"CDCD");
-                ws.value(24,0,"EFEF");
-                ws.value(24,1,"GHGH");
-                ws.range(25,0,25,1).validateWithList(ws.range(23,0,24,1));
+            //validation
+            ws.value(23, 0, "ABAB");
+            ws.value(23, 1, "CDCD");
+            ws.value(24, 0, "EFEF");
+            ws.value(24, 1, "GHGH");
+            ws.range(25, 0, 25, 1).validateWithList(ws.range(23, 0, 24, 1));
 
-                //table
-                ws.range(0, 0, 5, 2).createTable();
-            });
+            //table
+            ws.range(0, 0, 5, 2).createTable();
+        });
 
-            //fileOutputStream.write(bytes);
+        //fileOutputStream.write(bytes);
         //}
     }
 
@@ -410,16 +409,16 @@ class CorrectnessTest {
     @Test
     void testForGithubIssue182() throws Exception {
         //try (FileOutputStream fileOutputStream = new FileOutputStream("D://fast_table.xlsx")) {
-            byte[] bytes = writeWorkbook(wb -> {
-                Worksheet ws = wb.newWorksheet("Worksheet 1");
-                ws.range(0, 0, 5, 2).createTable()
-                        .setDisplayName("TableDisplayName")
-                        .setName("TableName")
-                        .styleInfo()
-                        .setStyleName("TableStyleMedium1")
-                        .setShowLastColumn(true);
-            });
-            //fileOutputStream.write(bytes);
+        byte[] bytes = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Worksheet 1");
+            ws.range(0, 0, 5, 2).createTable()
+                    .setDisplayName("TableDisplayName")
+                    .setName("TableName")
+                    .styleInfo()
+                    .setStyleName("TableStyleMedium1")
+                    .setShowLastColumn(true);
+        });
+        //fileOutputStream.write(bytes);
         //}
     }
 
@@ -427,12 +426,12 @@ class CorrectnessTest {
     void testForGithubIssue254() throws Exception {
         assertThrows(IllegalArgumentException.class, () -> {
             //try (FileOutputStream fileOutputStream = new FileOutputStream("D://merge_conflicted.xlsx")) {
-                byte[] bytes = writeWorkbook(wb -> {
-                    Worksheet ws = wb.newWorksheet("Worksheet 1");
-                    ws.range(0, 0, 2, 2).merge();
-                    ws.range(1, 1, 3, 3).merge();
-                });
-                //fileOutputStream.write(bytes);
+            byte[] bytes = writeWorkbook(wb -> {
+                Worksheet ws = wb.newWorksheet("Worksheet 1");
+                ws.range(0, 0, 2, 2).merge();
+                ws.range(1, 1, 3, 3).merge();
+            });
+            //fileOutputStream.write(bytes);
             //}
         });
     }
@@ -442,75 +441,75 @@ class CorrectnessTest {
     void testForTableConflict() throws Exception {
         assertThrows(IllegalArgumentException.class, () -> {
             //try (FileOutputStream fileOutputStream = new FileOutputStream("D://table_conflicted.xlsx")) {
-                byte[] bytes = writeWorkbook(wb -> {
-                    Worksheet ws = wb.newWorksheet("Worksheet 1");
-                    ws.range(0, 0, 2, 2).createTable();
-                    ws.range(1, 1, 3, 3).createTable();
-                });
-                //fileOutputStream.write(bytes);
+            byte[] bytes = writeWorkbook(wb -> {
+                Worksheet ws = wb.newWorksheet("Worksheet 1");
+                ws.range(0, 0, 2, 2).createTable();
+                ws.range(1, 1, 3, 3).createTable();
+            });
+            //fileOutputStream.write(bytes);
             //}
         });
     }
-    
-    @Test 
+
+    @Test
     void testForOffBy1ErrorFor1900_localDateTime() {
-    	LocalDateTime ldt1 = LocalDateTime.of(1900, Month.JANUARY, 1, 0, 0);
-    	LocalDateTime ldt2 = LocalDateTime.of(1901, Month.JANUARY, 1, 0, 0);
-    	LocalDateTime ldt3 = LocalDateTime.of(2000, Month.JANUARY, 1, 0, 0);
-    	LocalDateTime ldt4 = LocalDateTime.of(2023, Month.JANUARY, 1, 0, 0);
-    	LocalDateTime ldt5 = LocalDateTime.of(1960, Month.JANUARY, 1, 0, 0);
-    	assertThat(TimestampUtil.convertDate(Date.from(ldt1.atZone(ZoneId.systemDefault()).toInstant())))
-    			.isEqualTo(1.0);
-    	assertThat(TimestampUtil.convertDate(Date.from(ldt2.atZone(ZoneId.systemDefault()).toInstant())))
-				.isEqualTo(367.0);
-    	assertThat(TimestampUtil.convertDate(Date.from(ldt3.atZone(ZoneId.systemDefault()).toInstant())))
-				.isEqualTo(36526.0);
-    	assertThat(TimestampUtil.convertDate(Date.from(ldt4.atZone(ZoneId.systemDefault()).toInstant())))
-				.isEqualTo(44927.0);
-    	assertThat(TimestampUtil.convertDate(Date.from(ldt5.atZone(ZoneId.systemDefault()).toInstant())))
-				.isEqualTo(21916.0);
+        LocalDateTime ldt1 = LocalDateTime.of(1900, Month.JANUARY, 1, 0, 0);
+        LocalDateTime ldt2 = LocalDateTime.of(1901, Month.JANUARY, 1, 0, 0);
+        LocalDateTime ldt3 = LocalDateTime.of(2000, Month.JANUARY, 1, 0, 0);
+        LocalDateTime ldt4 = LocalDateTime.of(2023, Month.JANUARY, 1, 0, 0);
+        LocalDateTime ldt5 = LocalDateTime.of(1960, Month.JANUARY, 1, 0, 0);
+        assertThat(TimestampUtil.convertDate(Date.from(ldt1.atZone(ZoneId.systemDefault()).toInstant())))
+                .isEqualTo(1.0);
+        assertThat(TimestampUtil.convertDate(Date.from(ldt2.atZone(ZoneId.systemDefault()).toInstant())))
+                .isEqualTo(367.0);
+        assertThat(TimestampUtil.convertDate(Date.from(ldt3.atZone(ZoneId.systemDefault()).toInstant())))
+                .isEqualTo(36526.0);
+        assertThat(TimestampUtil.convertDate(Date.from(ldt4.atZone(ZoneId.systemDefault()).toInstant())))
+                .isEqualTo(44927.0);
+        assertThat(TimestampUtil.convertDate(Date.from(ldt5.atZone(ZoneId.systemDefault()).toInstant())))
+                .isEqualTo(21916.0);
     }
-    
-    @Test 
+
+    @Test
     void testForOffBy1ErrorFor1900_localDate() {
-    	LocalDate ldt1 = LocalDate.of(1900, Month.JANUARY, 1);
-    	
-    	LocalDate ldt2 = LocalDate.of(1901, Month.JANUARY, 1);
-    	LocalDate ldt3 = LocalDate.of(2000, Month.JANUARY, 1);
-    	LocalDate ldt4 = LocalDate.of(2023, Month.JANUARY, 1);
-    	LocalDate ldt5 = LocalDate.of(1960, Month.JANUARY, 1);
-    	assertThat(TimestampUtil.convertDate(ldt1)).isEqualTo(1.0);
-    	assertThat(TimestampUtil.convertDate(ldt2)).isEqualTo(367.0);
-    	assertThat(TimestampUtil.convertDate(ldt3)).isEqualTo(36526.0);
-    	assertThat(TimestampUtil.convertDate(ldt4)).isEqualTo(44927.0);
-    	assertThat(TimestampUtil.convertDate(ldt5)).isEqualTo(21916.0);
+        LocalDate ldt1 = LocalDate.of(1900, Month.JANUARY, 1);
+        LocalDate ldt2 = LocalDate.of(1901, Month.JANUARY, 1);
+        LocalDate ldt3 = LocalDate.of(2000, Month.JANUARY, 1);
+        LocalDate ldt4 = LocalDate.of(2023, Month.JANUARY, 1);
+        LocalDate ldt5 = LocalDate.of(1960, Month.JANUARY, 1);
+        assertThat(TimestampUtil.convertDate(ldt1)).isEqualTo(1.0);
+        assertThat(TimestampUtil.convertDate(ldt2)).isEqualTo(367.0);
+        assertThat(TimestampUtil.convertDate(ldt3)).isEqualTo(36526.0);
+        assertThat(TimestampUtil.convertDate(ldt4)).isEqualTo(44927.0);
+        assertThat(TimestampUtil.convertDate(ldt5)).isEqualTo(21916.0);
     }
-    
-    @Test 
+
+    @Test
     void testForOffBy1ErrorFor1900_utilDate() {
-    	Date d1 = getCalendarDate(1900, 1, 1);
-    	Date d2 = getCalendarDate(1901, 1, 1);
-    	Date d3 = getCalendarDate(2000, 1, 1);
-    	Date d4 = getCalendarDate(2023, 1, 1);
-    	Date d5 = getCalendarDate(1960, 1, 1);
-    	assertThat(TimestampUtil.convertDate(d1)).isEqualTo(1.5);
-    	assertThat(TimestampUtil.convertDate(d2)).isEqualTo(367.5);
-    	assertThat(TimestampUtil.convertDate(d3)).isEqualTo(36526.5);
-    	assertThat(TimestampUtil.convertDate(d4)).isEqualTo(44927.5);
-    	assertThat(TimestampUtil.convertDate(d5)).isEqualTo(21916.5);
+        Date d1 = getCalendarDate(1900, 1, 1);
+        Date d2 = getCalendarDate(1901, 1, 1);
+        Date d3 = getCalendarDate(2000, 1, 1);
+        Date d4 = getCalendarDate(2023, 1, 1);
+        Date d5 = getCalendarDate(1960, 1, 1);
+        assertThat(TimestampUtil.convertDate(d1)).isEqualTo(1.5);
+        assertThat(TimestampUtil.convertDate(d2)).isEqualTo(367.5);
+        assertThat(TimestampUtil.convertDate(d3)).isEqualTo(36526.5);
+        assertThat(TimestampUtil.convertDate(d4)).isEqualTo(44927.5);
+        assertThat(TimestampUtil.convertDate(d5)).isEqualTo(21916.5);
     }
-    
+
     private static Date getCalendarDate(int year, int month, int day) {
-		Calendar cal = Calendar.getInstance();
-		cal.set(Calendar.YEAR, year);
-		cal.set(Calendar.MONTH, month-1);
-		cal.set(Calendar.DAY_OF_MONTH, day);
-		cal.set(Calendar.HOUR, 0);
-		cal.set(Calendar.MINUTE, 0);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
-		Date time = cal.getTime();
-		return time;
-	}
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeZone(TimeZone.getTimeZone("Europe/Paris"));
+        cal.set(Calendar.YEAR, year);
+        cal.set(Calendar.MONTH, month - 1);
+        cal.set(Calendar.DAY_OF_MONTH, day);
+        cal.set(Calendar.HOUR, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        Date time = cal.getTime();
+        return time;
+    }
 
 }
