@@ -491,6 +491,7 @@ class CorrectnessTest {
         Date d3 = getCalendarDate(2000, 1, 1);
         Date d4 = getCalendarDate(2023, 1, 1);
         Date d5 = getCalendarDate(1960, 1, 1);
+        System.out.println(d1);
         assertThat(TimestampUtil.convertDate(d1)).isEqualTo(1.5);
         assertThat(TimestampUtil.convertDate(d2)).isEqualTo(367.5);
         assertThat(TimestampUtil.convertDate(d3)).isEqualTo(36526.5);
@@ -500,7 +501,7 @@ class CorrectnessTest {
 
     private static Date getCalendarDate(int year, int month, int day) {
         Calendar cal = Calendar.getInstance();
-        cal.setTimeZone(TimeZone.getTimeZone("Europe/Paris"));
+        cal.setTimeZone(TimeZone.getDefault());
         cal.set(Calendar.YEAR, year);
         cal.set(Calendar.MONTH, month - 1);
         cal.set(Calendar.DAY_OF_MONTH, day);
