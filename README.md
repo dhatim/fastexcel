@@ -200,8 +200,24 @@ ws.repeatRows(2); // keep the third row on each page when printing.
 ws.repeatCols(0, 2); // repeat first three columns (A to C) on each page when printing.
 ws.repeatCols(0); // repeat only first column (A) on each page for the print setup.
 ```
+Hide sheet.
+
+```
+ws.setVisibilityState(VisibilityState.HIDDEN);
+```
+
+Hide rows or colums
+
+```java
+ws.hideRow(2);
+ws.hideColumn(2);
+IntStream.rangeClosed(3,5).forEach(ws::hideRow);
+IntStream.rangeClosed(3,5).forEach(ws::hideColumn);
+```
+
 Set header and footer content.\
 To set page enumeration in the top right:
+
 ```java
 ws.header("page 1 of ?", Position.RIGHT);
 ```
