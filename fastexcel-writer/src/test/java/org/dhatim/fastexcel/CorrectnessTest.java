@@ -513,4 +513,21 @@ class CorrectnessTest {
         return time;
     }
 
+
+    @Test
+    void testForIssue261() throws Exception {
+        //try (FileOutputStream fileOutputStream = new FileOutputStream("D://hide_test.xlsx")) {
+        byte[] bytes = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Worksheet 1");
+            ws.value(1, 1, "hidden cell");
+            ws.hideRow(1);
+            ws.hideColumn(1);
+
+            ws.hideRow(3);
+            ws.hideColumn(3);
+        });
+        //fileOutputStream.write(bytes);
+        //}
+    }
+
 }
