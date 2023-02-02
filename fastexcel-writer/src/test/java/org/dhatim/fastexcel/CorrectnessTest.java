@@ -458,16 +458,11 @@ class CorrectnessTest {
         LocalDateTime ldt3 = LocalDateTime.of(2000, Month.JANUARY, 1, 0, 0);
         LocalDateTime ldt4 = LocalDateTime.of(2023, Month.JANUARY, 1, 0, 0);
         LocalDateTime ldt5 = LocalDateTime.of(1960, Month.JANUARY, 1, 0, 0);
-        assertThat(TimestampUtil.convertDate(Date.from(ldt1.atZone(ZoneId.systemDefault()).toInstant())))
-                .isEqualTo(1.0);
-        assertThat(TimestampUtil.convertDate(Date.from(ldt2.atZone(ZoneId.systemDefault()).toInstant())))
-                .isEqualTo(367.0);
-        assertThat(TimestampUtil.convertDate(Date.from(ldt3.atZone(ZoneId.systemDefault()).toInstant())))
-                .isEqualTo(36526.0);
-        assertThat(TimestampUtil.convertDate(Date.from(ldt4.atZone(ZoneId.systemDefault()).toInstant())))
-                .isEqualTo(44927.0);
-        assertThat(TimestampUtil.convertDate(Date.from(ldt5.atZone(ZoneId.systemDefault()).toInstant())))
-                .isEqualTo(21916.0);
+        assertThat(TimestampUtil.convertDate(ldt1)).isEqualTo(1.0);
+        assertThat(TimestampUtil.convertDate(ldt2)).isEqualTo(367.0);
+        assertThat(TimestampUtil.convertDate(ldt3)).isEqualTo(36526.0);
+        assertThat(TimestampUtil.convertDate(ldt4)).isEqualTo(44927.0);
+        assertThat(TimestampUtil.convertDate(ldt5)).isEqualTo(21916.0);
     }
 
     @Test
@@ -492,11 +487,11 @@ class CorrectnessTest {
         Date d4 = getCalendarDate(2023, 1, 1);
         Date d5 = getCalendarDate(1960, 1, 1);
         System.out.println(d1);
-        assertThat(TimestampUtil.convertDate(d1)).isEqualTo(1.5);
-        assertThat(TimestampUtil.convertDate(d2)).isEqualTo(367.5);
-        assertThat(TimestampUtil.convertDate(d3)).isEqualTo(36526.5);
-        assertThat(TimestampUtil.convertDate(d4)).isEqualTo(44927.5);
-        assertThat(TimestampUtil.convertDate(d5)).isEqualTo(21916.5);
+        assertThat(TimestampUtil.convertDate(d1)).isEqualTo(1.0);
+        assertThat(TimestampUtil.convertDate(d2)).isEqualTo(367.0);
+        assertThat(TimestampUtil.convertDate(d3)).isEqualTo(36526.0);
+        assertThat(TimestampUtil.convertDate(d4)).isEqualTo(44927.0);
+        assertThat(TimestampUtil.convertDate(d5)).isEqualTo(21916.0);
     }
 
     private static Date getCalendarDate(int year, int month, int day) {
@@ -505,7 +500,7 @@ class CorrectnessTest {
         cal.set(Calendar.YEAR, year);
         cal.set(Calendar.MONTH, month - 1);
         cal.set(Calendar.DAY_OF_MONTH, day);
-        cal.set(Calendar.HOUR, 0);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
         cal.set(Calendar.MINUTE, 0);
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);

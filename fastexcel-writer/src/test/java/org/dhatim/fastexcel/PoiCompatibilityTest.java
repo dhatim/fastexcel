@@ -89,8 +89,8 @@ class PoiCompatibilityTest {
         assertThat(xws.getRow(i).getCell(i++).getDateCellValue()).isEqualTo(dateValue);
         // Check zoned timestamps have the same textual representation as the Dates extracted from the workbook
         // (Excel date serial numbers do not carry timezone information)
-        assertThat(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(ZonedDateTime.ofInstant(xws.getRow(i).getCell(i++).getDateCellValue().toInstant(), ZoneId.systemDefault()))).isEqualTo(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(localDateTimeValue));
-        assertThat(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(ZonedDateTime.ofInstant(xws.getRow(i).getCell(i++).getDateCellValue().toInstant(), ZoneId.systemDefault()))).isEqualTo(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(zonedDateValue));
+        assertThat(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(xws.getRow(i).getCell(i++).getLocalDateTimeCellValue())).isEqualTo(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(localDateTimeValue));
+        assertThat(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(ZonedDateTime.ofInstant(xws.getRow(i).getCell(i++).getDateCellValue().toInstant(), timezone))).isEqualTo(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(zonedDateValue));
         assertThat(xws.getRow(i).getCell(i++).getNumericCellValue()).isEqualTo(doubleValue);
         assertThat(xws.getRow(i).getCell(i++).getNumericCellValue()).isEqualTo(intValue);
         assertThat(xws.getRow(i).getCell(i++).getNumericCellValue()).isEqualTo(longValue);
