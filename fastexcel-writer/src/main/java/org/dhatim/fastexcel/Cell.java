@@ -95,7 +95,7 @@ class Cell implements Ref {
 
     void setValue(LocalDateTime v) {
         value = v == null ? null :
-            TimestampUtil.convertDate(Date.from(v.atZone(ZoneId.systemDefault()).toInstant()));
+            TimestampUtil.convertDate(v);
     }
 
     void setValue(LocalDate v) {
