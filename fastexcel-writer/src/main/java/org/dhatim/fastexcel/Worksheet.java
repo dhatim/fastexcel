@@ -715,13 +715,13 @@ public class Worksheet {
      * Write column definitions of this worksheet as an XML element.
      *
      * @param w Output writer.
-     * @param nbCols Number of columns.
+     * @param maxCol Max number of columns.
      * @throws IOException If an I/O error occurs.
      */
-    private void writeCols(Writer w, int nbCols) throws IOException {
+    private void writeCols(Writer w, int maxCol) throws IOException {
         // Adjust column widths
         boolean started = false;
-        for (int c = 0; c < nbCols; ++c) {
+        for (int c = 0; c < maxCol; ++c) {
             double maxWidth = 0;
             boolean bestFit = true;
             if (colWidths.containsKey(c)) {
@@ -738,12 +738,13 @@ public class Worksheet {
                     }
                 }
             }
-            if (maxWidth > 0) {
+            boolean isHidden = hiddenColumns.contains(c);
+            if (maxWidth > 0 || isHidden) {
                 if (!started) {
                     w.append("<cols>");
                     started = true;
                 }
-                writeCol(w, c, maxWidth, bestFit, hiddenColumns.contains(c));
+                writeCol(w, c, maxWidth, bestFit, isHidden);
             }
         }
         if (started) {
@@ -939,7 +940,7 @@ public class Worksheet {
      * @throws IOException If an I/O error occurs.
      */
     public void flush() throws IOException {
-        if(writer == null) {
+        if (writer == null) {
             int index = workbook.getIndex(this);
             writer = workbook.beginFile("xl/worksheets/sheet" + index + ".xml");
             writer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
@@ -947,34 +948,42 @@ public class Worksheet {
             writer.append("<sheetPr filterMode=\"" + "false" + "\"><pageSetUpPr fitToPage=\"" + fitToPage + "\" autoPageBreaks=\"" + autoPageBreaks + "\"/></sheetPr>");
             writer.append("<dimension ref=\"A1\"/>");
             writer.append("<sheetViews><sheetView workbookViewId=\"0\"");
-            if(!showGridLines) {
+            if (!showGridLines) {
                 writer.append(" showGridLines=\"false\"");
             }
-            if(zoomScale != 100) {
+            if (zoomScale != 100) {
                 writer.append(" zoomScale=\"").append(zoomScale).append("\"");
             }
             writer.append(">");
-            if(freezeLeftColumns > 0 || freezeTopRows > 0) {
+            if (freezeLeftColumns > 0 || freezeTopRows > 0) {
                 writeFreezePane(writer);
             }
             writer.append("</sheetView>");
             writer.append("</sheetViews><sheetFormatPr defaultRowHeight=\"15.0\"/>");
-            int nbCols = rows.stream().filter(Objects::nonNull).map(r -> r.length).reduce(0, Math::max);
-            if (nbCols > 0) {
-                writeCols(writer, nbCols);
+            final int nbCols = rows.stream().filter(Objects::nonNull).mapToInt(r -> r.length).max().orElse(0);
+            final int maxHideCol = hiddenColumns.stream().mapToInt(a -> a).max().orElse(0);
+            if (nbCols > 0 || !hiddenColumns.isEmpty()) {
+                int maxCol = Math.max(nbCols, maxHideCol) + 1;
+                writeCols(writer, maxCol);
             }
             writer.append("<sheetData>");
         }
-
-        for (int r = flushedRows; r < rows.size(); ++r) {
-            Cell[] row = rows.get(r);
-            if (row != null) {
-                writeRow(writer, r, hiddenRows.contains(r),
+        final int nbRows = rows.size();
+        final int maxHideRow = hiddenRows.stream().mapToInt(a -> a).max().orElse(0);
+        final int maxRow = Math.max(nbRows, maxHideRow + 1);
+        for (int r = flushedRows; r < maxRow; ++r) {
+            boolean notEmptyRow = r < rows.size();
+            Cell[] row = notEmptyRow ? rows.get(r) : null;
+            boolean isHidden = hiddenRows.contains(r);
+            if (row != null || isHidden) {
+                writeRow(writer, r, isHidden,
                         rowHeights.get(r), row);
             }
-            rows.set(r, null); // free flushed row data
+            if (notEmptyRow) {
+                rows.set(r, null); // free flushed row data
+            }
         }
-        flushedRows = rows.size() - 1;
+        flushedRows = maxRow - 1;
 
 
         writer.flush();
@@ -1041,9 +1050,11 @@ public class Worksheet {
              .append(" customHeight=\"1\"");
         }
         w.append(">");
-        for (int c = 0; c < row.length; ++c) {
-            if (row[c] != null) {
-                row[c].write(w, r, c);
+        if (null!=row) {
+            for (int c = 0; c < row.length; ++c) {
+                if (row[c] != null) {
+                    row[c].write(w, r, c);
+                }
             }
         }
         w.append("</row>");
