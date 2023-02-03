@@ -196,21 +196,21 @@ public class Worksheet {
     /**
      * Header map for left, central and right field text.
      */
-    private Map<Position,String> header = new LinkedHashMap();
+    private final Map<Position,String> header = new LinkedHashMap<>();
     /**
      * Footer map for left, central and right field text.
      */
-    private Map<Position,String> footer = new LinkedHashMap();
+    private final Map<Position,String> footer = new LinkedHashMap<>();
     /**
      * Range of repeating rows for the print setup.
      * (Those rows will be repeated on each page when document is printed.)
      */
-    private RepeatRowRange repeatingRows = null;
+    private RowRange repeatingRows = null;
     /**
      * Range of repeating columns for the print setup.
      * (Those columns will be repeated on each page when document is printed.)
      */
-    private RepeatColRange repeatingCols = null;
+    private ColRange repeatingCols = null;
     /**
      * The hashed password that protects this sheet.
      */
@@ -221,13 +221,13 @@ public class Worksheet {
      */
     private Range autoFilterRange = null;
 
-    private Relationships relationships = new Relationships(this);
+    private final Relationships relationships = new Relationships(this);
     /**
      * List of named ranges.
      */
-    private Map<String, Range> namedRanges = new LinkedHashMap<>();
+    private final Map<String, Range> namedRanges = new LinkedHashMap<>();
 
-    private Map<HyperLink, Ref> hyperlinkRanges = new LinkedHashMap<>();
+    private final Map<HyperLink, Ref> hyperlinkRanges = new LinkedHashMap<>();
 
     /**
      * The set of protection options that are applied on the sheet.
@@ -268,7 +268,7 @@ public class Worksheet {
      * @return List representing a range of rows to be repeated
      *              on each page when printing.
      */
-    public RepeatRowRange getRepeatingRows(){
+    public RowRange getRepeatingRows(){
         return repeatingRows;
     }
 
@@ -288,7 +288,7 @@ public class Worksheet {
      * @return List representing a range of columns to be repeated
      *              on each page when printing.
      */
-    public RepeatColRange getRepeatingCols(){
+    public ColRange getRepeatingCols(){
         return repeatingCols;
     }
 
@@ -1213,19 +1213,19 @@ public class Worksheet {
     }
 
     public void repeatRows(int startRow, int endRow) {
-        this.repeatingRows = new RepeatRowRange(startRow, endRow);
+        this.repeatingRows = new RowRange(startRow, endRow);
     }
 
     public void repeatRows(int row) {
-        this.repeatingRows = new RepeatRowRange(row, row);
+        this.repeatingRows = new RowRange(row, row);
     }
 
     public void repeatCols(int startCol, int endCol) {
-        this.repeatingCols = new RepeatColRange(startCol, endCol);
+        this.repeatingCols = new ColRange(startCol, endCol);
     }
 
     public void repeatCols(int col) {
-        this.repeatingCols = new RepeatColRange(col, col);
+        this.repeatingCols = new ColRange(col, col);
     }
 
     /**

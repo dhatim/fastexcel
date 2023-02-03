@@ -244,9 +244,9 @@ public class Workbook {
                 writeWorkbookSheet(w, ws);
             }
             w.append("</sheets>");
-            /** Defining repeating rows and columns for the print setup...
-             *  This is defined for each sheet separately
-             * (if there are any repeating rows or cols in the sheet at all) **/
+            /* Defining repeating rows and columns for the print setup...
+               This is defined for each sheet separately
+              (if there are any repeating rows or cols in the sheet at all) */
 
             w.append("<definedNames>");
             for (Worksheet ws : worksheets) {
@@ -264,7 +264,7 @@ public class Workbook {
                      .append(defineName)
                      .append("</definedName>");
                 }
-                /** define specifically named ranges **/
+                /* define specifically named ranges */
                 for (Map.Entry<String, Range> nr : ws.getNamedRanges().entrySet()) {
                     String rangeName = nr.getKey();
                     Range range = nr.getValue();

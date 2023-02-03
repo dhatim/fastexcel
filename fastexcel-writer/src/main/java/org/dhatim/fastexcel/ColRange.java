@@ -15,16 +15,43 @@
  */
 package org.dhatim.fastexcel;
 
-/** This class represents a range of columns for the 
- *      repeating columns feature in the print setup. */
-class RepeatColRange implements Ref {
+import java.util.Comparator;
+import java.util.Objects;
+
+
+/**
+ * This class is used to refer to multiple columns.
+ */
+class ColRange implements Comparable<ColRange>, Ref {
     
     final int from;
     final int to;
 
-    public RepeatColRange(int from, int to) {
+    public ColRange(int from, int to) {
         this.from = from;
         this.to = to;
+    }
+
+
+    @Override
+    public int compareTo(ColRange o) {
+        return Comparator.comparingInt((ColRange colRange) -> colRange.from)
+                .thenComparing((ColRange colRange) -> colRange.to)
+                .compare(this, o);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ColRange) {
+            ColRange that = (ColRange) obj;
+            return this == that || (this.from == that.from && this.to == that.to);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(from,to);
     }
 
     /**

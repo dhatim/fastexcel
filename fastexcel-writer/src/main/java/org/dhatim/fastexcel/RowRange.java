@@ -15,22 +15,48 @@
  */
 package org.dhatim.fastexcel;
 
-/** This class represents a range of rows for the 
- *      repeating rows feature in the print setup. */
-class RepeatRowRange { 
+import java.util.Comparator;
+import java.util.Objects;
+
+/**
+ *  This class is used to refer to multiple rows.
+ */
+class RowRange implements Comparable<RowRange>, Ref {
     
     final int from;
     final int to;
 
-    public RepeatRowRange(int from, int to) {
+    public RowRange(int from, int to) {
         this.from = from;
         this.to = to;
     }
 
+    @Override
+    public int compareTo(RowRange o) {
+        return Comparator.comparingInt((RowRange rowRange) -> rowRange.from)
+                .thenComparing((RowRange rowRange) -> rowRange.to)
+                .compare(this, o);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof RowRange) {
+            RowRange that = (RowRange) obj;
+            return this == that || (this.from == that.from && this.to == that.to);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(from,to);
+    }
+
     /**
-     * Row indexes need to be increased by 1 
+     * Row indexes need to be increased by 1
      *  (sheet row indexes start from 1 and not from 0)
      */
+    @Override
     public String toString() {
         return "$" + (1 + from) + ":$" + (1 + to);
     }

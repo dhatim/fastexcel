@@ -35,10 +35,10 @@ import java.util.Arrays;
  */
 public final class BitMatrix implements Cloneable {
 
-  private int width;
-  private int height;
-  private int rowSize;
-  private int[] bits;
+  private final int width;
+  private final int height;
+  private final int rowSize;
+  private final int[] bits;
 
   /**
    * Creates an empty square {@code BitMatrix}.
