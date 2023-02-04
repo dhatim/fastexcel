@@ -52,11 +52,13 @@ class Cell implements Ref {
                 w.append(" s=\"").append(style).append('\"');
             }
             if (value != null && !(value instanceof Formula)) {
-                w.append(" t=\"").append((value instanceof CachedString) ? 's' : (value instanceof Boolean ? 'b' : 'n')).append('\"');
+                w.append(" t=\"").append((value instanceof CachedString) ? "s" : (value instanceof Boolean ? "b" : (value instanceof String ? "inlineStr" : "n"))).append('\"');
             }
             w.append(">");
             if (value instanceof Formula) {
                 w.append("<f>").append(((Formula) value).getExpression()).append("</f>");
+            } else if (value instanceof String) {
+                w.append("<is><t>").appendEscaped((String) value).append("</t></is>");
             } else if (value != null) {
                 w.append("<v>");
                 if (value instanceof CachedString) {
@@ -78,8 +80,8 @@ class Cell implements Ref {
         }
     }
 
-    void setValue(Workbook wb, String v) {
-        value = v == null ? null : wb.cacheString(v);
+    void setValue(Workbook wb, String v, boolean inline) {
+        value = inline ? v : (v == null ? null : wb.cacheString(v));
     }
 
     void setValue(Number v) {

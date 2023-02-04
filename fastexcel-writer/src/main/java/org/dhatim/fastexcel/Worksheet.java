@@ -583,7 +583,19 @@ public class Worksheet {
      * @param value Cell value.
      */
     public void value(int r, int c, String value) {
-        cell(r, c).setValue(workbook, value);
+        cell(r, c).setValue(workbook, value, false);
+    }
+
+    /**
+     * Set the cell value at the given coordinates.
+     *
+     * @param r Zero-based row number.
+     * @param c Zero-based column number.
+     * @param value Cell value.
+     * @param inline Whether inline string or shared string.
+     */
+    public void value(int r, int c, String value, boolean inline) {
+        cell(r, c).setValue(workbook, value, inline);
     }
     /**
      * Set the cell value at the given coordinates.
