@@ -52,7 +52,7 @@ class Cell implements Ref {
                 w.append(" s=\"").append(style).append('\"');
             }
             if (value != null && !(value instanceof Formula)) {
-                w.append(" t=\"").append((value instanceof CachedString) ? "s" : (value instanceof Boolean ? "b" : (value instanceof String ? "inlineStr" : "n"))).append('\"');
+                w.append(" t=\"").append(getCellType(value)).append('\"');
             }
             w.append(">");
             if (value instanceof Formula) {
@@ -77,6 +77,18 @@ class Cell implements Ref {
                 w.append("</v>");
             }
             w.append("</c>");
+        }
+    }
+
+    static String getCellType(Object value) {
+        if (value instanceof CachedString) {
+            return "s";
+        } else if (value instanceof Boolean) {
+            return "b";
+        } else if (value instanceof String) {
+            return "inlineStr";
+        } else {
+            return "n";
         }
     }
 
