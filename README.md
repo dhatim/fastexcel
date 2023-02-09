@@ -215,6 +215,18 @@ IntStream.rangeClosed(3,5).forEach(ws::hideRow);
 IntStream.rangeClosed(3,5).forEach(ws::hideColumn);
 ```
 
+Group rows or colums
+
+```java
+ws.groupRows(2，3);
+ws.groupRows(1，5);
+
+ws.groupCols(2，3);
+ws.groupCols(1，5);
+```
+
+
+
 Set header and footer content.\
 To set page enumeration in the top right:
 
