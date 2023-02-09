@@ -80,30 +80,16 @@ public class DynamicByteArray {
         return builder.toString();
     }
 
-    public static String repeatString(String seed, int n) {
+    private String repeatString(String seed, int n) {
         final int seedLen = seed.length();
-
         final char[] srcArr = seed.toCharArray();
         char[] dstArr = new char[n * seedLen];
-
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < seedLen; j++) {
                 dstArr[i * seedLen + j] = srcArr[j];
             }
         }
-
         return String.valueOf(dstArr);
-    }
-
-    private boolean isInNullArea(int j) {
-        return byteArrayData.get(j / UNIT_LENGTH) == null;
-    }
-
-    public static void main(String[] args) {
-        DynamicByteArray dynamicByteArray = new DynamicByteArray(20);
-        dynamicByteArray.set(1,(byte) 20);
-        dynamicByteArray.set(20,(byte) 20);
-        System.out.println(dynamicByteArray);
     }
 
 }
