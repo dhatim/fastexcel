@@ -51,11 +51,29 @@ public class DynamicByteArray {
 
     byte get(int index) {
         int arrayAreaIndex = index / UNIT_LENGTH;
+        if (arrayAreaIndex > byteArrayData.size()-1){
+            return 0;
+        }
         byte[] bytes = byteArrayData.get(arrayAreaIndex);
         if (bytes == null) {
             return 0;
         }
         return bytes[index - arrayAreaIndex * UNIT_LENGTH];
+    }
+
+    int getMaxNoZeroIndex() {
+        for (int areaIndex = byteArrayData.size(); areaIndex > 0; areaIndex--) {
+            byte[] bytes = byteArrayData.get(areaIndex-1);
+            if (bytes == null) {
+                continue;
+            }
+            for (int i = bytes.length - 1; i >= 0; i--) {
+                if (bytes[i] != 0) {
+                    return i + (areaIndex-1) * UNIT_LENGTH;
+                }
+            }
+        }
+        return -1;
     }
 
 
