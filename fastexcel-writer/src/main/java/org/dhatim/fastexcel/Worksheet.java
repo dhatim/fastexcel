@@ -60,7 +60,7 @@ public class Worksheet {
     /**
      * Matrix of merged cells.
      */
-    private final DynamicBitMatrix mergedMatrix = new DynamicBitMatrix();
+    private final DynamicBitMatrix mergedMatrix = new DynamicBitMatrix(MAX_COLS, MAX_ROWS);
     /**
      * List of conditional formattings for this worksheet
      */
@@ -101,7 +101,7 @@ public class Worksheet {
 
     final Map<String,Table> tables = new LinkedHashMap<>();
 
-    private final DynamicBitMatrix tablesMatrix = new DynamicBitMatrix();
+    private final DynamicBitMatrix tablesMatrix = new DynamicBitMatrix(MAX_COLS, MAX_ROWS);
 
     /**
      * Is this worksheet construction completed?
