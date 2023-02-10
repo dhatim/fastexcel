@@ -32,7 +32,9 @@ public class DynamicByteArray {
         }
         int arrayAreaIndex = index / UNIT_LENGTH;
         byte[] bytes = getBytesWithOutNull(arrayAreaIndex);
-        bytes[index - arrayAreaIndex * UNIT_LENGTH]++;
+        if (++bytes[index - arrayAreaIndex * UNIT_LENGTH]>7) {
+            throw new IllegalStateException(String.format("Cannot proceed with grouping because the grouping level at this index position has reached the maximum 7.index = %s",index));
+        }
     }
 
     private byte[] getBytesWithOutNull(int arrayAreaIndex) {
@@ -44,8 +46,7 @@ public class DynamicByteArray {
         if (byteArrayData.get(arrayAreaIndex) == null) {
             byteArrayData.set(arrayAreaIndex, new byte[UNIT_LENGTH]);
         }
-        byte[] bytes = byteArrayData.get(arrayAreaIndex);
-        return bytes;
+        return byteArrayData.get(arrayAreaIndex);
     }
 
 
@@ -84,12 +85,10 @@ public class DynamicByteArray {
 
     public String buildToString(String fillNullString) {
         StringBuilder builder = new StringBuilder();
-        int maxByteAreaSize = byteArrayData.size();
-        for (int i = 0; i < maxByteAreaSize; i++) {
-            byte[] bytes = byteArrayData.get(i);
+        for (byte[] bytes : byteArrayData) {
             if (bytes == null) {
-                builder.append(repeatString(fillNullString+',', UNIT_LENGTH));
-            }else {
+                builder.append(repeatString(fillNullString + ',', UNIT_LENGTH));
+            } else {
                 for (byte aByte : bytes) {
                     builder.append(aByte).append(',');
                 }
