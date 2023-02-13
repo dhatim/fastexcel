@@ -10,11 +10,21 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class DynamicBitMatrix {
     static final int UNIT_WEITH = 1 << 6, UNIT_HIGHT = 1 << 10;
 
+    final int MAX_WIDTH ,MAX_HIGHT;
+
     private final CopyOnWriteArrayList<CopyOnWriteArrayList<BitMatrix>> bitMatrixData = new CopyOnWriteArrayList<>();
 
+    public DynamicBitMatrix(int maxWidth, int maxHight) {
+        MAX_WIDTH = maxWidth;
+        MAX_HIGHT = maxHight;
+    }
+
     void setRegion(int top, int left, int bottom, int right) {
-        if (right >= Worksheet.MAX_COLS || bottom >= Worksheet.MAX_ROWS) {
-            throw new IllegalArgumentException();
+        if (right >= MAX_WIDTH ) {
+            throw new IllegalArgumentException(String.format("Right boundary value exceeds maximum allowed.MAX_WIDTH = %d,right = %d",MAX_WIDTH,right));
+        }
+        if (bottom >= MAX_HIGHT ) {
+            throw new IllegalArgumentException(String.format("Bottom boundary value exceeds maximum allowed.MAX_HIGHT = %d,bottom = %d",MAX_HIGHT,bottom));
         }
         int rightBitMatrixColIndex = right / UNIT_WEITH;
         int leftBitMatrixColIndex = left / UNIT_WEITH;

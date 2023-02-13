@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.stream.IntStream;
 
 /**
  * A worksheet is a set of cells.
@@ -60,7 +61,7 @@ public class Worksheet {
     /**
      * Matrix of merged cells.
      */
-    private final DynamicBitMatrix mergedMatrix = new DynamicBitMatrix();
+    private final DynamicBitMatrix mergedMatrix = new DynamicBitMatrix(MAX_COLS, MAX_ROWS);
     /**
      * List of conditional formattings for this worksheet
      */
@@ -86,6 +87,14 @@ public class Worksheet {
      * List of columns to hide
      */
     private final Set<Integer> hiddenColumns = new HashSet<>();
+    /**
+     * Array of column's group level
+     */
+    private final DynamicByteArray groupColums = new DynamicByteArray(MAX_COLS);
+    /**
+     * Array of rows's group level
+     */
+    private final DynamicByteArray groupRows = new DynamicByteArray(MAX_ROWS);
 
     /**
      * Map of columns and their widths
@@ -101,7 +110,7 @@ public class Worksheet {
 
     final Map<String,Table> tables = new LinkedHashMap<>();
 
-    private final DynamicBitMatrix tablesMatrix = new DynamicBitMatrix();
+    private final DynamicBitMatrix tablesMatrix = new DynamicBitMatrix(MAX_COLS, MAX_ROWS);
 
     /**
      * Is this worksheet construction completed?
@@ -274,7 +283,7 @@ public class Worksheet {
 
     /**
      * Get cell range that autofilter is applied to.
-     * 
+     *
      * @return Range of cells that autofilter is set to
      *             (null if autofilter is not set).
      */
@@ -294,8 +303,8 @@ public class Worksheet {
 
     /**
      * Get a list of named ranges.
-     * 
-     * @return Map containing named range entries 
+     *
+     * @return Map containing named range entries
      *              where keys are the names and values are cell ranges.
      */
     public Map<String, Range> getNamedRanges() {
@@ -739,12 +748,13 @@ public class Worksheet {
                 }
             }
             boolean isHidden = hiddenColumns.contains(c);
-            if (maxWidth > 0 || isHidden) {
+            int groupLevel = groupColums.get(c);
+            if (maxWidth > 0 || isHidden||groupLevel!=0) {
                 if (!started) {
                     w.append("<cols>");
                     started = true;
                 }
-                writeCol(w, c, maxWidth, bestFit, isHidden);
+                writeCol(w, c, maxWidth, bestFit, isHidden,groupLevel);
             }
         }
         if (started) {
@@ -763,10 +773,12 @@ public class Worksheet {
      * @param isHidden Whether or not this row is hidden
      * @throws IOException If an I/O error occurs.
      */
-    private static void writeCol(Writer w, int columnIndex, double maxWidth, boolean bestFit, boolean isHidden) throws IOException {
+    private static void writeCol(Writer w, int columnIndex, double maxWidth, boolean bestFit, boolean isHidden, int groupLevel) throws IOException {
         final int col = columnIndex + 1;
         w.append("<col min=\"").append(col).append("\" max=\"").append(col).append("\" width=\"")
-                .append(Math.min(MAX_COL_WIDTH, maxWidth)).append("\" customWidth=\"true\" bestFit=\"")
+                .append(Math.min(MAX_COL_WIDTH, maxWidth));
+        w.append("\" outlineLevel=\"").append(groupLevel);
+        w.append("\" customWidth=\"true\" bestFit=\"")
                 .append(String.valueOf(bestFit));
 
         if (isHidden) {
@@ -962,21 +974,24 @@ public class Worksheet {
             writer.append("</sheetViews><sheetFormatPr defaultRowHeight=\"15.0\"/>");
             final int nbCols = rows.stream().filter(Objects::nonNull).mapToInt(r -> r.length).max().orElse(0);
             final int maxHideCol = hiddenColumns.stream().mapToInt(a -> a).max().orElse(0);
-            if (nbCols > 0 || !hiddenColumns.isEmpty()) {
-                int maxCol = Math.max(nbCols, maxHideCol) + 1;
+            final int maxNoZeroIndex = groupColums.getMaxNoZeroIndex();
+            if (nbCols > 0 || !hiddenColumns.isEmpty()||maxNoZeroIndex!=-1) {
+                int maxCol = Math.max(nbCols, Math.max(maxHideCol,maxNoZeroIndex) + 1) ;
                 writeCols(writer, maxCol);
             }
             writer.append("<sheetData>");
         }
         final int nbRows = rows.size();
         final int maxHideRow = hiddenRows.stream().mapToInt(a -> a).max().orElse(0);
-        final int maxRow = Math.max(nbRows, maxHideRow + 1);
+        final int maxGroupRow = groupRows.getMaxNoZeroIndex();
+        final int maxRow = Math.max(nbRows, Math.max(maxGroupRow,maxHideRow) + 1);
         for (int r = flushedRows; r < maxRow; ++r) {
             boolean notEmptyRow = r < rows.size();
             Cell[] row = notEmptyRow ? rows.get(r) : null;
             boolean isHidden = hiddenRows.contains(r);
-            if (row != null || isHidden) {
-                writeRow(writer, r, isHidden,
+            byte groupLevel = groupRows.get(r);
+            if (row != null || isHidden || groupLevel != 0) {
+                writeRow(writer, r, isHidden,groupLevel,
                         rowHeights.get(r), row);
             }
             if (notEmptyRow) {
@@ -1033,11 +1048,12 @@ public class Worksheet {
      * @param w Output writer.
      * @param r Zero-based row number.
      * @param isHidden Whether or not this row is hidden
+     * @param groupLevel Group level of row
      * @param rowHeight Row height value in points to be set if customHeight is true
      * @param row Cells in the row.
      * @throws IOException If an I/O error occurs.
      */
-    private static void writeRow(Writer w, int r, boolean isHidden,
+    private static void writeRow(Writer w, int r, boolean isHidden,byte groupLevel,
                                  Double rowHeight, Cell... row) throws IOException {
         w.append("<row r=\"").append(r + 1).append("\"");
         if (isHidden) {
@@ -1048,6 +1064,11 @@ public class Worksheet {
              .append(rowHeight)
              .append("\"")
              .append(" customHeight=\"1\"");
+        }
+        if (groupLevel!=0){
+            w.append(" outlineLevel=\"")
+                    .append(groupLevel)
+                    .append("\"");
         }
         w.append(">");
         if (null!=row) {
@@ -1349,5 +1370,13 @@ public class Worksheet {
         } else {
             throw new IllegalArgumentException("Table conflicted:" + range);
         }
+    }
+
+    public void groupCols(int from , int to) {
+        IntStream.rangeClosed(Math.min(from,to),Math.max(from,to)).forEach(groupColums::increase);
+    }
+
+    public void groupRows(int from , int to) {
+        IntStream.rangeClosed(Math.min(from,to),Math.max(from,to)).forEach(groupRows::increase);
     }
 }

@@ -387,6 +387,13 @@ class CorrectnessTest {
 
             //table
             ws.range(0, 0, 5, 2).createTable();
+
+            //group
+            ws.groupRows(3,4);
+            ws.groupRows(2,5);
+
+            ws.groupCols(6,7);
+            ws.groupCols(4,8);
         });
 
         //fileOutputStream.write(bytes);
@@ -520,6 +527,34 @@ class CorrectnessTest {
 
             ws.hideRow(3);
             ws.hideColumn(3);
+        });
+        //fileOutputStream.write(bytes);
+        //}
+    }
+
+    @Test
+    void testForIssue259() throws Exception {
+        //try (FileOutputStream fileOutputStream = new FileOutputStream("D://group_cols_test.xlsx")) {
+        byte[] bytes = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Worksheet 1");
+            ws.value(1,1,"tt");
+            ws.value(1,2,"tt");
+            ws.value(1,3,"tt");
+            ws.value(1,4,"tt");
+            ws.value(1,5,"tt");
+
+            ws.value(1,0,"cc");
+            ws.value(2,0,"cc");
+            ws.value(3,0,"cc");
+            ws.value(4,0,"cc");
+            ws.value(5,0,"cc");
+
+            ws.groupCols(2,3);
+            ws.groupCols(1,5);
+
+            ws.groupRows(2,3);
+            ws.groupRows(1,5);
+
         });
         //fileOutputStream.write(bytes);
         //}
