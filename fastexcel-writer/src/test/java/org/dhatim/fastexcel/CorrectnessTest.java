@@ -309,7 +309,7 @@ class CorrectnessTest {
 
             //set values for cell
             ws.value(0, 0, "Hello fastexcel");
-            ws.value(0, 1, "Hello fastexcel (inline)", true);
+            ws.inlineString(0, 1, "Hello fastexcel (inline)");
             ws.value(1, 0, 1024.2048);
             ws.value(2, 0, true);
             ws.value(3, 0, new Date());

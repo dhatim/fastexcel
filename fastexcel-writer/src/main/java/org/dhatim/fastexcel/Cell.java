@@ -92,8 +92,8 @@ class Cell implements Ref {
         }
     }
 
-    void setValue(Workbook wb, String v, boolean inline) {
-        value = inline ? v : (v == null ? null : wb.cacheString(v));
+    void setValue(Workbook wb, String v) {
+        value = v == null ? null : wb.cacheString(v);
     }
 
     void setValue(Number v) {
@@ -143,6 +143,15 @@ class Cell implements Ref {
      */
     void setFormula(String expression) {
         value = new Formula(expression);
+    }
+
+    /**
+     * Assign an inline string to this cell.
+     *
+     * @param v String value.
+     */
+    void setInlineString(String v) {
+        value = v;
     }
 
     /**

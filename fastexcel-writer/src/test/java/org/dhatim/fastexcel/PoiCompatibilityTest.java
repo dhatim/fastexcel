@@ -55,7 +55,7 @@ class PoiCompatibilityTest {
             int i = 1;
             ws.hideRow(i);
             ws.value(i, i++, stringValue);
-            ws.value(i, i++, stringValue, true);
+            ws.inlineString(i, i++, stringValue);
             ws.value(i, i++, dateValue);
             ws.value(i, i++, localDateTimeValue);
             ws.value(i, i++, zonedDateValue);
