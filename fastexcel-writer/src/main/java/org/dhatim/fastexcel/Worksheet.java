@@ -695,6 +695,17 @@ public class Worksheet {
     }
 
     /**
+     * Set the cell value at the given coordinates.
+     *
+     * @param r Zero-based row number.
+     * @param c Zero-based column number.
+     * @param value Cell value.
+     */
+    public void inlineString(int r, int c, String value) {
+        cell(r, c).setInlineString(value);
+    }
+
+    /**
      * Get a new style setter for a cell.
      *
      * @param r Zero-based row number.

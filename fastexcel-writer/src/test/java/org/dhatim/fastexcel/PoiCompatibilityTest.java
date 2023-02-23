@@ -55,6 +55,7 @@ class PoiCompatibilityTest {
             int i = 1;
             ws.hideRow(i);
             ws.value(i, i++, stringValue);
+            ws.inlineString(i, i++, stringValue);
             ws.value(i, i++, dateValue);
             ws.value(i, i++, localDateTimeValue);
             ws.value(i, i++, zonedDateValue);
@@ -85,6 +86,7 @@ class PoiCompatibilityTest {
         // poi column width is in 1/256 characters
         assertThat(xws.getColumnWidth(0) / 256).isEqualTo(2);
         assertThat(xws.getRow(i).getZeroHeight()).isTrue();
+        assertThat(xws.getRow(i).getCell(i++).getStringCellValue()).isEqualTo(stringValue);
         assertThat(xws.getRow(i).getCell(i++).getStringCellValue()).isEqualTo(stringValue);
         assertThat(xws.getRow(i).getCell(i++).getDateCellValue()).isEqualTo(dateValue);
         // Check zoned timestamps have the same textual representation as the Dates extracted from the workbook
