@@ -158,6 +158,14 @@ ws.hyperlink(0, 0, new HyperLink("https://github.com/dhatim/fastexcel", "Baidu")
 ws.range(1, 0, 1, 1).setHyperlink(new HyperLink("./dev_soft/test.pdf", "dev_folder"));
 ```
 
+### Inline String
+
+The function `value(row, col, string)` sets the value as a shared string. If there are many duplicate strings, using a shared string can be very efficient in terms of file size. However, if there are many distinct strings, using shared strings can consume a large amount of memory to share these strings. Therefore, you may choose not to share strings to use less memory, even if the file size will be large. In this case, you can use inline strings.
+
+```java
+ws.inlineString(0, 0, "Inline String");
+```
+
 ### Data Table
 
 ```java
