@@ -16,7 +16,7 @@
 package org.dhatim.fastexcel;
 
 import com.github.rzymek.opczip.OpcOutputStream;
-
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
@@ -33,7 +33,7 @@ import java.util.zip.ZipEntry;
 /**
  * A {@link Workbook} contains one or more {@link Worksheet} objects.
  */
-public class Workbook {
+public class Workbook implements Closeable{
 
     private int activeTab = 0;
     private final String applicationName;
@@ -116,13 +116,14 @@ public class Workbook {
      *
      * @throws IOException In case of I/O error.
      */
-    public void finish() throws IOException {
+    @Override
+    public void close() throws IOException {
         if (worksheets.isEmpty()) {
             throw new IllegalArgumentException("A workbook must contain at least one worksheet.");
         }
 
         for (Worksheet ws : worksheets) {
-            ws.finish();
+            ws.close();
         }
 
         writeFile("[Content_Types].xml", w -> {
