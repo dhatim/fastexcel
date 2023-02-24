@@ -66,7 +66,7 @@ class PoiCompatibilityTest {
             ws.value(i, i++, Boolean.TRUE);
             ws.value(i, i++, Boolean.FALSE);
             try {
-                ws.finish();
+                ws.close();
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }
@@ -227,7 +227,7 @@ class PoiCompatibilityTest {
             ws.value(0, 6, all_three);
             ws.style(0, 6).bold().italic().underlined().set();
             try {
-                ws.finish();
+                ws.close();
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }

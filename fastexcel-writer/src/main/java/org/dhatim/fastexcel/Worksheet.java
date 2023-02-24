@@ -15,6 +15,7 @@
  */
 package org.dhatim.fastexcel;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -25,7 +26,7 @@ import java.util.stream.IntStream;
 /**
  * A worksheet is a set of cells.
  */
-public class Worksheet {
+public class Worksheet implements Closeable {
 
     /**
      * Maximum number of rows in Excel.
@@ -815,7 +816,8 @@ public class Worksheet {
      *
      * @throws IOException If an I/O error occurs.
      */
-    public void finish() throws IOException {
+    @Override
+    public void close() throws IOException {
         if (finished) {
             return;
         }
