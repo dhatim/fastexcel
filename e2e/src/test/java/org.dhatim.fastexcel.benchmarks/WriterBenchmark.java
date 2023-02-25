@@ -51,16 +51,16 @@ public class WriterBenchmark extends BenchmarkLauncher {
     @Benchmark
     public Object fastExcel() throws IOException {
         CountingOutputStream count = new CountingOutputStream(new NullOutputStream());
-        Workbook wb = new Workbook(count, "Perf", "1.0");
-        Worksheet ws = wb.newWorksheet("Sheet 1");
-        for (int r = 0; r < NB_ROWS; ++r) {
-            ws.value(r, 0, r);
-            ws.value(r, 1, Integer.toString(r % 1000));
-            ws.value(r, 2, r / 87.0);
-            ws.value(r, 3, new Date(1549915044));
+        try(Workbook wb = new Workbook(count, "Perf", "1.0")){
+          Worksheet ws = wb.newWorksheet("Sheet 1");
+          for (int r = 0; r < NB_ROWS; ++r) {
+              ws.value(r, 0, r);
+              ws.value(r, 1, Integer.toString(r % 1000));
+              ws.value(r, 2, r / 87.0);
+              ws.value(r, 3, new Date(1549915044));
+          }
+          ws.range(0, 3, NB_ROWS - 1, 3).style().format("yyyy-mm-dd hh:mm:ss").set();
         }
-        ws.range(0, 3, NB_ROWS - 1, 3).style().format("yyyy-mm-dd hh:mm:ss").set();
-        wb.finish();
         return count.getCount();
     }
 
