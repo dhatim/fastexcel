@@ -110,14 +110,18 @@ public class Workbook implements Closeable{
         worksheets.sort(comparator);
     }
 
+	@Override
+	public void close() throws IOException {
+		finish();
+	}
+	
     /**
      * Complete workbook generation: this writes worksheets and additional files
      * as zip entries to the output stream.
      *
      * @throws IOException In case of I/O error.
      */
-    @Override
-    public void close() throws IOException {
+    public void finish() throws IOException {
         if (worksheets.isEmpty()) {
             throw new IllegalArgumentException("A workbook must contain at least one worksheet.");
         }
