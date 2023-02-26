@@ -959,7 +959,7 @@ public class Worksheet implements Closeable {
      * <ul>
      * <li>All columns must be defined before calling this method:
      * do not add or merge columns after calling {@link #flush()}.</li>
-     * <li>When a {@link Worksheet} is flushed, no other worksheet can be flushed until {@link #finish()} is called.</li>
+     * <li>When a {@link Worksheet} is flushed, no other worksheet can be flushed until {@link #close()} is called.</li>
      * </ul>
      *
      * @throws IOException If an I/O error occurs.
@@ -1098,7 +1098,7 @@ public class Worksheet implements Closeable {
      * Assign a note/comment to a cell.
      * The comment popup will be twice the size of the cell and will be initially hidden.
      * <p>
-     * Comments are stored in memory till call to {@link #finish()} - calling {@link #flush()} does not write them to output stream.
+     * Comments are stored in memory till call to {@link #close()} - calling {@link #flush()} does not write them to output stream.
      * @param r Zero-based row number.
      * @param c Zero-based column number.
      * @param comment Note text
