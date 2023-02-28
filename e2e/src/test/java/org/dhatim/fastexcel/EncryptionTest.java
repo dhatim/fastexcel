@@ -30,12 +30,11 @@ public class EncryptionTest {
 
 
     void fastexcelWriteProtectTest() throws IOException, GeneralSecurityException, InvalidFormatException {
-        try (ByteArrayOutputStream bos = new ByteArrayOutputStream(); POIFSFileSystem fs = new POIFSFileSystem()) {
-            Workbook wb = new Workbook(bos, "Test", "1.0");
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream(); POIFSFileSystem fs = new POIFSFileSystem(); Workbook wb = new Workbook(bos, "Test", "1.0");) {
             wb.setGlobalDefaultFont("Arial", 15.5);
             Worksheet ws = wb.newWorksheet("Worksheet 1");
             ws.value(0, 0, testContent);
-            wb.finish();
+            wb.close();
             byte[] bytes = bos.toByteArray();
             EncryptionInfo info = new EncryptionInfo(EncryptionMode.agile);
             // EncryptionInfo info = new EncryptionInfo(EncryptionMode.agile, CipherAlgorithm.aes192, HashAlgorithm.sha384, -1, -1, null);

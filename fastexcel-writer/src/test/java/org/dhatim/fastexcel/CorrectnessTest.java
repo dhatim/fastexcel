@@ -36,7 +36,7 @@ class CorrectnessTest {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         Workbook wb = new Workbook(os, "Test", "1.0");
         consumer.accept(wb);
-        wb.finish();
+        wb.close();
         return os.toByteArray();
     }
 

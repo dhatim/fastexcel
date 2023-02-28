@@ -16,7 +16,7 @@
 package org.dhatim.fastexcel;
 
 import com.github.rzymek.opczip.OpcOutputStream;
-
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
@@ -33,7 +33,7 @@ import java.util.zip.ZipEntry;
 /**
  * A {@link Workbook} contains one or more {@link Worksheet} objects.
  */
-public class Workbook {
+public class Workbook implements Closeable{
 
     private int activeTab = 0;
     private final String applicationName;
@@ -110,6 +110,11 @@ public class Workbook {
         worksheets.sort(comparator);
     }
 
+	@Override
+	public void close() throws IOException {
+		finish();
+	}
+	
     /**
      * Complete workbook generation: this writes worksheets and additional files
      * as zip entries to the output stream.
@@ -122,7 +127,7 @@ public class Workbook {
         }
 
         for (Worksheet ws : worksheets) {
-            ws.finish();
+            ws.close();
         }
 
         writeFile("[Content_Types].xml", w -> {

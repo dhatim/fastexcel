@@ -40,21 +40,21 @@ public class MemoryUsageE2E {
     }
 
     private void write(OutputStream out) throws IOException {
-        Workbook wb = new Workbook(out, "test", "1.0");
-        for (int s = 0; s < SHEETS; s++) {
-            Worksheet sheet = wb.newWorksheet("sheet " + s);
-            for (int r = 0; r < ROWS; r++) {
-                printProgress("writing", s, r);
-                for (int c = 0; c < COLS; c++) {
-                    sheet.value(r, c, valueFor(r, c));
-                }
-                if (r % FLUSH_EVERY_NR_OR_ROWS == 0) {
-                    sheet.flush();
+        try(Workbook wb = new Workbook(out, "test", "1.0")){
+            for (int s = 0; s < SHEETS; s++) {
+                try(Worksheet sheet = wb.newWorksheet("sheet " + s)){
+                    for (int r = 0; r < ROWS; r++) {
+                        printProgress("writing", s, r);
+                        for (int c = 0; c < COLS; c++) {
+                            sheet.value(r, c, valueFor(r, c));
+                        }
+                        if (r % FLUSH_EVERY_NR_OR_ROWS == 0) {
+                            sheet.flush();
+                        }
+                    }
                 }
             }
-            sheet.finish();
         }
-        wb.finish();
     }
 
     private void read(ReadableWorkbook wb) {
