@@ -95,6 +95,10 @@ public class StyleSetter {
      */
     private boolean wrapText;
     /**
+     * Text rotation in degrees
+     */
+    private int rotation;
+    /**
      * Border.
      */
     private Border border;
@@ -224,7 +228,7 @@ public class StyleSetter {
         this.italic = true;
         return this;
     }
-    
+
     /**
      * Use underlined text.
      *
@@ -272,6 +276,17 @@ public class StyleSetter {
     }
 
     /**
+     * Set cell text rotation in degrees.
+     *
+     * @param degrees rotation of text in cell
+     * @return This style setter
+     */
+    public StyleSetter rotation(int degrees) {
+        this.rotation = degrees;
+        return this;
+    }
+
+    /**
      * Set cell border element.
      *
      * @param side Border side where element is set.
@@ -308,7 +323,7 @@ public class StyleSetter {
             border = new Border();
         }
         EnumSet.of(BorderSide.TOP, BorderSide.LEFT, BorderSide.BOTTOM, BorderSide.RIGHT).forEach(side ->
-            borderElement(side, border.elements.get(side).updateStyle(borderStyle))
+                borderElement(side, border.elements.get(side).updateStyle(borderStyle))
         );
         return this;
     }
@@ -349,7 +364,7 @@ public class StyleSetter {
             border = new Border();
         }
         EnumSet.of(BorderSide.TOP, BorderSide.LEFT, BorderSide.BOTTOM, BorderSide.RIGHT).forEach(side ->
-            borderElement(side, border.elements.get(side).updateColor(borderColor))
+                borderElement(side, border.elements.get(side).updateColor(borderColor))
         );
         return this;
     }
@@ -399,8 +414,8 @@ public class StyleSetter {
      */
     public void set() {
         Alignment alignment;
-        if (horizontalAlignment != null || verticalAlignment != null || wrapText) {
-            alignment = new Alignment(horizontalAlignment, verticalAlignment, wrapText);
+        if (horizontalAlignment != null || verticalAlignment != null || wrapText || rotation != 0) {
+            alignment = new Alignment(horizontalAlignment, verticalAlignment, wrapText, rotation);
         } else {
             alignment = null;
         }
@@ -443,15 +458,15 @@ public class StyleSetter {
             range.shadeRows(Fill.fromColor(shadingFillColor, false), eachNRows);
         }
     }
-    
+
     /**
      * Apply style elements conditionally
      * @param conditionalFormattingRule Conditional formatting rule to apply
      */
     public void set(ConditionalFormattingRule conditionalFormattingRule) {
         Alignment alignment = null;
-        if (horizontalAlignment != null || verticalAlignment != null || wrapText) {
-            alignment = new Alignment(horizontalAlignment, verticalAlignment, wrapText);
+        if (horizontalAlignment != null || verticalAlignment != null || wrapText || rotation != 0) {
+            alignment = new Alignment(horizontalAlignment, verticalAlignment, wrapText, rotation);
         }
         Font font = null;
         if (bold || italic || underlined || fontColor != null || fontName != null || fontSize != null) {
@@ -465,7 +480,7 @@ public class StyleSetter {
         if (protectionOptions != null) {
             protection = new Protection(protectionOptions);
         }
-        
+
         int dxfId = range.getWorksheet().getWorkbook().cacheDifferentialFormat(new DifferentialFormat(valueFormatting, font, fill, border, alignment, protection));
         conditionalFormattingRule.setDxfId(dxfId);
         ConditionalFormatting conditionalFormatting = new ConditionalFormatting(range, conditionalFormattingRule);

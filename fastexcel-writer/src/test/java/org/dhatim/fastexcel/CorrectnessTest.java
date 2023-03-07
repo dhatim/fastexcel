@@ -346,6 +346,7 @@ class CorrectnessTest {
                     .fontName("Cooper Black")
                     .borderColor(Color.SEA_BLUE)
                     .underlined()
+                    .rotation(90)
                     .set();
             //merge cells
             ws.range(12, 0, 12, 3).merge();
