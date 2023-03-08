@@ -110,6 +110,10 @@ Apply conditional formatting of expression type to a cell:
 ```java
 ws.style(0, 0).fillColor("FF8800").set(new ConditionalFormattingExpressionRule("LENB(A1)>1", true));
 ```
+Rotate text in cell:
+```java
+ws.style(0, 0).rotation(90).set();
+```
 Set global default font:
 ```java
 wb.setGlobalDefaultFont("Arial", 15.5);
