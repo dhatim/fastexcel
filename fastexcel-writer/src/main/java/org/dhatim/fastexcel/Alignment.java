@@ -27,6 +27,7 @@ class Alignment {
     private final String horizontal;
     private final String vertical;
     private final boolean wrapText;
+    private final int rotation;
 
     /**
      * Constructor.
@@ -38,10 +39,11 @@ class Alignment {
      * <a href="https://learn.microsoft.com/en-us/previous-versions/office/developer/office-2010/cc802119(v=office.14)?redirectedfrom=MSDN">here</a>.
      * @param wrapText Enable or disable text wrapping in cells.
      */
-    Alignment(String horizontal, String vertical, boolean wrapText) {
+    Alignment(String horizontal, String vertical, boolean wrapText, int rotation) {
         this.horizontal = horizontal;
         this.vertical = vertical;
         this.wrapText = wrapText;
+        this.rotation = rotation;
     }
 
     @Override
@@ -54,7 +56,8 @@ class Alignment {
         boolean result;
         if (obj != null && obj.getClass() == this.getClass()) {
             Alignment other = (Alignment) obj;
-            result = Objects.equals(horizontal, other.horizontal) && Objects.equals(vertical, other.vertical) && Objects.equals(wrapText, other.wrapText);
+            result = Objects.equals(horizontal, other.horizontal) && Objects.equals(vertical, other.vertical)
+                    && Objects.equals(wrapText, other.wrapText) && Objects.equals(rotation, other.rotation);
         } else {
             result = false;
         }
@@ -74,6 +77,9 @@ class Alignment {
         }
         if (vertical != null) {
             w.append(" vertical=\"").append(vertical).append('\"');
+        }
+        if (rotation != 0) {
+            w.append(" textRotation=\"").append(rotation).append('\"');
         }
         if (wrapText) {
             w.append(" wrapText=\"true\"");
