@@ -249,22 +249,20 @@ public class Workbook implements Closeable{
                 writeWorkbookSheet(w, ws);
             }
             w.append("</sheets>");
+
             /** Defining repeating rows and columns for the print setup...
              *  This is defined for each sheet separately
              * (if there are any repeating rows or cols in the sheet at all) **/
-
             w.append("<definedNames>");
             for (Worksheet ws : worksheets) {
                 int worksheetIndex = getIndex(ws) - 1;
                 List<Object> repeatingColsAndRows = Stream.of(ws.getRepeatingCols(), ws.getRepeatingRows())
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
-
+                            .filter(Objects::nonNull)
+                            .collect(Collectors.toList());
                 if (!repeatingColsAndRows.isEmpty()) {
-                    w.append("<definedName function=\"false\" " +
-                                "hidden=\"false\" localSheetId=\"" +
-                                worksheetIndex + "\" name=\"_xlnm.Print_Titles\" " +
-                                "vbProcedure=\"false\">");
+                    w.append("<definedName function=\"false\" hidden=\"false\" localSheetId=\"")
+                            .append(worksheetIndex)
+                            .append("\" name=\"_xlnm.Print_Titles\" vbProcedure=\"false\">");
                     for (int i = 0; i < repeatingColsAndRows.size(); ++i) {
                         if (i > 0) {
                             w.append(",");
@@ -278,8 +276,9 @@ public class Workbook implements Closeable{
                     String rangeName = nr.getKey();
                     Range range = nr.getValue();
                     w.append("<definedName function=\"false\" " +
-                                    "hidden=\"false\" localSheetId=\"" +
-                                    worksheetIndex + "\" name=\"")
+                                    "hidden=\"false\" localSheetId=\"")
+                            .append(worksheetIndex)
+                            .append("\" name=\"")
                             .append(rangeName)
                             .append("\" vbProcedure=\"false\">'")
                             .appendEscaped(ws.getName())
