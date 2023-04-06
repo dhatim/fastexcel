@@ -120,9 +120,9 @@ public class ListDataValidation implements DataValidation {
                 .append(errorTitle)
                 .append("\" error=\"")
                 .append(error)
-                .append("\"><formula1>")
-                .append("'"+listRange.getWorksheet().getName()+"'")
-                .append("!")
+                .append("\"><formula1>'")
+                .appendEscaped(listRange.getWorksheet().getName())
+                .append("'!")
                 .append(listRange.toAbsoluteString())
                 .append("</formula1></dataValidation>");
     }

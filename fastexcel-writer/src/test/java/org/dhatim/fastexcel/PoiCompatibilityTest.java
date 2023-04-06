@@ -1,14 +1,11 @@
 package org.dhatim.fastexcel;
 
 import org.apache.poi.ss.usermodel.DataValidation.ErrorStyle;
-import org.apache.poi.ss.usermodel.DataValidationConstraint;
-import org.apache.poi.ss.usermodel.FontUnderline;
-import org.apache.poi.ss.usermodel.IndexedColors;
-import org.apache.poi.ss.usermodel.PrintOrientation;
-import org.apache.poi.ss.usermodel.SheetVisibility;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.*;
 import org.junit.jupiter.api.Test;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTAutoFilter;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -717,6 +714,27 @@ class PoiCompatibilityTest {
         assertTrue(condFmtRule.getFormula1().equals("LENB(A1)>1"));
         assertTrue(condFmtRule.getPatternFormatting().getFillBackgroundColorColor().getARGBHex().equals("FFFF8800"));
         assertTrue(cellRange.formatAsString().equals("A1:C2"));
+    }
+
+    @Test
+    void checkWorksheetNameEscaping() throws Exception {
+        String worksheetName = "A&B";
+        byte[] data = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet(worksheetName);
+            ws.setAutoFilter(0, 1, 0, 10);
+            ws.repeatCols(0);
+            ws.repeatRows(0);
+        });
+        // Check generated workbook with Apache POI
+        XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
+        XSSFSheet xws = xwb.getSheetAt(0);
+        CTAutoFilter autoFilter = xws.getCTWorksheet().getAutoFilter();
+        assertEquals("B1:K1", autoFilter.getRef());
+        CellRangeAddress repeatingRows = xws.getRepeatingRows();
+        assertEquals("1:1", repeatingRows.formatAsString());
+        CellRangeAddress repeatingCols = xws.getRepeatingColumns();
+        assertEquals("A:A", repeatingCols.formatAsString());
+        assertEquals(worksheetName, xws.getSheetName());
     }
 
 }
