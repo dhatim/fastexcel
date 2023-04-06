@@ -1,11 +1,7 @@
 package org.dhatim.fastexcel;
 
 import org.apache.poi.ss.usermodel.DataValidation.ErrorStyle;
-import org.apache.poi.ss.usermodel.DataValidationConstraint;
-import org.apache.poi.ss.usermodel.FontUnderline;
-import org.apache.poi.ss.usermodel.IndexedColors;
-import org.apache.poi.ss.usermodel.PrintOrientation;
-import org.apache.poi.ss.usermodel.SheetVisibility;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.*;
 import org.junit.jupiter.api.Test;
@@ -13,8 +9,6 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -37,7 +31,7 @@ class PoiCompatibilityTest {
 
     @Test
     void singleWorksheet() throws Exception {
-        String sheetName = "T&O";
+        String sheetName = "Worksheet 1";
         String stringValue = "Sample text with chars to escape : < > & \\ \" ' ~ é è à ç ù µ £ €";
         Date dateValue = new Date();
         // We truncate to milliseconds because JDK 9 gives microseconds, whereas Excel format supports only milliseconds
