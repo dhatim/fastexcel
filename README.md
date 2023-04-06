@@ -321,7 +321,7 @@ In between there a more developer friendly wrapper around Apache Poi called [Exc
 <dependency>
     <groupId>org.dhatim</groupId>
     <artifactId>fastexcel-reader</artifactId>
-    <version>0.14.18</version>
+    <version>0.15.3</version>
 </dependency>
 ```
 
