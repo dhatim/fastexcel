@@ -5,6 +5,7 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.*;
 import org.junit.jupiter.api.Test;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTAutoFilter;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -727,6 +728,8 @@ class PoiCompatibilityTest {
         // Check generated workbook with Apache POI
         XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
         XSSFSheet xws = xwb.getSheetAt(0);
+        CTAutoFilter autoFilter = xws.getCTWorksheet().getAutoFilter();
+        assertEquals("B1:K1", autoFilter.getRef());
         CellRangeAddress repeatingRows = xws.getRepeatingRows();
         assertEquals("1:1", repeatingRows.formatAsString());
         CellRangeAddress repeatingCols = xws.getRepeatingColumns();
