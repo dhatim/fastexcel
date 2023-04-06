@@ -13,6 +13,8 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -35,7 +37,7 @@ class PoiCompatibilityTest {
 
     @Test
     void singleWorksheet() throws Exception {
-        String sheetName = "Worksheet 1";
+        String sheetName = "T&O";
         String stringValue = "Sample text with chars to escape : < > & \\ \" ' ~ é è à ç ù µ £ €";
         Date dateValue = new Date();
         // We truncate to milliseconds because JDK 9 gives microseconds, whereas Excel format supports only milliseconds
@@ -717,6 +719,25 @@ class PoiCompatibilityTest {
         assertTrue(condFmtRule.getFormula1().equals("LENB(A1)>1"));
         assertTrue(condFmtRule.getPatternFormatting().getFillBackgroundColorColor().getARGBHex().equals("FFFF8800"));
         assertTrue(cellRange.formatAsString().equals("A1:C2"));
+    }
+
+    @Test
+    void checkWorksheetNameEscaping() throws Exception {
+        String worksheetName = "A&B";
+        byte[] data = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet(worksheetName);
+            ws.setAutoFilter(0, 1, 0, 10);
+            ws.repeatCols(0);
+            ws.repeatRows(0);
+        });
+        // Check generated workbook with Apache POI
+        XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
+        XSSFSheet xws = xwb.getSheetAt(0);
+        CellRangeAddress repeatingRows = xws.getRepeatingRows();
+        assertEquals("1:1", repeatingRows.formatAsString());
+        CellRangeAddress repeatingCols = xws.getRepeatingColumns();
+        assertEquals("A:A", repeatingCols.formatAsString());
+        assertEquals(worksheetName, xws.getSheetName());
     }
 
 }

@@ -110,11 +110,11 @@ public class Workbook implements Closeable{
         worksheets.sort(comparator);
     }
 
-	@Override
-	public void close() throws IOException {
-		finish();
-	}
-	
+    @Override
+    public void close() throws IOException {
+        finish();
+    }
+
     /**
      * Complete workbook generation: this writes worksheets and additional files
      * as zip entries to the output stream.
@@ -256,18 +256,22 @@ public class Workbook implements Closeable{
             w.append("<definedNames>");
             for (Worksheet ws : worksheets) {
                 int worksheetIndex = getIndex(ws) - 1;
-                String defineName = Stream.of(ws.getRepeatingCols(),ws.getRepeatingRows())
-                                .filter(Objects::nonNull)
-                                .map(r -> "&apos;" + ws.getName() + "&apos;!" + r.toString())
-                                .collect(Collectors.joining(","));
+                List<Object> repeatingColsAndRows = Stream.of(ws.getRepeatingCols(), ws.getRepeatingRows())
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
 
-                if (!defineName.isEmpty()) {
+                if (!repeatingColsAndRows.isEmpty()) {
                     w.append("<definedName function=\"false\" " +
                                 "hidden=\"false\" localSheetId=\"" +
                                 worksheetIndex + "\" name=\"_xlnm.Print_Titles\" " +
-                                "vbProcedure=\"false\">")
-                     .append(defineName)
-                     .append("</definedName>");
+                                "vbProcedure=\"false\">");
+                    for (int i = 0; i < repeatingColsAndRows.size(); ++i) {
+                        if (i > 0) {
+                            w.append(",");
+                        }
+                        w.append("'").appendEscaped(ws.getName()).append("'!").append(repeatingColsAndRows.get(i).toString());
+                    }
+                    w.append("</definedName>");
                 }
                 /** define specifically named ranges **/
                 for (Map.Entry<String, Range> nr : ws.getNamedRanges().entrySet()) {
@@ -277,10 +281,9 @@ public class Workbook implements Closeable{
                                     "hidden=\"false\" localSheetId=\"" +
                                     worksheetIndex + "\" name=\"")
                             .append(rangeName)
-                            .append("\" vbProcedure=\"false\">&apos;")
-                            .append(ws.getName())
-                            .append("&apos;")
-                            .append("!")
+                            .append("\" vbProcedure=\"false\">'")
+                            .appendEscaped(ws.getName())
+                            .append("'!")
                             .append(range.toAbsoluteString())
                             .append("</definedName>");
                 }
@@ -288,11 +291,9 @@ public class Workbook implements Closeable{
                 if (af != null) {
                     w.append("<definedName function=\"false\" hidden=\"true\" localSheetId=\"")
                             .append(worksheetIndex)
-                            .append("\" name=\"_xlnm._FilterDatabase\" vbProcedure=\"false\">")
-                            .append("&apos;")
-                            .append(ws.getName())
-                            .append("&apos;")
-                            .append("!")
+                            .append("\" name=\"_xlnm._FilterDatabase\" vbProcedure=\"false\">'")
+                            .appendEscaped(ws.getName())
+                            .append("'!")
                             .append(af.toAbsoluteString())
                             .append("</definedName>");
                 }
