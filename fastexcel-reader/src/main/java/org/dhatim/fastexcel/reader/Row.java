@@ -43,7 +43,7 @@ public class Row implements Iterable<Cell> {
     }
 
     public Cell getCell(CellAddress address) {
-        if (rowNum != address.getRow()) {
+        if (rowNum -1 != address.getRow()) {
             throw new IllegalArgumentException("The given address " + address + " concerns another row (" + rowNum + ")");
         }
         return getCell(address.getColumn());
