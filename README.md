@@ -70,7 +70,7 @@ General properties：
 ```java
 wb.properties()
     .setTitle("title property")
-    .setCategory("categrovy property")
+    .setCategory("category property")
     .setSubject("subject property")
     .setKeywords("keywords property")
     .setDescription("description property")
