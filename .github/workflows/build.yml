@@ -2,7 +2,6 @@ name: build
 on:
     push:
         branches: [ '*' ]
-        tags: [ '*' ]
     pull_request:
         branches: [ '*' ]
 jobs:
@@ -15,21 +14,4 @@ jobs:
                     distribution: 'zulu'
                     java-version: '8'
             -   name: maven build
-                env:
-                    GPG_SECRET_KEY: ${{ secrets.GPG_SECRET_KEY }}
-                    GPG_OWNERTRUST: ${{ secrets.GPG_OWNERTRUST }}
-                    GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-                    SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
-                    SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
-                run: |
-                    if echo "${GITHUB_REF_NAME}" | egrep '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9]+)?$'
-                    then
-                        # the tag looks like a version number: proceed with release
-                        echo ${GPG_SECRET_KEY} | base64 --decode | gpg --import --no-tty --batch --yes
-                        echo ${GPG_OWNERTRUST} | base64 --decode | gpg --import-ownertrust --no-tty --batch --yes
-                        mvn -ntp versions:set -DnewVersion=${GITHUB_REF_NAME}
-                        mvn -ntp -s .github/settings.xml -Prelease deploy
-                    else
-                        # this is a regular build
-                        mvn -ntp install
-                    fi
+                run: mvn --batch-mode --errors --show-version --no-transfer-progress clean verify
