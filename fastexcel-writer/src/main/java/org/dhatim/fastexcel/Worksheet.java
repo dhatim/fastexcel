@@ -206,11 +206,11 @@ public class Worksheet implements Closeable {
     /**
      * Header map for left, central and right field text.
      */
-    private Map<Position,String> header = new LinkedHashMap();
+    private final Map<Position, MarginalInformation> header = new LinkedHashMap<>();
     /**
      * Footer map for left, central and right field text.
      */
-    private Map<Position,String> footer = new LinkedHashMap();
+    private final Map<Position, MarginalInformation> footer = new LinkedHashMap<>();
     /**
      * Range of repeating rows for the print setup.
      * (Those rows will be repeated on each page when document is printed.)
@@ -907,14 +907,14 @@ public class Worksheet implements Closeable {
         /* write to header and footer */
         writer.append("<headerFooter differentFirst=\"false\" differentOddEven=\"false\">");
         writer.append("<oddHeader>");
-        if (header.get(Position.LEFT) != null) writer.append(header.get(Position.LEFT));
-        if (header.get(Position.CENTER) != null) writer.append(header.get(Position.CENTER));
-        if (header.get(Position.RIGHT) != null) writer.append(header.get(Position.RIGHT));
+        for (MarginalInformation headerEntry : header.values()) {
+            headerEntry.write(writer);
+        }
         writer.append("</oddHeader>");
         writer.append("<oddFooter>");
-        if (footer.get(Position.LEFT) != null) writer.append(footer.get(Position.LEFT));
-        if (footer.get(Position.CENTER) != null) writer.append(footer.get(Position.CENTER));
-        if (footer.get(Position.RIGHT) != null) writer.append(footer.get(Position.RIGHT));
+        for (MarginalInformation footerEntry : footer.values()) {
+            footerEntry.write(writer);
+        }
         writer.append("</oddFooter></headerFooter>");
 
 
@@ -1267,34 +1267,12 @@ public class Worksheet implements Closeable {
     }
 
     /**
-     * Gets input text form and converts it into what will be written in the
-     * <header>/<footer> xml tag
-     * @param text Header/footer text input form
-     * @return (partial) String content of <header> or <footer> XML tag
-     */
-    private String prepareForXml(String text) {
-        switch(text.toLowerCase()) {
-            case "page 1 of ?":
-                return "Page &amp;P of &amp;N";
-            case "page 1, sheetname":
-                return "Page &amp;P, &amp;A";
-            case "page 1":
-                return "Page &amp;P";
-            case "sheetname":
-                return "&amp;A";
-            default:
-                return text;
-        }
-    }
-
-    /**
      * Set footer text.
      * @param text - text input form or custom text
      * @param position - Position.LEFT/RIGHT/CENTER enum
      */
     public void footer(String text, Position position) {
-        this.footer.put(position, "&amp;" + position.getPos() +
-                                  prepareForXml(text));
+        this.footer.put(position, new MarginalInformation(text, position));
     }
 
     /**
@@ -1304,9 +1282,8 @@ public class Worksheet implements Closeable {
      * @param fontSize - integer describing font size
      */
     public void footer(String text, Position position, int fontSize) {
-        this.footer.put(position, "&amp;" + position.getPos() +
-                                  "&amp;&quot;Times New Roman,Regular&quot;&amp;" + fontSize +
-                                  "&amp;K000000" + prepareForXml(text));
+        this.footer.put(position, new MarginalInformation(text, position)
+            .withFontSize(fontSize));
     }
 
     /**
@@ -1317,9 +1294,9 @@ public class Worksheet implements Closeable {
      * @param fontSize - integer describing font size
      */
     public void footer(String text, Position position, String fontName, int fontSize) {
-        this.footer.put(position, "&amp;" + position.getPos() +
-                                  "&amp;&quot;" + fontName + ",Regular&quot;&amp;" + fontSize +
-                                  "&amp;K000000" + prepareForXml(text));
+        this.footer.put(position, new MarginalInformation(text, position)
+            .withFont(fontName)
+            .withFontSize(fontSize));
     }
 
     /**
@@ -1330,9 +1307,9 @@ public class Worksheet implements Closeable {
      * @param fontSize - integer describing font size
      */
     public void header(String text, Position position, String fontName, int fontSize) {
-        this.header.put(position, "&amp;" + position.getPos() +
-                                  "&amp;&quot;" + fontName + ",Regular&quot;&amp;" + fontSize +
-                                  "&amp;K000000" + prepareForXml(text));
+        this.header.put(position, new MarginalInformation(text, position)
+            .withFont(fontName)
+            .withFontSize(fontSize));
     }
 
     /**
@@ -1342,9 +1319,8 @@ public class Worksheet implements Closeable {
      * @param fontSize - integer describing font size
      */
     public void header(String text, Position position, int fontSize) {
-        this.header.put(position, "&amp;" + position.getPos() +
-                                  "&amp;&quot;Times New Roman,Regular&quot;&amp;" + fontSize +
-                                  "&amp;K000000" + prepareForXml(text));
+        this.header.put(position, new MarginalInformation(text, position)
+            .withFontSize(fontSize));
     }
 
     /**
@@ -1353,8 +1329,7 @@ public class Worksheet implements Closeable {
      * @param position - Position.LEFT/RIGHT/CENTER enum
      */
     public void header(String text, Position position) {
-        this.header.put(position, "&amp;" + position.getPos() +
-                                  prepareForXml(text));
+        this.header.put(position, new MarginalInformation(text, position));
     }
 
     /**
