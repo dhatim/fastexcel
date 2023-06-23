@@ -41,7 +41,7 @@ public final class TimestampUtil {
      * carry any timezone information; this method uses the system timezone to
      * convert the timestamp to a serial number. If you need a specific
      * timezone, prefer using
-     * {@link #convertZonedDateTime(java.time.chrono.ChronoZonedDateTime)}.
+     * {@link #convertZonedDateTime(java.time.ZonedDateTime)}.
      *
      * @param date Date value.
      * @return Serial number value.
@@ -90,8 +90,8 @@ public final class TimestampUtil {
      * @param zdt Date and timezone values.
      * @return Serial number value.
      */
-    public static Double convertZonedDateTime(ChronoZonedDateTime<?> zdt) {
-        return convertDate(Date.from(zdt.toInstant()));
+    public static Double convertZonedDateTime(ZonedDateTime zdt) {
+        return convertDate(zdt.toLocalDateTime());
     }
 
     private static double internalGetExcelDate(int year, int dayOfYear, int hour, int minute, int second, int milliSecond) {
