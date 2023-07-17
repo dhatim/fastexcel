@@ -41,7 +41,7 @@ public class ReadableWorkbook implements Closeable {
     }
 
     public ReadableWorkbook(File inputFile, ReadingOptions readingOptions) throws IOException {
-        this(OPCPackage.open(inputFile), readingOptions);
+        this(OPCPackage.open(inputFile, readingOptions.isWithCellFormat()), readingOptions);
     }
 
     /**
