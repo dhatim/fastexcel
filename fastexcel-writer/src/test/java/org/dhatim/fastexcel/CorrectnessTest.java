@@ -28,7 +28,7 @@ import java.util.TimeZone;
 import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 class CorrectnessTest {
 
@@ -560,6 +560,16 @@ class CorrectnessTest {
         });
         //fileOutputStream.write(bytes);
         //}
+    }
+
+    @Test
+    void testForTimeZoneWhenUsingZonedDateTime() {
+        final Instant instant = Instant.ofEpochSecond(0);
+        final ZonedDateTime utc = ZonedDateTime.ofInstant(instant, ZoneId.of("Z"));
+        final ZonedDateTime two = ZonedDateTime.ofInstant(instant, ZoneId.of("+02:00"));
+
+        assertEquals(25569.0, TimestampUtil.convertZonedDateTime(utc));
+        assertEquals(25569.083, TimestampUtil.convertZonedDateTime(two), 0.001);
     }
 
 }
