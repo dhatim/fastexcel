@@ -12,7 +12,7 @@
     <url>https://github.com/dhatim/fastexcel</url>
 
     <properties>
-        <jmh.version>1.36</jmh.version>
+        <jmh.version>1.37</jmh.version>
     </properties>
 
     <dependencies>
