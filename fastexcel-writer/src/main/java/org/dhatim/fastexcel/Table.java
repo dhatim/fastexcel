@@ -44,7 +44,7 @@ public class Table{
         return styleInfo;
     }
 
-    class TableStyleInfo {
+    public class TableStyleInfo {
         private final Table table;
         TableStyleInfo(Table table){
             this.table = table;
