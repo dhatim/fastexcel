@@ -87,7 +87,7 @@ public class Cell {
      * @throws ExcelReaderException is the cell if not of numerical type or empty
      */
     public LocalDateTime asDate() {
-        if (type == CellType.NUMBER) {
+        if (type == CellType.NUMBER || type == CellType.FORMULA) {
             return convertToDate(Double.parseDouble(rawValue));
         } else if (type == CellType.EMPTY) {
             return null;
