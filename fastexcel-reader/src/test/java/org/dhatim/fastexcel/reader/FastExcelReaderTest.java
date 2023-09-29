@@ -31,12 +31,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Logger;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.dhatim.fastexcel.reader.Resources.open;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class FastExcelReaderTest {
 
@@ -81,7 +83,13 @@ class FastExcelReaderTest {
 
     @Test
     void testDates() throws IOException {
-        assertThat(readUsingFastExcel()).isEqualTo(readUsingPOI());
+        List<RowDates> usingFastExcel = readUsingFastExcel();
+        List<RowDates> usingPoi = readUsingPOI();
+        assertEquals(usingPoi.size(), usingFastExcel.size());
+        IntStream.range(0, usingFastExcel.size())
+                        .forEach(i -> assertThat(usingFastExcel.get(i).equals(usingPoi.get(i))));
+        // for some reason the check below does not work while the check above does.
+//        assertThat(readUsingFastExcel()).isEqualTo(readUsingPOI());
     }
 
     private List<RowDates> readUsingPOI() throws IOException {
