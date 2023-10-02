@@ -62,13 +62,23 @@ public class EncryptionTest {
             }
             // parse dataStream
             try (InputStream dataStream = d.getDataStream(fileSystem); ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-                /* TODO:The dataStream obtained here is broken and cannot be read normally by programs other than POI, which is probably a bug of POI.
+                /* TODO:In POI version v5.2.3 and before,the dataStream obtained here is broken and cannot be read normally by programs other than POI, which is probably a bug of POI.
                      See https://bz.apache.org/bugzilla/show_bug.cgi?id=66436
-                     This problem can be avoided by saving after being wrapped by OPCPackage */
-                OPCPackage open = OPCPackage.open(dataStream);
-                open.save(bos);
-                byte[] bytes = bos.toByteArray();
-                ReadableWorkbook fworkbook = new ReadableWorkbook(new ByteArrayInputStream(bytes));
+                     This problem can be avoided by saving after being wrapped by OPCPackage.
+                     Now,POI v5.2.4 has fixed this issue and does not have to be wrapped by OPCPackage.
+                     */
+                ReadableWorkbook fworkbook;
+                // For POI <= v5.2.3 this should be true
+                boolean shouldBeWrapped = false;
+                if (shouldBeWrapped) {
+                    OPCPackage open = OPCPackage.open(dataStream);
+                    open.save(bos);
+                    byte[] bytes = bos.toByteArray();
+                    fworkbook = new ReadableWorkbook(new ByteArrayInputStream(bytes));
+                } else {
+                    fworkbook = new ReadableWorkbook(dataStream);
+                }
+
                 Sheet sheet = fworkbook.getSheet(0).orElse(null);
                 assert sheet != null;
                 sheet.openStream().forEach(r -> {
