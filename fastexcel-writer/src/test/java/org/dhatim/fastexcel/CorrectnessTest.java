@@ -19,6 +19,7 @@ import org.apache.commons.io.output.NullOutputStream;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.*;
@@ -570,6 +571,26 @@ class CorrectnessTest {
 
         assertEquals(25569.0, TimestampUtil.convertZonedDateTime(utc));
         assertEquals(25569.083, TimestampUtil.convertZonedDateTime(two), 0.001);
+    }
+
+    @Test
+    void testForIssue285() throws Exception {
+        // try (FileOutputStream fileOutputStream = new FileOutputStream("D://global_font_test.xlsx")) {
+        byte[] bytes = writeWorkbook(wb -> {
+            Worksheet sheet = wb.newWorksheet("test sheet");
+            wb.setGlobalDefaultFont("Arial", 15.5);
+
+            sheet.value(0, 0, "should be arial"); // but it is Calibri
+            sheet.style(0, 0).fontColor(Color.RED).set();
+
+            sheet.value(2, 0, "no additional style"); // Arial 15.5 as global default
+
+            sheet.value(3, 0, "manual arial with style");
+            sheet.style(3, 0).fontName("Arial").fontColor(Color.GREEN).set(); // Arial 11
+
+        });
+        // fileOutputStream.write(bytes);
+        // }
     }
 
 }
