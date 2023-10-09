@@ -469,7 +469,7 @@ public class StyleSetter {
             alignment = new Alignment(horizontalAlignment, verticalAlignment, wrapText, rotation);
         }
         Font font = null;
-        if (bold || italic || underlined || fontColor != null || fontName != null || fontSize != null) {
+        if (bold != null && bold || italic != null && italic || underlined != null && underlined || fontColor != null || fontName != null || fontSize != null) {
             font = Font.build(bold, italic, underlined, fontName, fontSize, fontColor);
         }
         Fill fill = null;
