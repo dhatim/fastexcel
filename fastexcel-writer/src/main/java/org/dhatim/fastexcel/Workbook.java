@@ -92,9 +92,11 @@ public class Workbook implements Closeable{
     }
 
     public void setGlobalDefaultFont(String fontName, double fontSize) {
-        this.setGlobalDefaultFont(Font.build(false,false,false,fontName, BigDecimal.valueOf(fontSize),null));
+        this.setGlobalDefaultFont(Font.build(null, null, null, fontName, BigDecimal.valueOf(fontSize), null));
     }
+
     public void setGlobalDefaultFont(Font font) {
+        Font.DEFAULT = font;
         this.styleCache.replaceDefaultFont(font);
     }
     public Properties properties() {

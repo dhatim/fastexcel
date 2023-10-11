@@ -30,7 +30,7 @@ class Font {
     /**
      * Default font.
      */
-    protected static final Font DEFAULT = build(false, false, false, null, null, null);
+    public static Font DEFAULT = build(false, false, false, "Calibri", BigDecimal.valueOf(11.0), "FF000000");
 
     /**
      * Bold flag.
@@ -90,8 +90,8 @@ class Font {
      * @param rgbColor RGB font color. Defaults to "FF000000".
      * @return New font object.
      */
-    public static Font build(boolean bold, boolean italic, boolean underlined, String name, BigDecimal size, String rgbColor) {
-        return new Font(bold, italic, underlined, name == null ? "Calibri" : name, size == null ? BigDecimal.valueOf(11.0) : size, rgbColor == null ? "FF000000" : rgbColor);
+    public static Font build(Boolean bold, Boolean italic, Boolean underlined, String name, BigDecimal size, String rgbColor) {
+        return new Font(bold != null? bold : DEFAULT.bold, italic != null ? italic : DEFAULT.italic , underlined != null ? underlined : DEFAULT.underlined, name != null ? name : DEFAULT.name, size != null ?  size:DEFAULT.size, rgbColor != null ?  rgbColor: DEFAULT.rgbColor);
     }
 
     @Override
@@ -109,6 +109,10 @@ class Font {
             result = false;
         }
         return result;
+    }
+
+    public static boolean equalsDefault(Boolean bold, Boolean italic, Boolean underlined, String fontName, BigDecimal fontSize, String fontColor) {
+        return Objects.equals(bold, DEFAULT.bold) && Objects.equals(italic, DEFAULT.italic) && Objects.equals(underlined, DEFAULT.underlined) && Objects.equals(fontName, DEFAULT.name) && Objects.equals(fontSize, DEFAULT.size) && Objects.equals(fontColor, DEFAULT.rgbColor);
     }
 
     /**

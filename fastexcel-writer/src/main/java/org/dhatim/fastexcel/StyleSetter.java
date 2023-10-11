@@ -61,15 +61,15 @@ public class StyleSetter {
     /**
      * Bold flag.
      */
-    private boolean bold;
+    private Boolean bold;
     /**
      * Italic flag.
      */
-    private boolean italic;
+    private Boolean italic;
     /**
      * Underlined flag.
      */
-    private boolean underlined;
+    private Boolean underlined;
     /**
      * Font name.
      */
@@ -420,7 +420,7 @@ public class StyleSetter {
             alignment = null;
         }
         Font font;
-        if (bold || italic || underlined || fontColor != null || fontName != null || fontSize != null) {
+        if (!Font.equalsDefault(bold,italic,underlined,fontName,fontSize,fontColor)) {
             font = Font.build(bold, italic, underlined, fontName, fontSize, fontColor);
         } else {
             font = Font.DEFAULT;
@@ -469,7 +469,7 @@ public class StyleSetter {
             alignment = new Alignment(horizontalAlignment, verticalAlignment, wrapText, rotation);
         }
         Font font = null;
-        if (bold || italic || underlined || fontColor != null || fontName != null || fontSize != null) {
+        if (bold != null && bold || italic != null && italic || underlined != null && underlined || fontColor != null || fontName != null || fontSize != null) {
             font = Font.build(bold, italic, underlined, fontName, fontSize, fontColor);
         }
         Fill fill = null;
