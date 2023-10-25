@@ -153,6 +153,9 @@ class FastExcelReaderTest {
                 while (it.hasNext()) {
                     Sheet sheetDef = it.next();
 
+                    assertThat(sheetDef.getId()).as("sheet id").isNotNull();
+                    assertThat(sheetDef.getStableId()).as("sheet stable id").isNotNull();
+
                     org.apache.poi.ss.usermodel.Sheet sheet = workbook.getSheetAt(sheetDef.getIndex());
 
                     try (Stream<Row> data = sheetDef.openStream()) {
