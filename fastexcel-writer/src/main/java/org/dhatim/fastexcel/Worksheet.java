@@ -15,6 +15,8 @@
  */
 package org.dhatim.fastexcel;
 
+import com.sun.xml.internal.ws.util.StringUtils;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -251,6 +253,8 @@ public class Worksheet implements Closeable {
      * Those rows are set to null in {@link #rows}
      */
     private int flushedRows = 0;
+
+    private String tabColor;
 
     /**
      * Constructor.
@@ -813,7 +817,7 @@ public class Worksheet implements Closeable {
 	public void close() throws IOException {
 		finish();
 	}
-	
+
     /**
      * Finish the construction of this worksheet. This creates the worksheet
      * file on the workbook's output stream. Rows and cells in this worksheet
@@ -974,7 +978,7 @@ public class Worksheet implements Closeable {
             writer = workbook.beginFile("xl/worksheets/sheet" + index + ".xml");
             writer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
             writer.append("<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">");
-            writer.append("<sheetPr filterMode=\"" + "false" + "\"><pageSetUpPr fitToPage=\"" + fitToPage + "\" autoPageBreaks=\"" + autoPageBreaks + "\"/></sheetPr>");
+            writer.append("<sheetPr filterMode=\"" + "false" + "\">" + (tabColor != null ? "<tabColor rgb=\""+tabColor+"\"/>" : "") + "<pageSetUpPr fitToPage=\"" + fitToPage + "\" autoPageBreaks=\"" + autoPageBreaks + "\"/></sheetPr>");
             writer.append("<dimension ref=\"A1\"/>");
             writer.append("<sheetViews><sheetView workbookViewId=\"0\"");
             if (!showGridLines) {
@@ -1370,5 +1374,12 @@ public class Worksheet implements Closeable {
 
     public void groupRows(int from , int to) {
         IntStream.rangeClosed(Math.min(from,to),Math.max(from,to)).forEach(groupRows::increase);
+    }
+
+    /**
+     * @param rgbColor FFF381E0
+     */
+    public void setTabColor(String rgbColor) {
+        this.tabColor = rgbColor;
     }
 }

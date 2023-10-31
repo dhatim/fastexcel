@@ -183,6 +183,11 @@ ws.range(0, 0, 5, 2).createTable()
 
 ### Additional worksheet features
 
+Set tab color
+```java
+ws.setTabColor("F381E0");
+```
+
 To keep the sheet in active tab:
 ```java
 ws.keepInActiveTab();
