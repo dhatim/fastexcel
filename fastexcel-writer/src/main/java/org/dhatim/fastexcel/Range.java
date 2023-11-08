@@ -201,6 +201,18 @@ public class Range implements Ref {
         return listDataValidation;
     }
 
+     /**
+     * Construct a new ListDataValidation
+     *
+     * @param formula The custom validation formula
+     * @return a new custom validation
+     */
+    public CustomDataValidation validateWithFormula(String formula) {
+        CustomDataValidation customDataValidation = new CustomDataValidation(this, new Formula(formula));
+        worksheet.addValidation(customDataValidation);
+        return customDataValidation;
+    }
+
     /**
      * Specifically define this range by assigning it a name.
      * It will be visible in the cell range dropdown menu.
