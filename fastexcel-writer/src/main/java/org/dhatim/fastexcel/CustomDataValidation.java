@@ -3,7 +3,7 @@ package org.dhatim.fastexcel;
 import java.io.IOException;
 
 /**
- * A CustomDataValidation defines a DataValidation for a worksheet of type = "list"
+ * A CustomDataValidation defines a DataValidation for a worksheet of type = "custom"
  */
 public class CustomDataValidation implements DataValidation {
     private final static String TYPE = "custom";
