@@ -594,7 +594,7 @@ class CorrectnessTest {
     }
 
     @Test
-    public void test() throws Exception {
+    public void testDiagonalProperties() throws Exception {
         writeWorkbook(wb -> {
             Worksheet worksheet = wb.newWorksheet("Worksheet 1");
             worksheet.style(0, 0)
