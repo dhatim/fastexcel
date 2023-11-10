@@ -405,6 +405,20 @@ public class StyleSetter {
     }
 
     /**
+     * Set cell diagonal property.
+     *
+     * @param diagonalProperty Diagonal border property which should be aplied to a cell
+     * @return This style setter.
+     */
+    public StyleSetter diagonalProperty(DiagonalProperty diagonalProperty) {
+        if (border == null) {
+            border = new Border();
+        }
+        border.setDiagonalProperty(diagonalProperty);
+        return this;
+    }
+
+    /**
      * Sets the value for a protection option.
      *
      * @param option The option to set

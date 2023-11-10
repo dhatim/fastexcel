@@ -16,8 +16,7 @@
 package org.dhatim.fastexcel;
 
 import java.io.IOException;
-import java.util.EnumMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Border attributes.
@@ -33,6 +32,10 @@ class Border {
      * Border elements.
      */
     final Map<BorderSide, BorderElement> elements = new EnumMap<>(BorderSide.class);
+    /**
+     * Diagonal properties
+     */
+    private final Set<DiagonalProperty> diagonalProperties = new HashSet<>();
 
     /**
      * Default constructor.
@@ -78,6 +81,15 @@ class Border {
     }
 
     /**
+     * Set a diagonal property.
+     *
+     * @param diagonalProperty Diagonal property.
+     */
+    void setDiagonalProperty(DiagonalProperty diagonalProperty) {
+        diagonalProperties.add(diagonalProperty);
+    }
+
+    /**
      * Create a border where all sides have the same style and color.
      *
      * @param style Border style. Possible values are defined
@@ -92,7 +104,7 @@ class Border {
 
     @Override
     public int hashCode() {
-        return elements.hashCode();
+        return Objects.hash(elements, diagonalProperties);
     }
 
     @Override
@@ -100,7 +112,7 @@ class Border {
         boolean result;
         if (obj != null && obj.getClass() == this.getClass()) {
             Border other = (Border) obj;
-            result = elements.equals(other.elements);
+            result = elements.equals(other.elements) && diagonalProperties.equals(other.diagonalProperties);
         } else {
             result = false;
         }
@@ -114,7 +126,14 @@ class Border {
      * @throws IOException If an I/O error occurs.
      */
     void write(Writer w) throws IOException {
-        w.append("<border>");
+        w.append("<border");
+        if (diagonalProperties.contains(DiagonalProperty.DIAGONAL_UP)) {
+            w.append(" diagonalUp=\"1\"");
+        }
+        if (diagonalProperties.contains(DiagonalProperty.DIAGONAL_DOWN)) {
+            w.append(" diagonalDown=\"1\"");
+        }
+        w.append(">");
         elements.get(BorderSide.LEFT).write("left", w);
         elements.get(BorderSide.RIGHT).write("right", w);
         elements.get(BorderSide.TOP).write("top", w);

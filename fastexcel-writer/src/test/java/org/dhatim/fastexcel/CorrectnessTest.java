@@ -597,6 +597,36 @@ class CorrectnessTest {
     }
 
     @Test
+    public void testDiagonalProperties() throws Exception {
+        writeWorkbook(wb -> {
+            Worksheet worksheet = wb.newWorksheet("Worksheet 1");
+            worksheet.style(0, 0)
+                    .borderColor(BorderSide.RIGHT, Color.BLACK)
+                    .borderStyle(BorderSide.RIGHT, BorderStyle.THIN)
+                    .borderColor(BorderSide.DIAGONAL, Color.BLACK)
+                    .borderStyle(BorderSide.DIAGONAL, BorderStyle.THIN)
+                    .diagonalProperty(DiagonalProperty.DIAGONAL_UP)
+                    .set();
+            worksheet.style(1, 0)
+                    .borderColor(BorderSide.TOP, Color.BLACK)
+                    .borderStyle(BorderSide.TOP, BorderStyle.THIN)
+                    .borderColor(BorderSide.DIAGONAL, Color.BLACK)
+                    .borderStyle(BorderSide.DIAGONAL, BorderStyle.MEDIUM)
+                    .diagonalProperty(DiagonalProperty.DIAGONAL_DOWN)
+                    .set();
+            worksheet.style(2, 0)
+                    .borderColor(BorderSide.TOP, Color.BLACK)
+                    .borderStyle(BorderSide.TOP, BorderStyle.THIN)
+                    .borderColor(BorderSide.DIAGONAL, Color.BLACK)
+                    .borderStyle(BorderSide.DIAGONAL, BorderStyle.MEDIUM)
+                    .diagonalProperty(DiagonalProperty.DIAGONAL_DOWN)
+                    .diagonalProperty(DiagonalProperty.DIAGONAL_UP)
+                    .diagonalProperty(DiagonalProperty.DIAGONAL_UP)
+                    .set();
+        });
+    }
+
+    @Test
     void testForIndent() throws Exception {
         writeWorkbook(wb -> {
             Worksheet ws = wb.newWorksheet("Worksheet 1");
@@ -646,7 +676,6 @@ class CorrectnessTest {
                     .error("Wrong value")
                     .showErrorMessage(true)
                     .errorStyle(DataValidationErrorStyle.STOP);
-
         });
     }
 }
