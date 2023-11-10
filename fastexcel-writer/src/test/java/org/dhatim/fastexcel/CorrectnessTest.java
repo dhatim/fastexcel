@@ -19,7 +19,6 @@ import org.apache.commons.io.output.NullOutputStream;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.*;
@@ -29,7 +28,8 @@ import java.util.TimeZone;
 import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class CorrectnessTest {
 
@@ -596,4 +596,42 @@ class CorrectnessTest {
         // }
     }
 
+    @Test
+    void testCustomValidation() throws Exception {
+        writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Sheet 1");
+
+            ws.range(0, 0, 10, 0).validateWithFormula("IsNumber(A1)")
+                    .allowBlank(false)
+                    .errorTitle("Error")
+                    .error("Wrong value")
+                    .showErrorMessage(true)
+                    .errorStyle(DataValidationErrorStyle.STOP);
+
+            //Is number
+            ws.range(0, 1, 10, 1).validateWithFormula("mod(B1,1)=0")
+                    .allowBlank(false)
+                    .errorTitle("Error")
+                    .error("Wrong value")
+                    .showErrorMessage(true)
+                    .errorStyle(DataValidationErrorStyle.STOP);
+
+            //Is date
+            ws.range(0, 2, 10, 2).validateWithFormula("ISNUMBER(DATEVALUE(TEXT(C1, \"dd/mm/yyyy\")))")
+                    .allowBlank(false)
+                    .errorTitle("Error")
+                    .error("Wrong value")
+                    .showErrorMessage(true)
+                    .errorStyle(DataValidationErrorStyle.STOP);
+
+            //Is bool
+            ws.range(0, 3, 10, 3).validateWithFormula("isLogical(D1)")
+                    .allowBlank(false)
+                    .errorTitle("Error")
+                    .error("Wrong value")
+                    .showErrorMessage(true)
+                    .errorStyle(DataValidationErrorStyle.STOP);
+
+        });
+    }
 }
