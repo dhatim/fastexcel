@@ -130,6 +130,7 @@ public class ReadableWorkbook implements Closeable {
     private void createSheet(SimpleXmlReader r) {
         String name = r.getAttribute("name");
         String id = r.getAttribute("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id");
+        String stableId = r.getAttribute("sheetId");
         SheetVisibility sheetVisibility;
         if ("veryHidden".equals(r.getAttribute("state"))) {
             sheetVisibility = SheetVisibility.VERY_HIDDEN;
@@ -139,7 +140,7 @@ public class ReadableWorkbook implements Closeable {
             sheetVisibility = SheetVisibility.VISIBLE;
         }
         int index = sheets.size();
-        sheets.add(new Sheet(this, index, id, name, sheetVisibility));
+        sheets.add(new Sheet(this, index, id, stableId, name, sheetVisibility));
     }
 
     Stream<Row> openStream(Sheet sheet) throws IOException {
