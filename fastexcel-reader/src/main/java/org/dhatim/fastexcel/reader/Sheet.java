@@ -25,13 +25,16 @@ public class Sheet {
     private final ReadableWorkbook workbook;
     private final int index;
     private final String id;
+    private final String stableId;
     private final String name;
     private final SheetVisibility visibility;
 
-    Sheet(ReadableWorkbook workbook, int index, String id, String name, SheetVisibility visibility) {
+    Sheet(ReadableWorkbook workbook, int index, String id, String stableId,
+          String name, SheetVisibility visibility) {
         this.workbook = workbook;
         this.index = index;
         this.id = id;
+        this.stableId = stableId;
         this.name = name;
         this.visibility = visibility;
     }
@@ -42,6 +45,10 @@ public class Sheet {
 
     public String getId() {
         return id;
+    }
+
+    public String getStableId() {
+        return stableId;
     }
 
     public String getName() {

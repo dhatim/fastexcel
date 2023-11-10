@@ -308,6 +308,9 @@ class CorrectnessTest {
             Worksheet invisibleSheet = wb.newWorksheet("Invisible Sheet");
             invisibleSheet.setVisibilityState(VisibilityState.HIDDEN);
 
+            //set tab color
+            ws.setTabColor("F381E0");
+
             //set values for cell
             ws.value(0, 0, "Hello fastexcel");
             ws.inlineString(0, 1, "Hello fastexcel (inline)");
@@ -620,6 +623,44 @@ class CorrectnessTest {
                     .diagonalProperty(DiagonalProperty.DIAGONAL_UP)
                     .diagonalProperty(DiagonalProperty.DIAGONAL_UP)
                     .set();
+        });
+    }
+          
+    @Test
+    void testCustomValidation() throws Exception {
+        writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Sheet 1");
+
+            ws.range(0, 0, 10, 0).validateWithFormula("IsNumber(A1)")
+                    .allowBlank(false)
+                    .errorTitle("Error")
+                    .error("Wrong value")
+                    .showErrorMessage(true)
+                    .errorStyle(DataValidationErrorStyle.STOP);
+
+            //Is number
+            ws.range(0, 1, 10, 1).validateWithFormula("mod(B1,1)=0")
+                    .allowBlank(false)
+                    .errorTitle("Error")
+                    .error("Wrong value")
+                    .showErrorMessage(true)
+                    .errorStyle(DataValidationErrorStyle.STOP);
+
+            //Is date
+            ws.range(0, 2, 10, 2).validateWithFormula("ISNUMBER(DATEVALUE(TEXT(C1, \"dd/mm/yyyy\")))")
+                    .allowBlank(false)
+                    .errorTitle("Error")
+                    .error("Wrong value")
+                    .showErrorMessage(true)
+                    .errorStyle(DataValidationErrorStyle.STOP);
+
+            //Is bool
+            ws.range(0, 3, 10, 3).validateWithFormula("isLogical(D1)")
+                    .allowBlank(false)
+                    .errorTitle("Error")
+                    .error("Wrong value")
+                    .showErrorMessage(true)
+                    .errorStyle(DataValidationErrorStyle.STOP);
         });
     }
 }
