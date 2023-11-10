@@ -87,7 +87,7 @@ public class Cell {
      * @throws ExcelReaderException is the cell if not of numerical type or empty
      */
     public LocalDateTime asDate() {
-        if (type == CellType.NUMBER) {
+        if (type == CellType.NUMBER || type == CellType.FORMULA) {
             return convertToDate(Double.parseDouble(rawValue));
         } else if (type == CellType.EMPTY) {
             return null;
@@ -99,6 +99,11 @@ public class Cell {
     private LocalDateTime convertToDate(double value) {
         int wholeDays = (int) Math.floor(value);
         long millisecondsInDay = (long) (((value - wholeDays) * DAY_MILLISECONDS) + 0.5D);
+        // sometimes the rounding for .9999999 returns the whole number of ms a day
+        if(millisecondsInDay == DAY_MILLISECONDS) {
+            wholeDays +=1;
+            millisecondsInDay= 0;
+        }
 
         int startYear = 1900;
         int dayAdjust = -1; // Excel thinks 2/29/1900 is a valid date, which it isn't
