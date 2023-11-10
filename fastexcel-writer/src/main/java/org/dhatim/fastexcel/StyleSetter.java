@@ -99,6 +99,10 @@ public class StyleSetter {
      */
     private int rotation;
     /**
+    * Represents the indent level
+    */
+    private int indent;
+    /**
      * Border.
      */
     private Border border;
@@ -286,6 +290,23 @@ public class StyleSetter {
         return this;
     }
 
+     /**
+     * Set cell text indentation.
+     *
+     * @param indent indentation of text in cell
+     * @return This style setter
+     */
+    public StyleSetter indent(int indent) {
+        if (indent < 0) {
+            this.indent = 0;
+        } else if (indent > 15) {
+            this.indent = 15;
+        }else{
+            this.indent = indent;
+        }
+        return this;
+    }
+
     /**
      * Set cell border element.
      *
@@ -428,8 +449,8 @@ public class StyleSetter {
      */
     public void set() {
         Alignment alignment;
-        if (horizontalAlignment != null || verticalAlignment != null || wrapText || rotation != 0) {
-            alignment = new Alignment(horizontalAlignment, verticalAlignment, wrapText, rotation);
+        if (horizontalAlignment != null || verticalAlignment != null || wrapText || rotation != 0 || indent  != 0) {
+            alignment = new Alignment(horizontalAlignment, verticalAlignment, wrapText, rotation, indent);
         } else {
             alignment = null;
         }
@@ -479,8 +500,8 @@ public class StyleSetter {
      */
     public void set(ConditionalFormattingRule conditionalFormattingRule) {
         Alignment alignment = null;
-        if (horizontalAlignment != null || verticalAlignment != null || wrapText || rotation != 0) {
-            alignment = new Alignment(horizontalAlignment, verticalAlignment, wrapText, rotation);
+        if (horizontalAlignment != null || verticalAlignment != null || wrapText || rotation != 0 || indent != 0) {
+            alignment = new Alignment(horizontalAlignment, verticalAlignment, wrapText, rotation, indent);
         }
         Font font = null;
         if (bold != null && bold || italic != null && italic || underlined != null && underlined || fontColor != null || fontName != null || fontSize != null) {

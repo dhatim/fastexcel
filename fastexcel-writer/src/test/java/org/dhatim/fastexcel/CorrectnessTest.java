@@ -625,7 +625,22 @@ class CorrectnessTest {
                     .set();
         });
     }
-          
+
+    @Test
+    void testForIndent() throws Exception {
+        writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Worksheet 1");
+            ws.value(0, 0, "One");
+            ws.value(0, 1, "Two");
+            ws.value(0, 2, "Three");
+            ws.value(1, 2, "Test");
+            ws.style(0, 0).indent(1).set();
+            ws.range(0, 1, 0, 2).style().indent(5).set();
+            ws.style(1, 2).indent(16).set();
+            ws.style(2,0).indent(0).set();
+        });
+    }
+
     @Test
     void testCustomValidation() throws Exception {
         writeWorkbook(wb -> {
