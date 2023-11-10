@@ -308,6 +308,9 @@ class CorrectnessTest {
             Worksheet invisibleSheet = wb.newWorksheet("Invisible Sheet");
             invisibleSheet.setVisibilityState(VisibilityState.HIDDEN);
 
+            //set tab color
+            ws.setTabColor("F381E0");
+
             //set values for cell
             ws.value(0, 0, "Hello fastexcel");
             ws.inlineString(0, 1, "Hello fastexcel (inline)");
