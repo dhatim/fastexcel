@@ -7,6 +7,26 @@ public class HyperLink {
 
     private final HyperLinkType hyperLinkType;
 
+    /**
+     * Static factory method which allows to create external HyperLink
+     * @param linkStr external link for which the hyperlink will lead to
+     * @param displayStr string which will displayed in hyperlink cell
+     * @return External HyperLink
+     */
+    public static HyperLink external(String linkStr, String displayStr) {
+        return new HyperLink(linkStr, displayStr, HyperLinkType.EXTERNAL);
+    }
+
+    /**
+     * Static factory method which allows to create internal HyperLink
+     * @param linkStr link for which the hyperlink will lead to
+     * @param displayStr string which will displayed in hyperlink cell
+     * @return Internal HyperLink
+     */
+    public static HyperLink internal(String linkStr, String displayStr) {
+        return new HyperLink(linkStr, displayStr, HyperLinkType.INTERNAL);
+    }
+
     public HyperLink(String linkStr) {
         this(linkStr, linkStr, HyperLinkType.EXTERNAL);
     }
@@ -51,7 +71,7 @@ public class HyperLink {
         return linkStr;
     }
 
-    public HyperLinkType getHyperLinkType() {
+    HyperLinkType getHyperLinkType() {
         return hyperLinkType;
     }
 }

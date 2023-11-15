@@ -685,8 +685,8 @@ class CorrectnessTest {
             Worksheet worksheet1 = wb.newWorksheet("Sheet1");
             Worksheet worksheet2 = wb.newWorksheet("Sheet2");
 
-            worksheet1.hyperlink(1, 1, new HyperLink("Sheet2!A1", "HyperLink", HyperLinkType.INTERNAL));
-            worksheet1.hyperlink(7, 0, new HyperLink("https://github.com/dhatim/fastexcel", "Test_Hyperlink_For_Cell"));
+            worksheet1.hyperlink(1, 1, HyperLink.internal("Sheet2!A1", "HyperLink"));
+            worksheet1.hyperlink(7, 0, HyperLink.external("https://github.com/dhatim/fastexcel", "Test_Hyperlink_For_Cell"));
         });
     }
 }
