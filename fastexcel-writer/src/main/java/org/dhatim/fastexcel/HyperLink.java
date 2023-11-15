@@ -5,14 +5,32 @@ public class HyperLink {
 
     private final String linkStr;
 
+    private final HyperLinkType hyperLinkType;
+
     public HyperLink(String linkStr) {
-        this.linkStr = linkStr;
-        this.displayStr = linkStr;
+        this(linkStr, linkStr, HyperLinkType.EXTERNAL);
     }
 
+    /**
+     * Default Constructor
+     * By default, the HyperLink will be marked as an external
+     * @param linkStr external link for which the hyperlink will lead to
+     * @param displayStr string which will displayed in hyperlink cell
+     */
     public HyperLink(String linkStr, String displayStr) {
+        this(linkStr, displayStr, HyperLinkType.EXTERNAL);
+    }
+
+    /**
+     * Constructor
+     * @param linkStr link for which the hyperlink will lead to
+     * @param displayStr string which will displayed in hyperlink cell
+     * @param hyperLinkType identifies type of the hyperlink
+     */
+    public HyperLink(String linkStr, String displayStr, HyperLinkType hyperLinkType) {
         this.linkStr = linkStr;
         this.displayStr = displayStr;
+        this.hyperLinkType = hyperLinkType;
     }
 
     @Override
@@ -31,5 +49,9 @@ public class HyperLink {
 
     public String getLinkStr() {
         return linkStr;
+    }
+
+    public HyperLinkType getHyperLinkType() {
+        return hyperLinkType;
     }
 }

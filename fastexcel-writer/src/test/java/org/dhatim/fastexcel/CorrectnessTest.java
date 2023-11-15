@@ -19,6 +19,8 @@ import org.apache.commons.io.output.NullOutputStream;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.*;
@@ -676,6 +678,17 @@ class CorrectnessTest {
                     .error("Wrong value")
                     .showErrorMessage(true)
                     .errorStyle(DataValidationErrorStyle.STOP);
+        });
+    }
+
+    @Test
+    void testInternalHyperlinks() throws Exception{
+        writeWorkbook(wb -> {
+            Worksheet worksheet1 = wb.newWorksheet("Sheet1");
+            Worksheet worksheet2 = wb.newWorksheet("Sheet2");
+
+            worksheet1.hyperlink(1, 1, new HyperLink("Sheet2!A1", "HyperLink", HyperLinkType.INTERNAL));
+            worksheet1.hyperlink(7, 0, new HyperLink("https://github.com/dhatim/fastexcel", "Test_Hyperlink_For_Cell"));
         });
     }
 }
