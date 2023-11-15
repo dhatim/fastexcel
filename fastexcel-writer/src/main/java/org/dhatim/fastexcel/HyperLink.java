@@ -47,7 +47,7 @@ public class HyperLink {
      * @param displayStr string which will displayed in hyperlink cell
      * @param hyperLinkType identifies type of the hyperlink
      */
-    public HyperLink(String linkStr, String displayStr, HyperLinkType hyperLinkType) {
+    HyperLink(String linkStr, String displayStr, HyperLinkType hyperLinkType) {
         this.linkStr = linkStr;
         this.displayStr = displayStr;
         this.hyperLinkType = hyperLinkType;
