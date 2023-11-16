@@ -678,4 +678,15 @@ class CorrectnessTest {
                     .errorStyle(DataValidationErrorStyle.STOP);
         });
     }
+
+    @Test
+    void testInternalHyperlinks() throws Exception{
+        writeWorkbook(wb -> {
+            Worksheet worksheet1 = wb.newWorksheet("Sheet1");
+            Worksheet worksheet2 = wb.newWorksheet("Sheet2");
+
+            worksheet1.hyperlink(1, 1, HyperLink.internal("Sheet2!A1", "HyperLink"));
+            worksheet1.hyperlink(7, 0, HyperLink.external("https://github.com/dhatim/fastexcel", "Test_Hyperlink_For_Cell"));
+        });
+    }
 }

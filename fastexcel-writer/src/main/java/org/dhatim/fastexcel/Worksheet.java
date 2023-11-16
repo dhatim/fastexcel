@@ -876,11 +876,15 @@ public class Worksheet implements Closeable {
             writer.append("<hyperlinks>");
             for (Map.Entry<HyperLink, Ref> hr : hyperlinkRanges.entrySet()) {
                 HyperLink hyperLink = hr.getKey();
-                Ref ref = hr.getValue();
-                String rId = relationships.setHyperLinkRels(hyperLink.getLinkStr(), "External");
                 writer.append("<hyperlink ");
+                Ref ref = hr.getValue();
                 writer.append("ref=\"" + ref.toString()+"\" ");
-                writer.append("r:id=\"" + rId +"\" ");
+                if (hyperLink.getHyperLinkType().equals(HyperLinkType.EXTERNAL)) {
+                    String rId = relationships.setHyperLinkRels(hyperLink.getLinkStr(), "External");
+                    writer.append("r:id=\"" + rId +"\" ");
+                }else{
+                    writer.append("location=\"").append(hyperLink.getLinkStr()).append("\"");
+                }
                 writer.append("/>");
             }
             writer.append("</hyperlinks>");
