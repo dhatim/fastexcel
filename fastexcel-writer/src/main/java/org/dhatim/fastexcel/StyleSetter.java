@@ -24,7 +24,7 @@ package org.dhatim.fastexcel;
  *  ws.range(1, 1, 1, 10).style().borderStyle("thin").bold().fillColor(Color.GRAY4).horizontalAlignment("center").set();
  * </pre></blockquote>
  */
-public class StyleSetter extends GenericStyleSetter{
+public class StyleSetter extends GenericStyleSetter<StyleSetter>{
 
     /**
      * Range of cells where the style is applied.
@@ -64,4 +64,8 @@ public class StyleSetter extends GenericStyleSetter{
         return this.range;
     }
 
+    @Override
+    protected StyleSetter getThis() {
+        return this;
+    }
 }

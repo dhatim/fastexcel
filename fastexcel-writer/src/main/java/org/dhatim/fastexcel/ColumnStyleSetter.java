@@ -29,7 +29,7 @@ import static org.dhatim.fastexcel.Worksheet.MAX_ROWS;
  *  ws.range(1, 1, 1, 10).style().borderStyle("thin").bold().fillColor(Color.GRAY4).horizontalAlignment("center").set();
  * </pre></blockquote>
  */
-public class ColumnStyleSetter extends GenericStyleSetter {
+public class ColumnStyleSetter extends GenericStyleSetter<ColumnStyleSetter> {
 
     /**
      * Column where the style is applied.
@@ -58,5 +58,10 @@ public class ColumnStyleSetter extends GenericStyleSetter {
     protected Range getRange() {
         int colNumber = column.getColNumber();
         return column.getWorksheet().range(0, colNumber, MAX_ROWS - 1, colNumber);
+    }
+
+    @Override
+    protected ColumnStyleSetter getThis() {
+        return this;
     }
 }

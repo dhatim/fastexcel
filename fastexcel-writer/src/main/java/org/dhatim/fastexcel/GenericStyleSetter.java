@@ -37,7 +37,7 @@ interface StylesFunction {
  *  ws.range(1, 1, 1, 10).style().borderStyle("thin").bold().fillColor(Color.GRAY4).horizontalAlignment("center").set();
  * </pre></blockquote>
  */
-abstract class GenericStyleSetter {
+abstract class GenericStyleSetter<STYLE_SETTER extends GenericStyleSetter<STYLE_SETTER>> {
 
     /**
      * Worksheet in which this styling is applied
@@ -126,6 +126,8 @@ abstract class GenericStyleSetter {
         this.worksheet = worksheet;
     }
 
+    protected abstract STYLE_SETTER getThis();
+
     /**
      * Set numbering format.
      *
@@ -134,9 +136,9 @@ abstract class GenericStyleSetter {
      * page</a>.
      * @return This style setter.
      */
-    public GenericStyleSetter format(String numberingFormat) {
+    public STYLE_SETTER format(String numberingFormat) {
         this.valueFormatting = numberingFormat;
-        return this;
+        return getThis();
     }
 
     /**
@@ -145,9 +147,9 @@ abstract class GenericStyleSetter {
      * @param rgb RGB fill color. See {@link Color} for predefined values.
      * @return This style setter.
      */
-    public GenericStyleSetter fillColor(String rgb) {
+    public STYLE_SETTER fillColor(String rgb) {
         this.fillColor = rgb;
-        return this;
+        return getThis();
     }
 
     /**
@@ -156,9 +158,9 @@ abstract class GenericStyleSetter {
      * @param rgb RGB shading color.
      * @return This style setter.
      */
-    public GenericStyleSetter shadeAlternateRows(String rgb) {
+    public STYLE_SETTER shadeAlternateRows(String rgb) {
         this.alternateShadingFillColor = rgb;
-        return this;
+        return getThis();
     }
 
     /**
@@ -168,10 +170,10 @@ abstract class GenericStyleSetter {
      * @param eachNRows shading frequency.
      * @return This style setter.
      */
-    public GenericStyleSetter shadeRows(String rgb, int eachNRows) {
+    public STYLE_SETTER shadeRows(String rgb, int eachNRows) {
         this.shadingFillColor = rgb;
         this.eachNRows = eachNRows;
-        return this;
+        return getThis();
     }
 
     /**
@@ -180,9 +182,9 @@ abstract class GenericStyleSetter {
      * @param rgb RGB font color.
      * @return This style setter.
      */
-    public GenericStyleSetter fontColor(String rgb) {
+    public STYLE_SETTER fontColor(String rgb) {
         this.fontColor = rgb;
-        return this;
+        return getThis();
     }
 
     /**
@@ -191,9 +193,9 @@ abstract class GenericStyleSetter {
      * @param name Font name.
      * @return This style setter.
      */
-    public GenericStyleSetter fontName(String name) {
+    public STYLE_SETTER fontName(String name) {
         this.fontName = name;
-        return this;
+        return getThis();
     }
 
     /**
@@ -202,9 +204,9 @@ abstract class GenericStyleSetter {
      * @param size Font size, in points.
      * @return This style setter.
      */
-    public GenericStyleSetter fontSize(BigDecimal size) {
+    public STYLE_SETTER fontSize(BigDecimal size) {
         this.fontSize = size;
-        return this;
+        return getThis();
     }
 
     /**
@@ -213,9 +215,9 @@ abstract class GenericStyleSetter {
      * @param size Font size, in points.
      * @return This style setter.
      */
-    public GenericStyleSetter fontSize(int size) {
+    public STYLE_SETTER fontSize(int size) {
         this.fontSize = BigDecimal.valueOf(size);
-        return this;
+        return getThis();
     }
 
     /**
@@ -223,9 +225,9 @@ abstract class GenericStyleSetter {
      *
      * @return This style setter.
      */
-    public GenericStyleSetter bold() {
+    public STYLE_SETTER bold() {
         this.bold = true;
-        return this;
+        return getThis();
     }
 
     /**
@@ -233,9 +235,9 @@ abstract class GenericStyleSetter {
      *
      * @return This style setter.
      */
-    public GenericStyleSetter italic() {
+    public STYLE_SETTER italic() {
         this.italic = true;
-        return this;
+        return getThis();
     }
 
     /**
@@ -243,9 +245,9 @@ abstract class GenericStyleSetter {
      *
      * @return This style setter.
      */
-    public GenericStyleSetter underlined() {
+    public STYLE_SETTER underlined() {
         this.underlined = true;
-        return this;
+        return getThis();
     }
 
     /**
@@ -255,9 +257,9 @@ abstract class GenericStyleSetter {
      * <a href="https://learn.microsoft.com/en-us/previous-versions/office/developer/office-2010/cc880467(v=office.14)?redirectedfrom=MSDN">here</a>.
      * @return This style setter.
      */
-    public GenericStyleSetter horizontalAlignment(String alignment) {
+    public STYLE_SETTER horizontalAlignment(String alignment) {
         this.horizontalAlignment = alignment;
-        return this;
+        return getThis();
     }
 
     /**
@@ -267,9 +269,9 @@ abstract class GenericStyleSetter {
      * <a href="https://learn.microsoft.com/en-us/previous-versions/office/developer/office-2010/cc802119(v=office.14)?redirectedfrom=MSDN">here</a>.
      * @return This style setter.
      */
-    public GenericStyleSetter verticalAlignment(String alignment) {
+    public STYLE_SETTER verticalAlignment(String alignment) {
         this.verticalAlignment = alignment;
-        return this;
+        return getThis();
     }
 
     /**
@@ -279,9 +281,9 @@ abstract class GenericStyleSetter {
      * {@code false}).
      * @return This style setter.
      */
-    public GenericStyleSetter wrapText(boolean wrapText) {
+    public STYLE_SETTER wrapText(boolean wrapText) {
         this.wrapText = wrapText;
-        return this;
+        return getThis();
     }
 
     /**
@@ -290,9 +292,9 @@ abstract class GenericStyleSetter {
      * @param degrees rotation of text in cell
      * @return This style setter
      */
-    public GenericStyleSetter rotation(int degrees) {
+    public STYLE_SETTER rotation(int degrees) {
         this.rotation = degrees;
-        return this;
+        return getThis();
     }
 
      /**
@@ -301,7 +303,7 @@ abstract class GenericStyleSetter {
      * @param indent indentation of text in cell
      * @return This style setter
      */
-    public GenericStyleSetter indent(int indent) {
+    public STYLE_SETTER indent(int indent) {
         if (indent < 0) {
             this.indent = 0;
         } else if (indent > 15) {
@@ -309,7 +311,7 @@ abstract class GenericStyleSetter {
         }else{
             this.indent = indent;
         }
-        return this;
+        return getThis();
     }
 
     /**
@@ -319,12 +321,12 @@ abstract class GenericStyleSetter {
      * @param element Border element to set.
      * @return This style setter.
      */
-    private GenericStyleSetter borderElement(BorderSide side, BorderElement element) {
+    private STYLE_SETTER borderElement(BorderSide side, BorderElement element) {
         if (border == null) {
             border = new Border();
         }
         border.setElement(side, element);
-        return this;
+        return getThis();
     }
 
     /**
@@ -333,7 +335,7 @@ abstract class GenericStyleSetter {
      * @param borderStyle Border style.
      * @return This style setter.
      */
-    public GenericStyleSetter borderStyle(BorderStyle borderStyle) {
+    public STYLE_SETTER borderStyle(BorderStyle borderStyle) {
         return borderStyle(borderStyle.xmlValue);
     }
 
@@ -344,14 +346,14 @@ abstract class GenericStyleSetter {
      * <a href="https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.spreadsheet.borderstylevalues?view=openxml-2.8.1">here</a>.
      * @return This style setter.
      */
-    public GenericStyleSetter borderStyle(String borderStyle) {
+    public STYLE_SETTER borderStyle(String borderStyle) {
         if (border == null) {
             border = new Border();
         }
         EnumSet.of(BorderSide.TOP, BorderSide.LEFT, BorderSide.BOTTOM, BorderSide.RIGHT).forEach(side ->
                 borderElement(side, border.elements.get(side).updateStyle(borderStyle))
         );
-        return this;
+        return getThis();
     }
 
     /**
@@ -361,7 +363,7 @@ abstract class GenericStyleSetter {
      * @param borderStyle Border style.
      * @return This style setter.
      */
-    public GenericStyleSetter borderStyle(BorderSide side, BorderStyle borderStyle) {
+    public STYLE_SETTER borderStyle(BorderSide side, BorderStyle borderStyle) {
         return borderStyle(side, borderStyle.xmlValue);
     }
     /**
@@ -372,7 +374,7 @@ abstract class GenericStyleSetter {
      * <a href="https://learn.microsoft.com/en-us/previous-versions/office/developer/office-2010/cc844549(v=office.14)?redirectedfrom=MSDN">here</a>.
      * @return This style setter.
      */
-    public GenericStyleSetter borderStyle(BorderSide side, String borderStyle) {
+    public STYLE_SETTER borderStyle(BorderSide side, String borderStyle) {
         if (border == null) {
             border = new Border();
         }
@@ -385,14 +387,14 @@ abstract class GenericStyleSetter {
      * @param borderColor RGB border color.
      * @return This style setter.
      */
-    public GenericStyleSetter borderColor(String borderColor) {
+    public STYLE_SETTER borderColor(String borderColor) {
         if (border == null) {
             border = new Border();
         }
         EnumSet.of(BorderSide.TOP, BorderSide.LEFT, BorderSide.BOTTOM, BorderSide.RIGHT).forEach(side ->
                 borderElement(side, border.elements.get(side).updateColor(borderColor))
         );
-        return this;
+        return getThis();
     }
 
     /**
@@ -402,7 +404,7 @@ abstract class GenericStyleSetter {
      * @param borderColor RGB border color.
      * @return This style setter.
      */
-    public GenericStyleSetter borderColor(BorderSide side, String borderColor) {
+    public STYLE_SETTER borderColor(BorderSide side, String borderColor) {
         if (border == null) {
             border = new Border();
         }
@@ -415,12 +417,12 @@ abstract class GenericStyleSetter {
      * @param diagonalProperty Diagonal border property which should be aplied to a cell
      * @return This style setter.
      */
-    public GenericStyleSetter diagonalProperty(DiagonalProperty diagonalProperty) {
+    public STYLE_SETTER diagonalProperty(DiagonalProperty diagonalProperty) {
         if (border == null) {
             border = new Border();
         }
         border.setDiagonalProperty(diagonalProperty);
-        return this;
+        return getThis();
     }
 
     /**
@@ -430,12 +432,12 @@ abstract class GenericStyleSetter {
      * @param value The value to set for the given option.
      * @return This style setter.
      */
-    public GenericStyleSetter protectionOption(ProtectionOption option, Boolean value) {
+    public STYLE_SETTER protectionOption(ProtectionOption option, Boolean value) {
         if (protectionOptions == null) {
             protectionOptions = new EnumMap<>(ProtectionOption.class);
         }
         protectionOptions.put(option, value);
-        return this;
+        return getThis();
     }
 
     /**
