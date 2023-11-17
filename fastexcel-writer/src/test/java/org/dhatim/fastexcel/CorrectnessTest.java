@@ -28,6 +28,7 @@ import java.util.TimeZone;
 import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.dhatim.fastexcel.Color.BLACK;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -395,11 +396,11 @@ class CorrectnessTest {
             ws.range(0, 0, 5, 2).createTable();
 
             //group
-            ws.groupRows(3,4);
-            ws.groupRows(2,5);
+            ws.groupRows(3, 4);
+            ws.groupRows(2, 5);
 
-            ws.groupCols(6,7);
-            ws.groupCols(4,8);
+            ws.groupCols(6, 7);
+            ws.groupCols(4, 8);
         });
 
         //fileOutputStream.write(bytes);
@@ -543,23 +544,23 @@ class CorrectnessTest {
         //try (FileOutputStream fileOutputStream = new FileOutputStream("D://group_cols_test.xlsx")) {
         byte[] bytes = writeWorkbook(wb -> {
             Worksheet ws = wb.newWorksheet("Worksheet 1");
-            ws.value(1,1,"tt");
-            ws.value(1,2,"tt");
-            ws.value(1,3,"tt");
-            ws.value(1,4,"tt");
-            ws.value(1,5,"tt");
+            ws.value(1, 1, "tt");
+            ws.value(1, 2, "tt");
+            ws.value(1, 3, "tt");
+            ws.value(1, 4, "tt");
+            ws.value(1, 5, "tt");
 
-            ws.value(1,0,"cc");
-            ws.value(2,0,"cc");
-            ws.value(3,0,"cc");
-            ws.value(4,0,"cc");
-            ws.value(5,0,"cc");
+            ws.value(1, 0, "cc");
+            ws.value(2, 0, "cc");
+            ws.value(3, 0, "cc");
+            ws.value(4, 0, "cc");
+            ws.value(5, 0, "cc");
 
-            ws.groupCols(2,3);
-            ws.groupCols(1,5);
+            ws.groupCols(2, 3);
+            ws.groupCols(1, 5);
 
-            ws.groupRows(2,3);
-            ws.groupRows(1,5);
+            ws.groupRows(2, 3);
+            ws.groupRows(1, 5);
 
         });
         //fileOutputStream.write(bytes);
@@ -637,7 +638,7 @@ class CorrectnessTest {
             ws.style(0, 0).indent(1).set();
             ws.range(0, 1, 0, 2).style().indent(5).set();
             ws.style(1, 2).indent(16).set();
-            ws.style(2,0).indent(0).set();
+            ws.style(2, 0).indent(0).set();
         });
     }
 
@@ -680,7 +681,7 @@ class CorrectnessTest {
     }
 
     @Test
-    void testInternalHyperlinks() throws Exception{
+    void testInternalHyperlinks() throws Exception {
         writeWorkbook(wb -> {
             Worksheet worksheet1 = wb.newWorksheet("Sheet1");
             Worksheet worksheet2 = wb.newWorksheet("Sheet2");
@@ -689,4 +690,65 @@ class CorrectnessTest {
             worksheet1.hyperlink(7, 0, HyperLink.external("https://github.com/dhatim/fastexcel", "Test_Hyperlink_For_Cell"));
         });
     }
+
+    @Test
+    void testColumnStyle() throws Exception {
+        writeWorkbook(wb -> {
+            Worksheet worksheet = wb.newWorksheet("Sheet 1");
+
+            worksheet.style(1).bold().set();
+            worksheet.style(1).fillColor(Color.BLACK).set();
+            worksheet.style(1, 1).fillColor(Color.BLUE_GRAY).set();
+
+            worksheet.style(2).format("dd/MM/yyyy").set();
+
+            worksheet.range(3, 3, 6, 3)
+                    .style().horizontalAlignment("left").fontColor(Color.ALMOND)
+                    .set();
+            worksheet.style(3).horizontalAlignment("center").set();
+
+            worksheet.style(4)
+                    .borderColor(BorderSide.RIGHT, BLACK)
+                    .borderStyle(BorderSide.RIGHT, BorderStyle.MEDIUM)
+                    .borderStyle(BorderSide.TOP, BorderStyle.DASHED)
+                    .borderStyle(BorderSide.LEFT, BorderStyle.THIN)
+                    .borderStyle(BorderSide.BOTTOM, BorderStyle.HAIR)
+                    .set();
+            worksheet.style(4, 4)
+                    .borderColor(BorderSide.RIGHT, BLACK)
+                    .borderStyle(BorderSide.RIGHT, BorderStyle.NONE)
+                    .borderStyle(BorderSide.TOP, BorderStyle.NONE)
+                    .borderStyle(BorderSide.LEFT, BorderStyle.NONE)
+                    .borderStyle(BorderSide.BOTTOM, BorderStyle.NONE)
+                    .set();
+            ;
+            worksheet.style(10)
+                    .borderColor(BorderSide.TOP, Color.BLACK)
+                    .borderStyle(BorderSide.TOP, BorderStyle.THIN)
+                    .borderColor(BorderSide.DIAGONAL, Color.BLACK)
+                    .borderStyle(BorderSide.DIAGONAL, BorderStyle.MEDIUM)
+                    .diagonalProperty(DiagonalProperty.DIAGONAL_DOWN)
+                    .diagonalProperty(DiagonalProperty.DIAGONAL_UP)
+                    .diagonalProperty(DiagonalProperty.DIAGONAL_UP)
+                    .set();
+            worksheet.style(6)
+                    .bold()
+                    .format("#,##0.00")
+                    .protectionOption(ProtectionOption.LOCKED, false)
+                    .fontColor(Color.BLUE_GRAY).set();
+            worksheet.style(7)
+                    .bold()
+                    .format("1")
+                    .fontColor(Color.BLUE_GRAY).set();
+
+            worksheet.hideColumn(7);
+            worksheet.width(1, 5);
+            worksheet.width(8, 25);
+
+            worksheet.style(12)
+                    .fillColor(Color.YELLOW)
+                    .set(new ConditionalFormattingExpressionRule("L1>1", false));
+        });
+    }
+
 }

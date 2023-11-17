@@ -15,8 +15,13 @@
  */
 package org.dhatim.fastexcel;
 
+import java.util.Collections;
+import java.util.HashSet;
+
+import static org.dhatim.fastexcel.Worksheet.MAX_ROWS;
+
 /**
- * Helper class to set style elements on a cell or range of cells. This class
+ * Helper class to set style elements on a column. This class
  * implements the builder pattern to easily modify a bunch of attributes.<p>
  * For example:
  * <blockquote><pre>
@@ -24,31 +29,21 @@ package org.dhatim.fastexcel;
  *  ws.range(1, 1, 1, 10).style().borderStyle("thin").bold().fillColor(Color.GRAY4).horizontalAlignment("center").set();
  * </pre></blockquote>
  */
-public class StyleSetter extends GenericStyleSetter{
+public class ColumnStyleSetter extends GenericStyleSetter {
 
     /**
-     * Range of cells where the style is applied.
+     * Column where the style is applied.
      */
-    private final Range range;
+    private final Column column;
 
     /**
      * Constructor.
      *
-     * @param range Range of cells where style is modified.
+     * @param column Column where style is modified.
      */
-    StyleSetter(Range range) {
-        super(range.getWorksheet());
-        this.range = range;
-    }
-
-    /**
-     * Merge cells in this style setter's range.
-     *
-     * @return This style setter.
-     */
-    public StyleSetter merge() {
-        range.merge();
-        return this;
+    ColumnStyleSetter(Column column) {
+        super(column.getWorksheet());
+        this.column = column;
     }
 
     /**
@@ -56,12 +51,12 @@ public class StyleSetter extends GenericStyleSetter{
      * done otherwise style changes are lost!</b>
      */
     public void set() {
-        super.setStyle(true, range.getStyles(), range::applyStyle);
+        super.setStyle(false, new HashSet<>(Collections.singletonList(column.getStyle())), column::applyStyle);
     }
 
     @Override
     protected Range getRange() {
-        return this.range;
+        int colNumber = column.getColNumber();
+        return column.getWorksheet().range(0, colNumber, MAX_ROWS - 1, colNumber);
     }
-
 }
