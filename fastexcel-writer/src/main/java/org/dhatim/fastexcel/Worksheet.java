@@ -43,6 +43,11 @@ public class Worksheet implements Closeable {
      */
     public static final int MAX_COL_WIDTH = 255;
 
+     /**
+     * Default column width in Excel.
+     */
+    public static final double DEFAULT_COL_WIDTH = 8.88671875;
+
     /**
      * Maximum row height in Excel.
      */
@@ -101,6 +106,11 @@ public class Worksheet implements Closeable {
      * Map of columns and their widths
      */
     private final Map<Integer, Double> colWidths = new HashMap<>();
+
+    /**
+     * Map of columns and their representations with styles
+     */
+    private final Map<Integer, Column> colStyles = new HashMap<>();
 
     /**
      * Map of rows and their heights
@@ -719,6 +729,18 @@ public class Worksheet implements Closeable {
         return new Range(this, r, c, r, c).style();
     }
 
+     /**
+     * Get a new style setter for a column.
+     *
+     * @param c Zero-based column number.
+     * @return Newly created style setter.
+     */
+    public ColumnStyleSetter style(int c) {
+        Column column = colStyles.getOrDefault(c, new Column(this, c));
+        colStyles.put(c, column);
+        return column.style();
+    }
+
     /**
      * Create a new range of cells. Note coordinates are reordered if necessary
      * to make sure {@code top} &lt;= {@code bottom} and {@code left} &lt;=
@@ -745,7 +767,7 @@ public class Worksheet implements Closeable {
         // Adjust column widths
         boolean started = false;
         for (int c = 0; c < maxCol; ++c) {
-            double maxWidth = 0;
+            double maxWidth = DEFAULT_COL_WIDTH;
             boolean bestFit = true;
             if (colWidths.containsKey(c)) {
                 bestFit = false;
@@ -762,13 +784,15 @@ public class Worksheet implements Closeable {
                 }
             }
             boolean isHidden = hiddenColumns.contains(c);
+            boolean hasStyle = colStyles.containsKey(c);
             int groupLevel = groupColums.get(c);
-            if (maxWidth > 0 || isHidden||groupLevel!=0) {
+            if (colWidths.containsKey(c) || isHidden || groupLevel!=0 || hasStyle) {
                 if (!started) {
                     w.append("<cols>");
                     started = true;
                 }
-                writeCol(w, c, maxWidth, bestFit, isHidden,groupLevel);
+                Integer style = colStyles.getOrDefault(c, Column.noStyle(this, c)).getStyle();
+                writeCol(w, c, maxWidth, bestFit, isHidden,groupLevel, style);
             }
         }
         if (started) {
@@ -784,10 +808,12 @@ public class Worksheet implements Closeable {
      * @param columnIndex Zero-based column number.
      * @param maxWidth The maximum width
      * @param bestFit Whether or not this column should be optimized for fit
-     * @param isHidden Whether or not this row is hidden
+     * @param isHidden Whether or not this column is hidden
+     * @param style Cached style index of the column
      * @throws IOException If an I/O error occurs.
      */
-    private static void writeCol(Writer w, int columnIndex, double maxWidth, boolean bestFit, boolean isHidden, int groupLevel) throws IOException {
+    private static void writeCol(Writer w, int columnIndex, double maxWidth, boolean bestFit, boolean isHidden, int groupLevel,
+                                 int style) throws IOException {
         final int col = columnIndex + 1;
         w.append("<col min=\"").append(col).append("\" max=\"").append(col).append("\" width=\"")
                 .append(Math.min(MAX_COL_WIDTH, maxWidth));
@@ -798,8 +824,12 @@ public class Worksheet implements Closeable {
         if (isHidden) {
             w.append("\" hidden=\"true");
         }
+        w.append("\"");
+        if (style > 0) {
+            w.append(" style=\"").append(style).append("\"");
+        }
 
-        w.append("\"/>");
+        w.append("/>");
     }
 
     /**
@@ -997,9 +1027,10 @@ public class Worksheet implements Closeable {
             writer.append("</sheetViews><sheetFormatPr defaultRowHeight=\"15.0\"/>");
             final int nbCols = rows.stream().filter(Objects::nonNull).mapToInt(r -> r.length).max().orElse(0);
             final int maxHideCol = hiddenColumns.stream().mapToInt(a -> a).max().orElse(0);
+            final int maxStyleCol = colStyles.values().stream().mapToInt(Column::getColNumber).max().orElse(0);
             final int maxNoZeroIndex = groupColums.getMaxNoZeroIndex();
-            if (nbCols > 0 || !hiddenColumns.isEmpty()||maxNoZeroIndex!=-1) {
-                int maxCol = Math.max(nbCols, Math.max(maxHideCol,maxNoZeroIndex) + 1) ;
+            if (nbCols > 0 || !hiddenColumns.isEmpty()||maxNoZeroIndex!=-1 || !colStyles.isEmpty()) {
+                int maxCol = Math.max(nbCols, Math.max(Math.max(maxHideCol,maxNoZeroIndex), maxStyleCol) + 1);
                 writeCols(writer, maxCol);
             }
             writer.append("<sheetData>");
