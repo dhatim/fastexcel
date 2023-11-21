@@ -24,6 +24,38 @@ import static org.dhatim.fastexcel.reader.DefaultXMLInputFactory.factory;
 
 class OPCPackage implements AutoCloseable {
     private static final Pattern filenameRegex = Pattern.compile("^(.*/)([^/]+)$");
+    // Following is a listing of number formats whose formatCode
+    // value is implied rather than explicitly saved in the file.
+    // https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.spreadsheet.numberingformat?view=openxml-2.8.1
+    private static final Map<String, String> IMPLICIT_NUM_FMTS = new HashMap<String, String>() {{
+        put("1", "0");
+        put("2", "0.00");
+        put("3", "#,##0");
+        put("4", "#,##0.00");
+        put("9", "0%");
+        put("10", "0.00%");
+        put("11", "0.00E+00");
+        put("12", "# ?/?");
+        put("13", "# ??/??");
+        put("14", "mm-dd-yy");
+        put("15", "d-mmm-yy");
+        put("16", "d-mmm");
+        put("17", "mmm-yy");
+        put("18", "h:mm AM/PM");
+        put("19", "h:mm:ss AM/PM");
+        put("20", "h:mm");
+        put("21", "h:mm:ss");
+        put("22", "m/d/yy h:mm");
+        put("37", "#,##0 ;(#,##0)");
+        put("38", "#,##0 ;[Red](#,##0)");
+        put("39", "#,##0.00;(#,##0.00)");
+        put("40", "#,##0.00;[Red](#,##0.00)");
+        put("45", "mm:ss");
+        put("46", "[h]:mm:ss");
+        put("47", "mmss.0");
+        put("48", "##0.0E+0");
+        put("49", "@");
+    }};
     private final ZipFile zip;
     private final Map<String, String> workbookPartsById;
     private final PartEntryNames parts;
@@ -121,7 +153,11 @@ class OPCPackage implements AutoCloseable {
                     String formatCode = reader.getAttributeRequired("formatCode");
                     fmtIdToFmtString.put(reader.getAttributeRequired("numFmtId"), formatCode);
                 } else if (insideCellXfs.get() && reader.isStartElement("xf")) {
-                    fmtIdList.add(reader.getAttribute ("numFmtId"));
+                    String numFmtId = reader.getAttribute ("numFmtId");
+                    fmtIdList.add(numFmtId);
+                    if (IMPLICIT_NUM_FMTS.containsKey(numFmtId)) {
+                        fmtIdToFmtString.put(numFmtId, IMPLICIT_NUM_FMTS.get(numFmtId));
+                    }
                 }
             }
         }
