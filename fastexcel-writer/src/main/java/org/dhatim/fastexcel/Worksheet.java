@@ -785,8 +785,9 @@ public class Worksheet implements Closeable {
             }
             boolean isHidden = hiddenColumns.contains(c);
             boolean hasStyle = colStyles.containsKey(c);
+            boolean widthChanged = colWidths.containsKey(c) || maxWidth > DEFAULT_COL_WIDTH;
             int groupLevel = groupColums.get(c);
-            if (colWidths.containsKey(c) || isHidden || groupLevel!=0 || hasStyle) {
+            if (widthChanged || isHidden || groupLevel != 0 || hasStyle) {
                 if (!started) {
                     w.append("<cols>");
                     started = true;
