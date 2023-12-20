@@ -699,6 +699,7 @@ class CorrectnessTest {
             worksheet.style(1).bold().set();
             worksheet.style(1).fillColor(Color.BLACK).set();
             worksheet.style(1, 1).fillColor(Color.BLUE_GRAY).set();
+            worksheet.value(1, 1, "test");
 
             worksheet.style(2).format("dd/MM/yyyy").set();
 
@@ -706,6 +707,7 @@ class CorrectnessTest {
                     .style().horizontalAlignment("left").fontColor(Color.ALMOND)
                     .set();
             worksheet.style(3).horizontalAlignment("center").set();
+            worksheet.value(3, 3, "long test, long test, long test");
 
             worksheet.style(4)
                     .borderColor(BorderSide.RIGHT, BLACK)
@@ -748,7 +750,11 @@ class CorrectnessTest {
             worksheet.style(12)
                     .fillColor(Color.YELLOW)
                     .set(new ConditionalFormattingExpressionRule("L1>1", false));
+
+            worksheet.value(4, 13, "not long");
+            worksheet.value(4, 14, "not long long long long long");
         });
     }
+
 
 }
