@@ -540,6 +540,20 @@ class CorrectnessTest {
     }
 
     @Test
+    void testForIssue63() throws Exception {
+        // try (FileOutputStream fileOutputStream = new FileOutputStream("D://right_to_left.xlsx")) {
+        byte[] bytes = writeWorkbook(wb -> {
+            Worksheet ws1 = wb.newWorksheet("Worksheet 1");
+            Worksheet ws2 = wb.newWorksheet("Worksheet 2");
+            ws1.reghtToLeft();
+            ws1.value(0,0,"Hello");
+            ws1.value(0,1,"World");
+        });
+        // fileOutputStream.write(bytes);
+        // }
+    }
+
+    @Test
     void testForIssue259() throws Exception {
         //try (FileOutputStream fileOutputStream = new FileOutputStream("D://group_cols_test.xlsx")) {
         byte[] bytes = writeWorkbook(wb -> {

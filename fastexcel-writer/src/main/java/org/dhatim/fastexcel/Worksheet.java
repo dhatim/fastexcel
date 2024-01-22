@@ -137,6 +137,11 @@ public class Worksheet implements Closeable {
      * Whether grid lines are displayed
      */
     private boolean showGridLines = true;
+
+    /**
+     * Display the worksheet from right to left
+     */
+    private boolean rightToLeft = false;
     /**
      * Sheet view zoom percentage
      */
@@ -1017,6 +1022,9 @@ public class Worksheet implements Closeable {
             if (!showGridLines) {
                 writer.append(" showGridLines=\"false\"");
             }
+            if (rightToLeft) {
+                writer.append(" rightToLeft=\"true\"");
+            }
             if (zoomScale != 100) {
                 writer.append(" zoomScale=\"").append(zoomScale).append("\"");
             }
@@ -1154,6 +1162,13 @@ public class Worksheet implements Closeable {
      */
     public void hideGridLines() {
         this.showGridLines = false;
+    }
+
+    /**
+     * Display the worksheet from right to left
+     */
+    public void reghtToLeft() {
+        this.rightToLeft = true;
     }
 
     /**
