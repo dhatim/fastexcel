@@ -230,6 +230,17 @@ IntStream.rangeClosed(3,5).forEach(ws::hideRow);
 IntStream.rangeClosed(3,5).forEach(ws::hideColumn);
 ```
 
+Hide grid lines
+```java
+ws.hideGridLines();
+```
+
+Display the worksheet from right to left
+```java
+ws.reghtToLeft();
+```
+
+
 Group rows or colums
 
 ```java
