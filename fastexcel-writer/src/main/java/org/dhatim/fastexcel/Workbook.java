@@ -36,6 +36,7 @@ import java.util.zip.ZipEntry;
 public class Workbook implements Closeable{
 
     private int activeTab = 0;
+    private boolean finished = false;
     private final String applicationName;
     private final String applicationVersion;
     private final List<Worksheet> worksheets = new ArrayList<>();
@@ -124,6 +125,10 @@ public class Workbook implements Closeable{
      * @throws IOException In case of I/O error.
      */
     public void finish() throws IOException {
+        if (finished){
+            return;
+        }
+
         if (worksheets.isEmpty()) {
             throw new IllegalArgumentException("A workbook must contain at least one worksheet.");
         }
@@ -188,6 +193,7 @@ public class Workbook implements Closeable{
         writeFile("xl/sharedStrings.xml", stringCache::write);
         writeFile("xl/styles.xml", styleCache::write);
         this.os.finish();
+        finished = true;
     }
 
     private void writeProperties() throws IOException {
