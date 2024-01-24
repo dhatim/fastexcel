@@ -1167,7 +1167,7 @@ public class Worksheet implements Closeable {
     /**
      * Display the worksheet from right to left
      */
-    public void reghtToLeft() {
+    public void rightToLeft() {
         this.rightToLeft = true;
     }
 

@@ -237,7 +237,7 @@ ws.hideGridLines();
 
 Display the worksheet from right to left
 ```java
-ws.reghtToLeft();
+ws.rightToLeft();
 ```
 
 

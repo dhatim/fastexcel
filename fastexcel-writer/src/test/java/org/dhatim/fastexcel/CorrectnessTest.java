@@ -545,7 +545,7 @@ class CorrectnessTest {
         byte[] bytes = writeWorkbook(wb -> {
             Worksheet ws1 = wb.newWorksheet("Worksheet 1");
             Worksheet ws2 = wb.newWorksheet("Worksheet 2");
-            ws1.reghtToLeft();
+            ws1.rightToLeft();
             ws1.value(0,0,"Hello");
             ws1.value(0,1,"World");
         });
