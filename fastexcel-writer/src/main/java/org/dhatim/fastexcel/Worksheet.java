@@ -1173,7 +1173,7 @@ public class Worksheet implements Closeable {
     }
 
     public void setFitToPage(Boolean fitToPage) {
-        this.fitToPage = true;
+        this.fitToPage = fitToPage;
     }
 
     /**
