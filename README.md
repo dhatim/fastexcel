@@ -34,13 +34,13 @@ Note heap memory usage is measured just before flushing the workbook to the outp
 
 ## Prerequisites
 
-- Java 8+. Build with Maven.
+- Java 11+. Build with Maven. (Fastexcel versions before 0.17 are compatible with Java 8.)
 - Include the following dependency in your POM:
 ```xml
 <dependency>
     <groupId>org.dhatim</groupId>
     <artifactId>fastexcel</artifactId>
-    <version>0.16.4</version>
+    <version>0.17.0</version>
 </dependency>
 ```
 
@@ -337,7 +337,7 @@ In between there a more developer friendly wrapper around Apache Poi called [Exc
 <dependency>
     <groupId>org.dhatim</groupId>
     <artifactId>fastexcel-reader</artifactId>
-    <version>0.16.4</version>
+    <version>0.17.0</version>
 </dependency>
 ```
 
