@@ -43,7 +43,7 @@
         <maven.compiler.source>11</maven.compiler.source>
         <junit.jupiter.version>5.10.2</junit.jupiter.version>
         <junit.platform.version>1.3.2</junit.platform.version>
-        <log4j.version>2.22.1</log4j.version>
+        <log4j.version>2.23.0</log4j.version>
         <enforcer.fail>false</enforcer.fail>
     </properties>
 
