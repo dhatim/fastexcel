@@ -331,7 +331,7 @@ In between there a more developer friendly wrapper around Apache Poi called [Exc
 
 ## Prerequisites
 
-- Java 8+. Build with Maven.
+- Java 11+. Build with Maven.
 - Include the following dependency in your POM:
 ```xml
 <dependency>
