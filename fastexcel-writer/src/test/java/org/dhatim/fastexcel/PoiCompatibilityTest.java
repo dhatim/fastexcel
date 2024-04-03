@@ -74,6 +74,8 @@ class PoiCompatibilityTest {
         assertThat(xwb.getActiveSheetIndex()).isEqualTo(0);
         assertThat(xwb.getNumberOfSheets()).isEqualTo(1);
         XSSFSheet xws = xwb.getSheet(sheetName);
+        assertThat(xws.getRowSumsBelow()).isEqualTo(true);
+        assertThat(xws.getRowSumsRight()).isEqualTo(true);
         assertThat(xws.getPrintSetup().getPaperSizeEnum()).isEqualTo(org.apache.poi.ss.usermodel.PaperSize.A4_PAPER);
         assertThat(xws.getPrintSetup().getOrientation()).isEqualTo(PrintOrientation.LANDSCAPE);
         assertThat(xws.getPrintSetup().getScale()).isEqualTo((short)80);
@@ -111,6 +113,8 @@ class PoiCompatibilityTest {
             CompletableFuture<Void>[] cfs = new CompletableFuture[numWs];
             for (int i = 0; i < cfs.length; ++i) {
                 Worksheet ws = wb.newWorksheet("Sheet " + i);
+                ws.rowSumsRight(i == 0);
+                ws.rowSumsBelow(i == 0);
                 CompletableFuture<Void> cf = CompletableFuture.runAsync(() -> {
                     for (int j = 0; j < numCols; ++j) {
                         ws.value(0, j, "Column " + j);
@@ -167,6 +171,8 @@ class PoiCompatibilityTest {
         for (int i = 0; i < numWs; ++i) {
             assertThat(xwb.getSheetName(i)).isEqualTo("Sheet " + i);
             XSSFSheet xws = xwb.getSheetAt(i);
+            assertThat(xws.getRowSumsRight()).isEqualTo(i == 0);
+            assertThat(xws.getRowSumsBelow()).isEqualTo(i == 0);
             assertThat(xws.getLastRowNum()).isEqualTo(numRows + 1);
             for (int j = 1; j <= numRows; ++j) {
                 assertThat(xws.getRow(j).getCell(0).getStringCellValue()).isEqualTo("String value " + j);
