@@ -235,7 +235,7 @@ class CorrectnessTest {
 
     @Test
     void testForGithubIssue164() throws Exception {
-        // try (FileOutputStream fileOutputStream = new FileOutputStream("D://globalDefaultFontTest.xlsx")) {
+        // try (FileOutputStream fileOutputStream = new FileOutputStream("D://propertiesTest.xlsx")) {
         byte[] bytes = writeWorkbook(wb -> {
             wb.setGlobalDefaultFont("Arial", 15.5);
             //General properties
@@ -252,6 +252,7 @@ class CorrectnessTest {
             wb.properties()
                     .setTextProperty("Test TextA", "Lucy")
                     .setTextProperty("Test TextB", "Tony")
+                    .setTextProperty("Test SQL", "SELECT 'x' AS COL1, 'y' AS COL2 FROM TBL WHERE ID <= 5")
                     .setDateProperty("Test DateA", Instant.parse("2022-12-22T10:00:00.123456789Z"))
                     .setDateProperty("Test DateB", Instant.parse("1999-09-09T09:09:09Z"))
                     .setNumberProperty("Test NumberA", BigDecimal.valueOf(202222.23364646D))
