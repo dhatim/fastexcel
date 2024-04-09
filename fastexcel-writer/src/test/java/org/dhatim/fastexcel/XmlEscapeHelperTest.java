@@ -17,7 +17,6 @@ class XmlEscapeHelperTest {
 			"<this will be escaped \ud83d\ude01>,&lt;this will be escaped &#x1f601;&gt;",
 			"nothing+!()happens,nothing+!()happens"})
 	public void testEscaping(String input, String expected) {
-		XmlEscapeHelper xmlEscapeHelper = new XmlEscapeHelper();
-		assertEquals(expected, xmlEscapeHelper.escape(input));
+		assertEquals(expected, XmlEscapeHelper.escape(input));
 	}
 }

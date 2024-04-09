@@ -12,7 +12,7 @@ public class XmlEscapeHelper {
 	 * @param text text to be escaped
 	 * @return escaped text
 	 */
-	public String escape(final String text) {
+	public static String escape(final String text) {
 		int offset = 0;
 		StringBuilder sb = new StringBuilder();
 		while (offset < text.length()) {
@@ -29,7 +29,7 @@ public class XmlEscapeHelper {
 	 *
 	 * @param c Character code point.
 	 */
-	private String escape(int c) {
+	private static String escape(int c) {
 		if (!(c == 0x9 || c == 0xa || c == 0xD
 				|| (c >= 0x20 && c <= 0xd7ff)
 				|| (c >= 0xe000 && c <= 0xfffd)

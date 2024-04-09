@@ -75,8 +75,7 @@ class Writer {
      */
     private Writer append(String s, boolean escape) throws IOException {
         if (escape) {
-            XmlEscapeHelper xmlEscapeHelper = new XmlEscapeHelper();
-            sb.append(xmlEscapeHelper.escape(s));
+            sb.append(XmlEscapeHelper.escape(s));
         } else {
             sb.append(s);
         }
