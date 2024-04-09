@@ -141,9 +141,8 @@ class OPCPackage implements AutoCloseable {
         fmtIdToFmtString = new HashMap<>();
         try (SimpleXmlReader reader = new SimpleXmlReader(factory, getRequiredEntryContent(styleXml))) {
             AtomicBoolean insideCellXfs = new AtomicBoolean(false);
-            while (reader.goTo(() -> reader.isStartElement("numFmt") ||
-                reader.isStartElement("cellXfs") || reader.isEndElement("cellXfs") ||
-                insideCellXfs.get())) {
+            while (reader.goTo(() -> reader.isStartElement("numFmt") || reader.isStartElement("xf") ||
+                    reader.isStartElement("cellXfs") || reader.isEndElement("cellXfs"))) {
                 if (reader.isStartElement("cellXfs")) {
                     insideCellXfs.set(true);
                 } else if (reader.isEndElement("cellXfs")) {
@@ -153,7 +152,7 @@ class OPCPackage implements AutoCloseable {
                     String formatCode = reader.getAttributeRequired("formatCode");
                     fmtIdToFmtString.put(reader.getAttributeRequired("numFmtId"), formatCode);
                 } else if (insideCellXfs.get() && reader.isStartElement("xf")) {
-                    String numFmtId = reader.getAttribute ("numFmtId");
+                    String numFmtId = reader.getAttribute("numFmtId");
                     fmtIdList.add(numFmtId);
                     if (IMPLICIT_NUM_FMTS.containsKey(numFmtId)) {
                         fmtIdToFmtString.put(numFmtId, IMPLICIT_NUM_FMTS.get(numFmtId));
@@ -166,7 +165,7 @@ class OPCPackage implements AutoCloseable {
 
     private InputStream getRequiredEntryContent(String name) throws IOException {
         return Optional.ofNullable(getEntryContent(name))
-            .orElseThrow(() -> new ExcelReaderException(name + " not found"));
+                .orElseThrow(() -> new ExcelReaderException(name + " not found"));
     }
 
     static OPCPackage open(File inputFile) throws IOException {
