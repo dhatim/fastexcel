@@ -55,8 +55,7 @@ public class MarginalInformation {
 			case "sheetname":
 				return "&amp;A";
 			default:
-				XmlEscapeHelper xmlEscapeHelper = new XmlEscapeHelper();
-				return xmlEscapeHelper.escape(text);
+				return XmlEscapeHelper.escape(text);
 		}
 	}
 }

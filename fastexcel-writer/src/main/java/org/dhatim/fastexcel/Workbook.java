@@ -16,6 +16,7 @@
 package org.dhatim.fastexcel;
 
 import com.github.rzymek.opczip.OpcOutputStream;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -33,7 +34,7 @@ import java.util.zip.ZipEntry;
 /**
  * A {@link Workbook} contains one or more {@link Worksheet} objects.
  */
-public class Workbook implements Closeable{
+public class Workbook implements Closeable {
 
     private int activeTab = 0;
     private boolean finished = false;
@@ -50,13 +51,13 @@ public class Workbook implements Closeable{
     /**
      * Constructor.
      *
-     * @param os Output stream eventually holding the serialized workbook.
-     * @param applicationName Name of the application which generated this
-     * workbook.
+     * @param os                 Output stream eventually holding the serialized workbook.
+     * @param applicationName    Name of the application which generated this
+     *                           workbook.
      * @param applicationVersion Version of the application. Ignored if
-     * {@code null}. Refer to
-     * <a href="https://learn.microsoft.com/en-us/previous-versions/office/developer/office-2010/ee881787(v=office.14)?redirectedfrom=MSDN">this
-     * page</a> for details.
+     *                           {@code null}. Refer to
+     *                           <a href="https://learn.microsoft.com/en-us/previous-versions/office/developer/office-2010/ee881787(v=office.14)?redirectedfrom=MSDN">this
+     *                           page</a> for details.
      */
     public Workbook(OutputStream os, String applicationName, String applicationVersion) {
         this.os = new OpcOutputStream(os);
@@ -100,6 +101,7 @@ public class Workbook implements Closeable{
         Font.DEFAULT = font;
         this.styleCache.replaceDefaultFont(font);
     }
+
     public Properties properties() {
         return this.properties;
     }
@@ -125,7 +127,7 @@ public class Workbook implements Closeable{
      * @throws IOException In case of I/O error.
      */
     public void finish() throws IOException {
-        if (finished){
+        if (finished) {
             return;
         }
 
@@ -139,21 +141,21 @@ public class Workbook implements Closeable{
 
         writeFile("[Content_Types].xml", w -> {
             w.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"><Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/><Default Extension=\"xml\" ContentType=\"application/xml\"/>");
-            if(hasComments()){
+            if (hasComments()) {
                 w.append("<Default ContentType=\"application/vnd.openxmlformats-officedocument.vmlDrawing\" Extension=\"vml\"/>");
             }
             w.append("<Override PartName=\"/xl/sharedStrings.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml\"/><Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/><Override PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/>");
             for (Worksheet ws : worksheets) {
                 int index = getIndex(ws);
                 w.append("<Override PartName=\"/xl/worksheets/sheet").append(index).append(".xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>");
-                if(!ws.comments.isEmpty()) {
+                if (!ws.comments.isEmpty()) {
                     w.append("<Override ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.comments+xml\" PartName=\"/xl/comments").append(index).append(".xml\"/>");
                     w.append("<Override ContentType=\"application/vnd.openxmlformats-officedocument.drawing+xml\" PartName=\"/xl/drawings/drawing").append(index).append(".xml\"/>");
                 }
                 if (!ws.tables.isEmpty()) {
                     for (Map.Entry<String, Table> entry : ws.tables.entrySet()) {
                         Table table = entry.getValue();
-                        w.append("<Override PartName=\"/xl/tables/table"+table.index+".xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.table+xml\"/>");
+                        w.append("<Override PartName=\"/xl/tables/table" + table.index + ".xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.table+xml\"/>");
                     }
                 }
             }
@@ -165,7 +167,7 @@ public class Workbook implements Closeable{
             w.append("</Types>");
         });
         writeProperties();
-        if(properties.hasCustomProperties()){
+        if (properties.hasCustomProperties()) {
             writeFile("docProps/custom.xml", properties::writeCustomProperties);
         }
 
@@ -201,26 +203,70 @@ public class Workbook implements Closeable{
             w.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
             w.append("<Properties xmlns=\"http://schemas.openxmlformats.org/officeDocument/2006/extended-properties\">");
             w.append("<Application>").appendEscaped(applicationName).append("</Application>");
-            w.append(properties.getManager() == null ? "" : ("<Manager>" + properties.getManager() + "</Manager>"));
-            w.append(properties.getCompany() == null ? "" : ("<Company>" + properties.getCompany() + "</Company>"));
-            w.append(properties.getHyperlinkBase() == null ? "" : ("<HyperlinkBase>" + properties.getHyperlinkBase() + "</HyperlinkBase>"));
-            w.append(applicationVersion == null ? "" : ("<AppVersion>" + applicationVersion + "</AppVersion>"));
+            String manager = properties.getManager();
+            if (manager != null) {
+                w.append("<Manager>");
+                w.appendEscaped(manager);
+                w.append("</Manager>");
+            }
+            String company = properties.getCompany();
+            if (company != null) {
+                w.append("<Company>");
+                w.appendEscaped(company);
+                w.append("</Company>");
+            }
+            String hyperlinkBase = properties.getHyperlinkBase();
+            if (hyperlinkBase != null) {
+                w.append("<HyperlinkBase>");
+                w.appendEscaped(hyperlinkBase);
+                w.append("</HyperlinkBase>");
+            }
+            if (applicationVersion != null) {
+                w.append("<AppVersion>");
+                w.appendEscaped(applicationVersion);
+                w.append("</AppVersion>");
+            }
             w.append("</Properties>");
         });
         writeFile("docProps/core.xml", w -> {
             w.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>");
             w.append("<cp:coreProperties xmlns:cp=\"http://schemas.openxmlformats.org/package/2006/metadata/core-properties\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:dcterms=\"http://purl.org/dc/terms/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">");
-            w.append(properties.getTitle() == null ? "" : ("<dc:title>" + properties.getTitle() + "</dc:title>"));
-            w.append(properties.getSubject() == null ? "" : ("<dc:subject>" + properties.getSubject() + "</dc:subject>"));
+            String title = properties.getTitle();
+            if (title != null) {
+                w.append("<dc:title>");
+                w.appendEscaped(title);
+                w.append("</dc:title>");
+            }
+            String subject = properties.getSubject();
+            if (subject != null) {
+                w.append("<dc:subject>");
+                w.appendEscaped(subject);
+                w.append("</dc:subject>");
+            }
             w.append("<dc:creator>");
             w.appendEscaped(applicationName);
             w.append("</dc:creator>");
-            w.append(properties.getKeywords() == null ? "" : ("<cp:keywords>" + properties.getKeywords() + "</cp:keywords>"));
-            w.append(properties.getDescription() == null ? "" : ("<dc:description>" + properties.getDescription() + "</dc:description>"));
+            String keywords = properties.getKeywords();
+            if (keywords != null) {
+                w.append("<cp:keywords>");
+                w.appendEscaped(keywords);
+                w.append("</cp:keywords>");
+            }
+            String description = properties.getDescription();
+            if (description != null) {
+                w.append("<dc:description>");
+                w.appendEscaped(description);
+                w.append("</dc:description>");
+            }
             w.append("<dcterms:created xsi:type=\"dcterms:W3CDTF\">");
             w.append(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX").withZone(ZoneId.of("UTC")).format(Instant.now()));
             w.append("</dcterms:created>");
-            w.append(properties.getCategory() == null ? "" : ("<cp:category>" + properties.getCategory() + "</cp:category>"));
+            String category = properties.getCategory();
+            if (category != null) {
+                w.append("<cp:category>");
+                w.appendEscaped(category);
+                w.append("</cp:category>");
+            }
             w.append("</cp:coreProperties>");
         });
     }
@@ -239,19 +285,20 @@ public class Workbook implements Closeable{
 
     /**
      * Writes the {@code xl/workbook.xml} file to the zip.
+     *
      * @throws IOException If an I/O error occurs.
      */
     private void writeWorkbookFile() throws IOException {
         writeFile("xl/workbook.xml", w -> {
             w.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                     "<workbook " +
-                            "xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" " +
-                            "xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">" +
+                    "xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" " +
+                    "xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">" +
                     "<workbookPr date1904=\"false\"/>" +
-                        "<bookViews>" +
-                            "<workbookView activeTab=\"" + activeTab + "\"/>" +
-                        "</bookViews>" +
-                        "<sheets>");
+                    "<bookViews>" +
+                    "<workbookView activeTab=\"" + activeTab + "\"/>" +
+                    "</bookViews>" +
+                    "<sheets>");
 
             for (Worksheet ws : worksheets) {
                 writeWorkbookSheet(w, ws);
@@ -265,8 +312,8 @@ public class Workbook implements Closeable{
             for (Worksheet ws : worksheets) {
                 int worksheetIndex = getIndex(ws) - 1;
                 List<Object> repeatingColsAndRows = Stream.of(ws.getRepeatingCols(), ws.getRepeatingRows())
-                            .filter(Objects::nonNull)
-                            .collect(Collectors.toList());
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList());
                 if (!repeatingColsAndRows.isEmpty()) {
                     w.append("<definedName function=\"false\" hidden=\"false\" localSheetId=\"")
                             .append(worksheetIndex)
@@ -312,7 +359,8 @@ public class Workbook implements Closeable{
 
     /**
      * Writes a {@code sheet} tag to the writer.
-     * @param w The writer to write to
+     *
+     * @param w  The writer to write to
      * @param ws The WorkSheet that is resembled by the {@code sheet} tag.
      * @throws IOException If an I/O error occurs.
      */
@@ -330,7 +378,7 @@ public class Workbook implements Closeable{
     /**
      * Write a new file as a zip entry to the output writer.
      *
-     * @param name File name.
+     * @param name     File name.
      * @param consumer Output writer consumer, producing file contents.
      * @throws IOException If an I/O error occurs.
      */
@@ -346,6 +394,7 @@ public class Workbook implements Closeable{
         os.putNextEntry(new ZipEntry(name));
         return writer;
     }
+
     void endFile() throws IOException {
         writer.flush();
         os.closeEntry();
@@ -364,12 +413,12 @@ public class Workbook implements Closeable{
     /**
      * Merge given style attributes with cached style.
      *
-     * @param currentStyle Current (cached) style index, 0 if none.
+     * @param currentStyle    Current (cached) style index, 0 if none.
      * @param numberingFormat Numbering format.
-     * @param font Font attributes.
-     * @param fill Fill attributes.
-     * @param border Border attributes.
-     * @param alignment Alignment attributes.
+     * @param font            Font attributes.
+     * @param fill            Fill attributes.
+     * @param border          Border attributes.
+     * @param alignment       Alignment attributes.
      * @return Cached style index.
      */
     int mergeAndCacheStyle(int currentStyle, String numberingFormat, Font font, Fill fill, Border border, Alignment alignment, Protection protection) {
@@ -392,7 +441,7 @@ public class Workbook implements Closeable{
      * Get unique index of a worksheet.
      *
      * @param ws Worksheet. It must have been created previously by calling
-     * {@link #newWorksheet(java.lang.String)} on this workbook.
+     *           {@link #newWorksheet(java.lang.String)} on this workbook.
      * @return Worksheet index.
      */
     int getIndex(Worksheet ws) {

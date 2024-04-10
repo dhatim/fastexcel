@@ -235,23 +235,23 @@ class CorrectnessTest {
 
     @Test
     void testForGithubIssue164() throws Exception {
-        // try (FileOutputStream fileOutputStream = new FileOutputStream("D://globalDefaultFontTest.xlsx")) {
+        // try (FileOutputStream fileOutputStream = new FileOutputStream("D://propertiesTest.xlsx")) {
         byte[] bytes = writeWorkbook(wb -> {
             wb.setGlobalDefaultFont("Arial", 15.5);
-            //General properties
+            // General properties
             wb.properties()
-                    .setTitle("title property")
-                    .setCategory("categrovy property")
-                    .setSubject("subject property")
-                    .setKeywords("keywords property")
-                    .setDescription("description property")
-                    .setManager("manager property")
-                    .setCompany("company property")
-                    .setHyperlinkBase("hyperlinkBase property");
-            //Custom properties
+                    .setTitle("title property<=")
+                    .setCategory("categrovy property<=")
+                    .setSubject("subject property<=")
+                    .setKeywords("keywords property<=")
+                    .setDescription("description property<=")
+                    .setManager("manager property<=")
+                    .setCompany("company property<=")
+                    .setHyperlinkBase("https://github.com/search?q=repo%3Adhatim%2Ffastexcel%20fastexcel&type=code");
+            // Custom properties
             wb.properties()
                     .setTextProperty("Test TextA", "Lucy")
-                    .setTextProperty("Test TextB", "Tony")
+                    .setTextProperty("Test TextB", "Tony<=")
                     .setDateProperty("Test DateA", Instant.parse("2022-12-22T10:00:00.123456789Z"))
                     .setDateProperty("Test DateB", Instant.parse("1999-09-09T09:09:09Z"))
                     .setNumberProperty("Test NumberA", BigDecimal.valueOf(202222.23364646D))

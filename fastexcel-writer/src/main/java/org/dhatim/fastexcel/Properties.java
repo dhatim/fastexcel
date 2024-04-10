@@ -121,11 +121,11 @@ public class Properties {
         return this;
     }
 
-    interface CustomProty<T> {
+    interface CustomProty {
         void write(Writer w, int pid) throws IOException;
     }
 
-    abstract class AbstractProperty<T> implements CustomProty<T> {
+    abstract class AbstractProperty<T> implements CustomProty {
         protected String key;
         protected T value;
 
@@ -158,7 +158,9 @@ public class Properties {
 
         @Override
         public void write(Writer w, int pid) throws IOException {
-            w.append("<property fmtid=\"{D5CDD505-2E9C-101B-9397-08002B2CF9AE}\" pid=\"" + pid + "\" name=\"" + key + "\"><vt:lpwstr>" + value + "</vt:lpwstr></property>");
+            w.append("<property fmtid=\"{D5CDD505-2E9C-101B-9397-08002B2CF9AE}\" pid=\"" + pid + "\" name=\"" + key + "\"><vt:lpwstr>");
+            w.appendEscaped(value);
+            w.append("</vt:lpwstr></property>");
         }
     }
 
@@ -191,7 +193,7 @@ public class Properties {
 
         @Override
         public void write(Writer w, int pid) throws IOException {
-            w.append("<property fmtid=\"{D5CDD505-2E9C-101B-9397-08002B2CF9AE}\" pid=\"" + pid + "\" name=\""+key+"\"><vt:bool>" + value.toString() + "</vt:bool></property>");
+            w.append("<property fmtid=\"{D5CDD505-2E9C-101B-9397-08002B2CF9AE}\" pid=\"" + pid + "\" name=\"" + key + "\"><vt:bool>" + value.toString() + "</vt:bool></property>");
         }
     }
 
