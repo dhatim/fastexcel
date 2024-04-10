@@ -142,6 +142,17 @@ public class Worksheet implements Closeable {
      * Display the worksheet from right to left
      */
     private boolean rightToLeft = false;
+
+    /**
+     * Flag indicating whether summary rows appear below detail in an outline, when applying an outline.
+     */
+    private boolean rowSumsBelow = true;
+
+    /**
+     * Flag indicating whether summary columns appear to the right of detail in an outline, when applying an outline.
+     */
+    private boolean rowSumsRight = true;
+
     /**
      * Sheet view zoom percentage
      */
@@ -1016,7 +1027,12 @@ public class Worksheet implements Closeable {
             writer = workbook.beginFile("xl/worksheets/sheet" + index + ".xml");
             writer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
             writer.append("<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">");
-            writer.append("<sheetPr filterMode=\"" + "false" + "\">" + (tabColor != null ? "<tabColor rgb=\""+tabColor+"\"/>" : "") + "<pageSetUpPr fitToPage=\"" + fitToPage + "\" autoPageBreaks=\"" + autoPageBreaks + "\"/></sheetPr>");
+            writer.append("<sheetPr filterMode=\"" + "false" + "\">" + "<outlinePr summaryBelow=\"" + rowSumsBelow +
+                    "\" summaryRight=\"" + rowSumsRight + "" +
+                    "\"/>" +
+                    (tabColor != null ?
+                    "<tabColor rgb=\""+tabColor+"\"/>" : "") + "<pageSetUpPr fitToPage=\"" + fitToPage + "\" " +
+                    "autoPageBreaks=\"" + autoPageBreaks + "\"/></sheetPr>");
             writer.append("<dimension ref=\"A1\"/>");
             writer.append("<sheetViews><sheetView workbookViewId=\"0\"");
             if (!showGridLines) {
@@ -1423,6 +1439,14 @@ public class Worksheet implements Closeable {
 
     public void groupRows(int from , int to) {
         IntStream.rangeClosed(Math.min(from,to),Math.max(from,to)).forEach(groupRows::increase);
+    }
+
+    public void rowSumsBelow(boolean rowSumsBelow) {
+        this.rowSumsBelow = rowSumsBelow;
+    }
+
+    public void rowSumsRight(boolean rowSumsRight) {
+        this.rowSumsRight = rowSumsRight;
     }
 
     /**
