@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.util.stream.Stream;
 
 import static org.dhatim.fastexcel.reader.Resources.open;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class ExcelFileWithCRLFTest {
@@ -24,6 +25,13 @@ public class ExcelFileWithCRLFTest {
                                 assertNotNull(c.getDataFormatString());
                             }
                         });
+                    } else {
+                        assertEquals("ID", r.getCell(0).getText());
+                        assertEquals("Date", r.getCell(1).getText());
+                        assertEquals("name", r.getCell(2).getText());
+                        assertEquals("valo", r.getCell(3).getText());
+                        assertEquals("ratio", r.getCell(4).getText());
+                        assertEquals("success", r.getCell(5).getText());
                     }
                 });
             }

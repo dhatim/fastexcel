@@ -36,7 +36,15 @@ class SST {
   private void readUpTo(int index) throws XMLStreamException {
     while (index >= values.size()) {
       reader.goTo("si");
-      values.add(reader.getValueUntilEndElement("si", "rPh"));
+      StringBuilder sb = new StringBuilder();
+      while (reader.goTo(() -> reader.isStartElement("t") || reader.isEndElement("si"))) {
+        if (reader.isStartElement("t")) {
+          sb.append(reader.getValueUntilEndElement("t"));
+        } else if (reader.isEndElement("si")) {
+          break;
+        }
+      }
+      values.add(sb.toString());
     }
   }
 }
