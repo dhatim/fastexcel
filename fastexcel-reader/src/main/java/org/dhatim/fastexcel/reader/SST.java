@@ -33,10 +33,22 @@ class SST {
     return values.get(index);
   }
 
-  private void readUpTo(int index) throws XMLStreamException {
-    while (index >= values.size()) {
-      reader.goTo("si");
-      values.add(reader.getValueUntilEndElement("si", "rPh"));
+    private void readUpTo(int index) throws XMLStreamException {
+        while (index >= values.size()) {
+            reader.goTo("si");
+            StringBuilder sb = new StringBuilder();
+            while (reader.goTo(() -> reader.isStartElement("t")
+                    || reader.isStartElement("rPh")
+                    || reader.isEndElement("si"))) {
+                if (reader.isStartElement("t")) {
+                    sb.append(reader.getValueUntilEndElement("t"));
+                } else if (reader.isEndElement("si")) {
+                    break;
+                } else if (reader.isStartElement("rPh")) {
+                    reader.goTo(() -> reader.isEndElement("rPh"));
+                }
+            }
+            values.add(sb.toString());
+        }
     }
-  }
 }
