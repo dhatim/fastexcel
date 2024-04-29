@@ -1027,12 +1027,21 @@ public class Worksheet implements Closeable {
             writer = workbook.beginFile("xl/worksheets/sheet" + index + ".xml");
             writer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
             writer.append("<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">");
-            writer.append("<sheetPr filterMode=\"" + "false" + "\">" + "<outlinePr summaryBelow=\"" + rowSumsBelow +
-                    "\" summaryRight=\"" + rowSumsRight + "" +
-                    "\"/>" +
-                    (tabColor != null ?
-                    "<tabColor rgb=\""+tabColor+"\"/>" : "") + "<pageSetUpPr fitToPage=\"" + fitToPage + "\" " +
-                    "autoPageBreaks=\"" + autoPageBreaks + "\"/></sheetPr>");
+            writer.append("<sheetPr filterMode=\"" + "false" + "\">");
+            if (tabColor != null) {
+                writer.append("<tabColor rgb=\"" + tabColor + "\"/>");
+            }
+            if (!rowSumsBelow || !rowSumsRight) {
+                writer.append("<outlinePr ");
+                if (!rowSumsBelow) {
+                    writer.append("summaryBelow=\"0\" ");
+                }
+                if (!rowSumsRight) {
+                    writer.append("summaryRight=\"0\" ");
+                }
+                writer.append("/>");
+            }
+            writer.append("<pageSetUpPr fitToPage=\"" + fitToPage + "\" " + "autoPageBreaks=\"" + autoPageBreaks + "\"/></sheetPr>");
             writer.append("<dimension ref=\"A1\"/>");
             writer.append("<sheetViews><sheetView workbookViewId=\"0\"");
             if (!showGridLines) {
