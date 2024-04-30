@@ -241,7 +241,7 @@ ws.rightToLeft();
 ```
 
 
-Group rows or colums
+Group rows or columns
 
 ```java
 ws.groupRows(2，3);
@@ -249,6 +249,13 @@ ws.groupRows(1，5);
 
 ws.groupCols(2，3);
 ws.groupCols(1，5);
+```
+
+Indicating summary rows/columns appear direction 
+
+```java
+ws.rowSumsBelow(false);
+ws.rowSumsRight(false);
 ```
 
 

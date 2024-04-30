@@ -96,7 +96,7 @@ public class Worksheet implements Closeable {
     /**
      * Array of column's group level
      */
-    private final DynamicByteArray groupColums = new DynamicByteArray(MAX_COLS);
+    private final DynamicByteArray groupColumns = new DynamicByteArray(MAX_COLS);
     /**
      * Array of rows's group level
      */
@@ -802,7 +802,7 @@ public class Worksheet implements Closeable {
             boolean isHidden = hiddenColumns.contains(c);
             boolean hasStyle = colStyles.containsKey(c);
             boolean widthChanged = colWidths.containsKey(c) || maxWidth > DEFAULT_COL_WIDTH;
-            int groupLevel = groupColums.get(c);
+            int groupLevel = groupColumns.get(c);
             if (widthChanged || isHidden || groupLevel != 0 || hasStyle) {
                 if (!started) {
                     w.append("<cols>");
@@ -1027,12 +1027,21 @@ public class Worksheet implements Closeable {
             writer = workbook.beginFile("xl/worksheets/sheet" + index + ".xml");
             writer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
             writer.append("<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">");
-            writer.append("<sheetPr filterMode=\"" + "false" + "\">" + "<outlinePr summaryBelow=\"" + rowSumsBelow +
-                    "\" summaryRight=\"" + rowSumsRight + "" +
-                    "\"/>" +
-                    (tabColor != null ?
-                    "<tabColor rgb=\""+tabColor+"\"/>" : "") + "<pageSetUpPr fitToPage=\"" + fitToPage + "\" " +
-                    "autoPageBreaks=\"" + autoPageBreaks + "\"/></sheetPr>");
+            writer.append("<sheetPr filterMode=\"" + "false" + "\">");
+            if (tabColor != null) {
+                writer.append("<tabColor rgb=\"" + tabColor + "\"/>");
+            }
+            if (!rowSumsBelow || !rowSumsRight) {
+                writer.append("<outlinePr ");
+                if (!rowSumsBelow) {
+                    writer.append("summaryBelow=\"0\" ");
+                }
+                if (!rowSumsRight) {
+                    writer.append("summaryRight=\"0\" ");
+                }
+                writer.append("/>");
+            }
+            writer.append("<pageSetUpPr fitToPage=\"" + fitToPage + "\" " + "autoPageBreaks=\"" + autoPageBreaks + "\"/></sheetPr>");
             writer.append("<dimension ref=\"A1\"/>");
             writer.append("<sheetViews><sheetView workbookViewId=\"0\"");
             if (!showGridLines) {
@@ -1053,7 +1062,7 @@ public class Worksheet implements Closeable {
             final int nbCols = rows.stream().filter(Objects::nonNull).mapToInt(r -> r.length).max().orElse(0);
             final int maxHideCol = hiddenColumns.stream().mapToInt(a -> a).max().orElse(0);
             final int maxStyleCol = colStyles.values().stream().mapToInt(Column::getColNumber).max().orElse(0);
-            final int maxNoZeroIndex = groupColums.getMaxNoZeroIndex();
+            final int maxNoZeroIndex = groupColumns.getMaxNoZeroIndex();
             if (nbCols > 0 || !hiddenColumns.isEmpty()||maxNoZeroIndex!=-1 || !colStyles.isEmpty()) {
                 int maxCol = Math.max(nbCols, Math.max(Math.max(maxHideCol,maxNoZeroIndex), maxStyleCol) + 1);
                 writeCols(writer, maxCol);
@@ -1434,7 +1443,7 @@ public class Worksheet implements Closeable {
     }
 
     public void groupCols(int from , int to) {
-        IntStream.rangeClosed(Math.min(from,to),Math.max(from,to)).forEach(groupColums::increase);
+        IntStream.rangeClosed(Math.min(from,to),Math.max(from,to)).forEach(groupColumns::increase);
     }
 
     public void groupRows(int from , int to) {

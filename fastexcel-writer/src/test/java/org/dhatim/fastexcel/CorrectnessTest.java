@@ -401,6 +401,9 @@ class CorrectnessTest {
 
             ws.groupCols(6, 7);
             ws.groupCols(4, 8);
+            //
+            ws.rowSumsBelow(false);
+            ws.rowSumsRight(false);
         });
 
         //fileOutputStream.write(bytes);
