@@ -291,14 +291,14 @@ public class Workbook implements Closeable {
     private void writeWorkbookFile() throws IOException {
         writeFile("xl/workbook.xml", w -> {
             w.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-                    "<workbook " +
-                    "xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" " +
-                    "xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">" +
-                    "<workbookPr date1904=\"false\"/>" +
-                    "<bookViews>" +
-                    "<workbookView activeTab=\"" + activeTab + "\"/>" +
-                    "</bookViews>" +
-                    "<sheets>");
+                     "<workbook " +
+                     "xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" " +
+                     "xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">" +
+                     "<workbookPr date1904=\"false\"/>" +
+                     "<bookViews>" +
+                     "<workbookView activeTab=\"" + activeTab + "\"/>" +
+                     "</bookViews>" +
+                     "<sheets>");
 
             for (Worksheet ws : worksheets) {
                 writeWorkbookSheet(w, ws);
@@ -312,12 +312,12 @@ public class Workbook implements Closeable {
             for (Worksheet ws : worksheets) {
                 int worksheetIndex = getIndex(ws) - 1;
                 List<Object> repeatingColsAndRows = Stream.of(ws.getRepeatingCols(), ws.getRepeatingRows())
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toList());
+                                                          .filter(Objects::nonNull)
+                                                          .collect(Collectors.toList());
                 if (!repeatingColsAndRows.isEmpty()) {
                     w.append("<definedName function=\"false\" hidden=\"false\" localSheetId=\"")
-                            .append(worksheetIndex)
-                            .append("\" name=\"_xlnm.Print_Titles\" vbProcedure=\"false\">");
+                     .append(worksheetIndex)
+                     .append("\" name=\"_xlnm.Print_Titles\" vbProcedure=\"false\">");
                     for (int i = 0; i < repeatingColsAndRows.size(); ++i) {
                         if (i > 0) {
                             w.append(",");
@@ -330,26 +330,30 @@ public class Workbook implements Closeable {
                 for (Map.Entry<String, Range> nr : ws.getNamedRanges().entrySet()) {
                     String rangeName = nr.getKey();
                     Range range = nr.getValue();
-                    w.append("<definedName function=\"false\" " +
-                                    "hidden=\"false\" localSheetId=\"")
-                            .append(worksheetIndex)
-                            .append("\" name=\"")
-                            .append(rangeName)
-                            .append("\" vbProcedure=\"false\">'")
-                            .appendEscaped(ws.getName())
-                            .append("'!")
-                            .append(range.toAbsoluteString())
-                            .append("</definedName>");
+                    w.append("<definedName function=\"false\" hidden=\"false\"");
+
+                    if (range.isGlobalVisibility()) {
+                        w.append(" localSheetId=\"")
+                         .append(worksheetIndex).append("\"");
+                    }
+
+                    w.append(" name=\"")
+                     .append(rangeName)
+                     .append("\" vbProcedure=\"false\">'")
+                     .appendEscaped(ws.getName())
+                     .append("'!")
+                     .append(range.toAbsoluteString())
+                     .append("</definedName>");
                 }
                 Range af = ws.getAutoFilterRange();
                 if (af != null) {
                     w.append("<definedName function=\"false\" hidden=\"true\" localSheetId=\"")
-                            .append(worksheetIndex)
-                            .append("\" name=\"_xlnm._FilterDatabase\" vbProcedure=\"false\">'")
-                            .appendEscaped(ws.getName())
-                            .append("'!")
-                            .append(af.toAbsoluteString())
-                            .append("</definedName>");
+                     .append(worksheetIndex)
+                     .append("\" name=\"_xlnm._FilterDatabase\" vbProcedure=\"false\">'")
+                     .appendEscaped(ws.getName())
+                     .append("'!")
+                     .append(af.toAbsoluteString())
+                     .append("</definedName>");
                 }
             }
             w.append("</definedNames>");
@@ -366,7 +370,7 @@ public class Workbook implements Closeable {
      */
     private void writeWorkbookSheet(Writer w, Worksheet ws) throws IOException {
         w.append("<sheet name=\"").appendEscaped(ws.getName()).append("\" r:id=\"rId").append(getIndex(ws) + 2)
-                .append("\" sheetId=\"").append(getIndex(ws));
+         .append("\" sheetId=\"").append(getIndex(ws));
 
         if (ws.getVisibilityState() != null) {
             w.append("\" state=\"").append(ws.getVisibilityState().getName());
