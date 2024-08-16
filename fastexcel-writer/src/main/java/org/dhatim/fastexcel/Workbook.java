@@ -332,7 +332,7 @@ public class Workbook implements Closeable {
                     Range range = nr.getValue();
                     w.append("<definedName function=\"false\" hidden=\"false\"");
 
-                    if (range.isGlobalVisibility()) {
+                    if (!range.isFolderScope()) {
                         w.append(" localSheetId=\"")
                          .append(worksheetIndex).append("\"");
                     }

@@ -45,9 +45,9 @@ public class Range implements Ref {
     private final int right;
 
     /**
-     * Check about the Range visibility when a named range is added.
+     * enable the folder scope when this range is added to a worksheet's named ranges
      */
-    private boolean globalVisibility = false;
+    private boolean folderScope = false;
 
     /**
      * Constructor. Note coordinates are reordered if necessary to make sure
@@ -241,22 +241,21 @@ public class Range implements Ref {
     }
 
     /**
-     * Return the visibility of this range.
+     * Check if this range has a folder scope. It is used by {@link Worksheet#addNamedRange(Range, String)}.
      *
-     * @return {@code true} if the range is visible by all worksheet, {@code false} if it is visible only by the worksheet contains the range
+     * @return {@code true} if the range has a folder scope, {@code false} if it is visible only by the worksheet contains the range
      */
-    public boolean isGlobalVisibility() {
-        return globalVisibility;
+    public boolean isFolderScope() {
+        return folderScope;
     }
 
     /**
      * Set the visibility of this range
      *
-     * @param globalVisibility {@code true} to allow to see the range by all worksheet
+     * @param folderScope {@code true} to allow to see the range by all worksheet
      */
-    public Range setGlobalVisibility(boolean globalVisibility) {
-        this.globalVisibility = globalVisibility;
-        return this;
+    public void setFolderScope(boolean folderScope) {
+        this.folderScope = folderScope;
     }
 
     /**
