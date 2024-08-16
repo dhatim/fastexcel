@@ -351,6 +351,7 @@ class CorrectnessTest {
                     .fontName("Cooper Black")
                     .borderColor(Color.SEA_BLUE)
                     .underlined()
+                    .strikethrough()
                     .rotation(90)
                     .set();
             //merge cells
@@ -371,6 +372,7 @@ class CorrectnessTest {
                     .fontName("Cooper Black")
                     .borderColor(Color.SEA_BLUE)
                     .underlined()
+                    .strikethrough()
                     .shadeAlternateRows(Color.SEA_BLUE)
                     .shadeRows(Color.RED, 1)
                     .set();
