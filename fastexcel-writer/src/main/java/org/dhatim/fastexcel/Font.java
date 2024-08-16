@@ -30,7 +30,7 @@ class Font {
     /**
      * Default font.
      */
-    public static Font DEFAULT = build(false, false, false, "Calibri", BigDecimal.valueOf(11.0), "FF000000");
+    public static Font DEFAULT = build(false, false, false, "Calibri", BigDecimal.valueOf(11.0), "FF000000", false);
 
     /**
      * Bold flag.
@@ -56,6 +56,10 @@ class Font {
      * RGB font color.
      */
     private final String rgbColor;
+    /**
+     * Strikethrough flag.
+     */
+    private final Boolean strikethrough;
 
     /**
      * Constructor.
@@ -66,8 +70,9 @@ class Font {
      * @param name Font name.
      * @param size Font size, in points.
      * @param rgbColor RGB font color.
+     * @param strikethrough Strikethrough flag.
      */
-    Font(boolean bold, boolean italic, boolean underlined, String name, BigDecimal size, String rgbColor) {
+    Font(boolean bold, boolean italic, boolean underlined, String name, BigDecimal size, String rgbColor, Boolean strikethrough) {
         if (size.compareTo(BigDecimal.valueOf(409)) > 0 || size.compareTo(BigDecimal.valueOf(1)) < 0) {
             throw new IllegalStateException("Font size must be between 1 and 409 points: " + size);
         }
@@ -77,6 +82,7 @@ class Font {
         this.name = name;
         this.size = size.setScale(2, RoundingMode.HALF_UP);
         this.rgbColor = rgbColor;
+        this.strikethrough = strikethrough;
     }
 
     /**
@@ -88,15 +94,16 @@ class Font {
      * @param name Font name. Defaults to "Calibri".
      * @param size Font size, in points. Defaults to 11.0.
      * @param rgbColor RGB font color. Defaults to "FF000000".
+     * @param strikethrough Strikethrough flag.
      * @return New font object.
      */
-    public static Font build(Boolean bold, Boolean italic, Boolean underlined, String name, BigDecimal size, String rgbColor) {
-        return new Font(bold != null? bold : DEFAULT.bold, italic != null ? italic : DEFAULT.italic , underlined != null ? underlined : DEFAULT.underlined, name != null ? name : DEFAULT.name, size != null ?  size:DEFAULT.size, rgbColor != null ?  rgbColor: DEFAULT.rgbColor);
+    public static Font build(Boolean bold, Boolean italic, Boolean underlined, String name, BigDecimal size, String rgbColor, Boolean strikethrough) {
+        return new Font(bold != null? bold : DEFAULT.bold, italic != null ? italic : DEFAULT.italic , underlined != null ? underlined : DEFAULT.underlined, name != null ? name : DEFAULT.name, size != null ?  size:DEFAULT.size, rgbColor != null ?  rgbColor: DEFAULT.rgbColor, strikethrough != null ? strikethrough : DEFAULT.strikethrough);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(bold, italic, underlined, name, size, rgbColor);
+        return Objects.hash(bold, italic, underlined, name, size, rgbColor, strikethrough);
     }
 
     @Override
@@ -104,15 +111,15 @@ class Font {
         boolean result;
         if (obj != null && obj.getClass() == this.getClass()) {
             Font other = (Font) obj;
-            result = Objects.equals(bold, other.bold) && Objects.equals(italic, other.italic) && Objects.equals(underlined, other.underlined) && Objects.equals(name, other.name) && Objects.equals(size, other.size) && Objects.equals(rgbColor, other.rgbColor);
+            result = Objects.equals(bold, other.bold) && Objects.equals(italic, other.italic) && Objects.equals(underlined, other.underlined) && Objects.equals(name, other.name) && Objects.equals(size, other.size) && Objects.equals(rgbColor, other.rgbColor) && Objects.equals(strikethrough, other.strikethrough);
         } else {
             result = false;
         }
         return result;
     }
 
-    public static boolean equalsDefault(Boolean bold, Boolean italic, Boolean underlined, String fontName, BigDecimal fontSize, String fontColor) {
-        return Objects.equals(bold, DEFAULT.bold) && Objects.equals(italic, DEFAULT.italic) && Objects.equals(underlined, DEFAULT.underlined) && Objects.equals(fontName, DEFAULT.name) && Objects.equals(fontSize, DEFAULT.size) && Objects.equals(fontColor, DEFAULT.rgbColor);
+    public static boolean equalsDefault(Boolean bold, Boolean italic, Boolean underlined, String fontName, BigDecimal fontSize, String fontColor, Boolean strikethrough) {
+        return Objects.equals(bold, DEFAULT.bold) && Objects.equals(italic, DEFAULT.italic) && Objects.equals(underlined, DEFAULT.underlined) && Objects.equals(fontName, DEFAULT.name) && Objects.equals(fontSize, DEFAULT.size) && Objects.equals(fontColor, DEFAULT.rgbColor) && Objects.equals(strikethrough, DEFAULT.strikethrough);
     }
 
     /**
@@ -123,6 +130,7 @@ class Font {
      */
     void write(Writer w) throws IOException {
         w.append("<font>").append(bold ? "<b/>" : "").append(italic ? "<i/>" : "").append(underlined ? "<u/>" : "").append("<sz val=\"").append(size.toString()).append("\"/>");
+        w.append(strikethrough ? "<strike/>" : "");
         if (rgbColor != null) {
             w.append("<color rgb=\"").append(rgbColor).append("\"/>");
         }

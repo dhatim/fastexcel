@@ -88,6 +88,10 @@ abstract class GenericStyleSetter<STYLE_SETTER extends GenericStyleSetter<STYLE_
      */
     private String fontColor;
     /**
+     * Strikethrough flag.
+     */
+    private Boolean strikethrough;
+    /**
      * Horizontal alignment.
      */
     private String horizontalAlignment;
@@ -247,6 +251,15 @@ abstract class GenericStyleSetter<STYLE_SETTER extends GenericStyleSetter<STYLE_
      */
     public STYLE_SETTER underlined() {
         this.underlined = true;
+        return getThis();
+    }
+
+    /**
+     * Use strikethrough text.
+     * @return This style setter.
+     */
+    public STYLE_SETTER strikethrough() {
+        this.strikethrough = true;
         return getThis();
     }
 
@@ -463,8 +476,8 @@ abstract class GenericStyleSetter<STYLE_SETTER extends GenericStyleSetter<STYLE_
             alignment = null;
         }
         Font font;
-        if (!Font.equalsDefault(bold,italic,underlined,fontName,fontSize,fontColor)) {
-            font = Font.build(bold, italic, underlined, fontName, fontSize, fontColor);
+        if (!Font.equalsDefault(bold,italic,underlined,fontName,fontSize,fontColor, strikethrough)) {
+            font = Font.build(bold, italic, underlined, fontName, fontSize, fontColor, strikethrough);
         } else {
             font = Font.DEFAULT;
         }
@@ -513,8 +526,8 @@ abstract class GenericStyleSetter<STYLE_SETTER extends GenericStyleSetter<STYLE_
             alignment = new Alignment(horizontalAlignment, verticalAlignment, wrapText, rotation, indent);
         }
         Font font = null;
-        if (bold != null && bold || italic != null && italic || underlined != null && underlined || fontColor != null || fontName != null || fontSize != null) {
-            font = Font.build(bold, italic, underlined, fontName, fontSize, fontColor);
+        if (bold != null && bold || italic != null && italic || underlined != null && underlined || fontColor != null || fontName != null || fontSize != null || strikethrough != null && strikethrough) {
+            font = Font.build(bold, italic, underlined, fontName, fontSize, fontColor, strikethrough);
         }
         Fill fill = null;
         if (fillColor != null) {
