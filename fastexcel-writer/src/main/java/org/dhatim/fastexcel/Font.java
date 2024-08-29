@@ -59,7 +59,7 @@ class Font {
     /**
      * Strikethrough flag.
      */
-    private final Boolean strikethrough;
+    private final boolean strikethrough;
 
     /**
      * Constructor.
@@ -72,7 +72,7 @@ class Font {
      * @param rgbColor RGB font color.
      * @param strikethrough Strikethrough flag.
      */
-    Font(boolean bold, boolean italic, boolean underlined, String name, BigDecimal size, String rgbColor, Boolean strikethrough) {
+    Font(boolean bold, boolean italic, boolean underlined, String name, BigDecimal size, String rgbColor, boolean strikethrough) {
         if (size.compareTo(BigDecimal.valueOf(409)) > 0 || size.compareTo(BigDecimal.valueOf(1)) < 0) {
             throw new IllegalStateException("Font size must be between 1 and 409 points: " + size);
         }
