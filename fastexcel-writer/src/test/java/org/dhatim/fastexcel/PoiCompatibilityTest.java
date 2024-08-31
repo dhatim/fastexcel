@@ -211,10 +211,14 @@ class PoiCompatibilityTest {
         String bold = "Bold";
         String italic = "Italic";
         String underlined = "Underlined";
+        String strikethrough = "Strikethrough";
         String bold_italic = "Bold_italic";
         String bold_underlined = "Bold_underlined";
+        String bold_strikethrough = "Bold_strikethrough";
         String italic_underlinded = "Italic_underlined";
-        String all_three = "All_three";
+        String italic_strikethrough = "Italic_strikethrough";
+        String underlined_strikethrough = "Underlined_strikethrough";
+        String all_four = "All_four";
         byte[] data = writeWorkbook(wb -> {
             Worksheet ws = wb.newWorksheet(sheetName);
             ws.value(0, 0, bold);
@@ -223,14 +227,22 @@ class PoiCompatibilityTest {
             ws.style(0, 1).italic().set();
             ws.value(0, 2, underlined);
             ws.style(0, 2).underlined().set();
-            ws.value(0, 3, bold_italic);
-            ws.style(0, 3).bold().italic().set();
-            ws.value(0, 4, bold_underlined);
-            ws.style(0, 4).bold().underlined().set();
-            ws.value(0, 5, italic_underlinded);
-            ws.style(0, 5).italic().underlined().set();
-            ws.value(0, 6, all_three);
-            ws.style(0, 6).bold().italic().underlined().set();
+            ws.value(0, 3, strikethrough);
+            ws.style(0, 3).strikethrough().set();
+            ws.value(0, 4, bold_italic);
+            ws.style(0, 4).bold().italic().set();
+            ws.value(0, 5, bold_underlined);
+            ws.style(0, 5).bold().underlined().set();
+            ws.value(0, 6, bold_strikethrough);
+            ws.style(0, 6).bold().strikethrough().set();
+            ws.value(0, 7, italic_underlinded);
+            ws.style(0, 7).italic().underlined().set();
+            ws.value(0, 8, italic_strikethrough);
+            ws.style(0, 8).italic().strikethrough().set();
+            ws.value(0, 9, underlined_strikethrough);
+            ws.style(0, 9).underlined().strikethrough().set();
+            ws.value(0, 10, all_four);
+            ws.style(0, 10).bold().italic().underlined().strikethrough().set();
             try {
                 ws.close();
             } catch (IOException ex) {
@@ -244,15 +256,26 @@ class PoiCompatibilityTest {
         assertTrue(xws.getRow(0).getCell(0).getCellStyle().getFont().getBold());
         assertTrue(xws.getRow(0).getCell(1).getCellStyle().getFont().getItalic());
         assertEquals(FontUnderline.valueOf(xws.getRow(0).getCell(2).getCellStyle().getFont().getUnderline()), FontUnderline.SINGLE);
-        assertTrue(xws.getRow(0).getCell(3).getCellStyle().getFont().getBold());
-        assertTrue(xws.getRow(0).getCell(3).getCellStyle().getFont().getItalic());
+        assertTrue(xws.getRow(0).getCell(3).getCellStyle().getFont().getStrikeout());
+
         assertTrue(xws.getRow(0).getCell(4).getCellStyle().getFont().getBold());
-        assertEquals(FontUnderline.valueOf(xws.getRow(0).getCell(4).getCellStyle().getFont().getUnderline()), FontUnderline.SINGLE);
-        assertTrue(xws.getRow(0).getCell(5).getCellStyle().getFont().getItalic());
+        assertTrue(xws.getRow(0).getCell(4).getCellStyle().getFont().getItalic());
+        assertTrue(xws.getRow(0).getCell(5).getCellStyle().getFont().getBold());
         assertEquals(FontUnderline.valueOf(xws.getRow(0).getCell(5).getCellStyle().getFont().getUnderline()), FontUnderline.SINGLE);
         assertTrue(xws.getRow(0).getCell(6).getCellStyle().getFont().getBold());
-        assertTrue(xws.getRow(0).getCell(6).getCellStyle().getFont().getItalic());
-        assertEquals(FontUnderline.valueOf(xws.getRow(0).getCell(6).getCellStyle().getFont().getUnderline()), FontUnderline.SINGLE);
+        assertTrue(xws.getRow(0).getCell(6).getCellStyle().getFont().getStrikeout());
+        assertTrue(xws.getRow(0).getCell(7).getCellStyle().getFont().getItalic());
+        assertEquals(FontUnderline.valueOf(xws.getRow(0).getCell(7).getCellStyle().getFont().getUnderline()), FontUnderline.SINGLE);
+        assertTrue(xws.getRow(0).getCell(8).getCellStyle().getFont().getItalic());
+        assertTrue(xws.getRow(0).getCell(8).getCellStyle().getFont().getStrikeout());
+        assertEquals(FontUnderline.valueOf(xws.getRow(0).getCell(9).getCellStyle().getFont().getUnderline()), FontUnderline.SINGLE);
+        assertTrue(xws.getRow(0).getCell(9).getCellStyle().getFont().getStrikeout());
+
+        assertTrue(xws.getRow(0).getCell(10).getCellStyle().getFont().getBold());
+        assertTrue(xws.getRow(0).getCell(10).getCellStyle().getFont().getItalic());
+        assertEquals(FontUnderline.valueOf(xws.getRow(0).getCell(10).getCellStyle().getFont().getUnderline()), FontUnderline.SINGLE);
+        assertTrue(xws.getRow(0).getCell(10).getCellStyle().getFont().getStrikeout());
+
     }
 
     @Test
@@ -664,7 +687,7 @@ class PoiCompatibilityTest {
         // Fetch the XSSF Name object
         XSSFName name = xwb.getName("col names");
         String formula = name.getRefersToFormula();
-        
+
         assertTrue(name != null);
         assertTrue(name.getNameName().equals("col names"));
         assertTrue(formula.equals("'Worksheet 1'!$A$1:$D$2"));
@@ -688,7 +711,7 @@ class PoiCompatibilityTest {
         XSSFConditionalFormattingRule condFmtRule = condFmt.getRule(0);
         int numRanges = condFmt.getFormattingRanges().length;
         CellRangeAddress cellRange = condFmt.getFormattingRanges()[0];
-        
+
         assertTrue(numCondFmts == 1);
         assertTrue(numRules == 1);
         assertTrue(numRanges == 1);
@@ -715,7 +738,7 @@ class PoiCompatibilityTest {
         XSSFConditionalFormattingRule condFmtRule = condFmt.getRule(0);
         int numRanges = condFmt.getFormattingRanges().length;
         CellRangeAddress cellRange = condFmt.getFormattingRanges()[0];
-        
+
         assertTrue(numCondFmts == 1);
         assertTrue(numRules == 1);
         assertTrue(numRanges == 1);
