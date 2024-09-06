@@ -1,5 +1,6 @@
 package org.dhatim.fastexcel;
 
+import org.apache.poi.ss.formula.WorkbookEvaluator;
 import org.apache.poi.ss.usermodel.DataValidation.ErrorStyle;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -417,6 +418,91 @@ class PoiCompatibilityTest {
 
         DataValidationConstraint validationConstraint = dataValidation.getValidationConstraint();
         assertThat(validationConstraint.getFormula1().toLowerCase()).isEqualToIgnoringCase("'Lists'!$A$1:$A$2");
+    }
+
+    @Test
+    void listFormulaValidations() throws Exception {
+
+        String errMsg = "Error Message";
+        String errTitle = "Error Title";
+
+        String mainWorksheet = "Worksheet 1";
+        String worksheetWithListValues = "Lists";
+
+        // name of named range to add
+        String namedRange = "VALUES";
+
+        byte[] data = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet(mainWorksheet);
+
+            // add list of values
+            Worksheet listWs = wb.newWorksheet(worksheetWithListValues);
+            listWs.value(0, 0, "val1");
+            listWs.value(1, 0, "val2");
+
+            // hidden worksheet with values
+            listWs.setVisibilityState(VisibilityState.HIDDEN);
+
+            Range listRange = listWs.range(0, 0, 1, 0);
+            // the folder scope to the range allows to show the "named range" if the list worksheet is hidden too
+            listRange.setFolderScope(true);
+            listWs.addNamedRange(listRange, namedRange);
+
+
+            // add cell with name of "named range" to retrieve
+            ws.value(0, 0, "VALUES");
+
+            String formula = "INDIRECT($A$1)";
+
+            ListFormulaDataValidation listFormulaDataValidation = ws.range(0, 1, 100, 1).validateWithListByFormula(formula);
+            listFormulaDataValidation
+                .allowBlank(false)
+                .error(errMsg)
+                .errorTitle(errTitle)
+                .errorStyle(DataValidationErrorStyle.WARNING)
+                .showErrorMessage(true);
+        });
+
+        // Check generated workbook with Apache POI
+        XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
+        assertThat(xwb.getNumberOfSheets()).isEqualTo(2);
+
+        XSSFSheet xwsValues = xwb.getSheet(worksheetWithListValues);
+        // check visibility of sheet contains value list
+        assertThat(xwb.getSheetVisibility(xwb.getSheetIndex(xwsValues))).isEqualTo(SheetVisibility.HIDDEN);
+
+        // check the named range and its reference
+        XSSFName xssfName = xwb.getName(namedRange);
+        xssfName.getRefersToFormula().equals("'Lists'!$A$1:$A$2");
+        // check that the named range has a global scope and not a reference to the local sheet
+        assertThat(xssfName.getSheetIndex()).isEqualTo(-1);
+
+        XSSFSheet xws = xwb.getSheet(mainWorksheet);
+
+        // check number of data validation of main worksheet
+        assertThat(xws.getDataValidations().size()).isEqualTo(1);
+
+        XSSFDataValidation dataValidation = xws.getDataValidations().get(0);
+
+        assertThat(dataValidation.getEmptyCellAllowed()).isFalse();
+        assertThat(dataValidation.getErrorBoxText()).isEqualTo(errMsg);
+        assertThat(dataValidation.getErrorBoxTitle()).isEqualTo(errTitle);
+        assertThat(dataValidation.getErrorStyle()).isEqualTo(ErrorStyle.WARNING);
+        assertThat(dataValidation.getShowErrorBox()).isTrue();
+        assertThat(dataValidation.getSuppressDropDownArrow()).isTrue();
+        assertThat(dataValidation.getRegions().getCellRangeAddresses().length).isEqualTo(1);
+
+        CellRangeAddress cellRangeAddress = dataValidation.getRegions().getCellRangeAddress(0);
+        assertThat(cellRangeAddress.getFirstColumn()).isEqualTo(1);
+        assertThat(cellRangeAddress.getLastColumn()).isEqualTo(1);
+        assertThat(cellRangeAddress.getFirstRow()).isEqualTo(0);
+        assertThat(cellRangeAddress.getLastRow()).isEqualTo(100);
+
+
+        DataValidationConstraint validationConstraint = dataValidation.getValidationConstraint();
+        assertThat(validationConstraint.getFormula1().toLowerCase()).isEqualToIgnoringCase("INDIRECT($A$1)");
+        assertThat(validationConstraint.getValidationType()).isEqualTo(DataValidationConstraint.ValidationType.LIST);
+
     }
 
     @Test

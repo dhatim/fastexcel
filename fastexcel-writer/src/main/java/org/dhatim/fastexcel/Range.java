@@ -45,6 +45,11 @@ public class Range implements Ref {
     private final int right;
 
     /**
+     * enable the folder scope when this range is added to a worksheet's named ranges
+     */
+    private boolean folderScope = false;
+
+    /**
      * Constructor. Note coordinates are reordered if necessary to make sure
      * {@code top} &lt;= {@code bottom} and {@code left} &lt;= {@code right}.
      *
@@ -201,7 +206,19 @@ public class Range implements Ref {
         return listDataValidation;
     }
 
-     /**
+    /**
+     * Construct a new ListDataValidation
+     *
+     * @param formula The Formula to retrieve the validation list
+     * @return a new list data validation object
+     */
+    public ListFormulaDataValidation validateWithListByFormula(String formula) {
+        ListFormulaDataValidation listDataValidation = new ListFormulaDataValidation(this, new Formula(formula));
+        worksheet.addValidation(listDataValidation);
+        return listDataValidation;
+    }
+
+    /**
      * Construct a new ListDataValidation
      *
      * @param formula The custom validation formula
@@ -216,11 +233,29 @@ public class Range implements Ref {
     /**
      * Specifically define this range by assigning it a name.
      * It will be visible in the cell range dropdown menu.
-     * 
+     *
      * @param name string representing the name of this cell range
      */
     public void setName(String name) {
         worksheet.addNamedRange(this, name);
+    }
+
+    /**
+     * Check if this range has a folder scope. It is used by {@link Worksheet#addNamedRange(Range, String)}.
+     *
+     * @return {@code true} if the range has a folder scope, {@code false} if it is visible only by the worksheet contains the range
+     */
+    public boolean isFolderScope() {
+        return folderScope;
+    }
+
+    /**
+     * Set the visibility of this range
+     *
+     * @param folderScope {@code true} to allow to see the range by all worksheet
+     */
+    public void setFolderScope(boolean folderScope) {
+        this.folderScope = folderScope;
     }
 
     /**
