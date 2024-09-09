@@ -71,7 +71,7 @@ class StringCache {
                 .map(Entry::getKey);
         Iterator<String> it = sortedStrings.iterator();
         while (it.hasNext()) {
-            w.append("<si><t>").appendEscaped(it.next()).append("</t></si>");
+            w.append("<si><t xml:space=\"preserve\">").appendEscaped(it.next()).append("</t></si>");
         }
         w.append("</sst>");
     }

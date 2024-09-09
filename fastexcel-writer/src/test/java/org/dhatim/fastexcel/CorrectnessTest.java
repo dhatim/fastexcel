@@ -775,5 +775,12 @@ class CorrectnessTest {
         });
     }
 
+    @Test
+    void testForIssue450() throws Exception {
+        writeWorkbook(wb -> {
+            Worksheet worksheet1 = wb.newWorksheet("Sheet1");
+            worksheet1.value(1, 1, "spaces ");
+        });
+    }
 
 }
