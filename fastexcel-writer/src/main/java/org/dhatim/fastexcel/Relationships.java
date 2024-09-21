@@ -14,11 +14,11 @@ public class Relationships {
 
     private final AtomicInteger maxIndex = new AtomicInteger(1);
 
-    final Worksheet worksheet;
+    final AbstractWorksheet worksheet;
 
     private ArrayList<Relationship> relationship = new ArrayList<>();
 
-    public Relationships(Worksheet worksheet) {
+    public Relationships(AbstractWorksheet worksheet) {
         this.worksheet = worksheet;
     }
 

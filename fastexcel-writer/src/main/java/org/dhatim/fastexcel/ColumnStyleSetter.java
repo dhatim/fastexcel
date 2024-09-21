@@ -56,8 +56,13 @@ public class ColumnStyleSetter extends GenericStyleSetter<ColumnStyleSetter> {
 
     @Override
     protected Range getRange() {
+
+        if (!(column.getWorksheet() instanceof Worksheet)) {
+            throw new IllegalStateException("The current worksheet doesn't support range");
+        }
+
         int colNumber = column.getColNumber();
-        return column.getWorksheet().range(0, colNumber, MAX_ROWS - 1, colNumber);
+        return ((Worksheet) column.getWorksheet()).range(0, colNumber, MAX_ROWS - 1, colNumber);
     }
 
     @Override

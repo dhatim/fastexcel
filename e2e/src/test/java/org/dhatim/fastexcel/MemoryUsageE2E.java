@@ -49,7 +49,7 @@ public class MemoryUsageE2E {
                             sheet.value(r, c, valueFor(r, c));
                         }
                         if (r % FLUSH_EVERY_NR_OR_ROWS == 0) {
-                            sheet.flush();
+                            sheet.initDocumentAndFlush();
                         }
                     }
                 }
