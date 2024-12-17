@@ -42,7 +42,7 @@ abstract class GenericStyleSetter<STYLE_SETTER extends GenericStyleSetter<STYLE_
     /**
      * Worksheet in which this styling is applied
      */
-    private final Worksheet worksheet;
+    private final AbstractWorksheet worksheet;
     /**
      * Value formatting.
      */
@@ -126,7 +126,7 @@ abstract class GenericStyleSetter<STYLE_SETTER extends GenericStyleSetter<STYLE_
      *
      * @param worksheet Worksheet in which this styling is applied
      */
-    GenericStyleSetter(Worksheet worksheet) {
+    GenericStyleSetter(AbstractWorksheet worksheet) {
         this.worksheet = worksheet;
     }
 
