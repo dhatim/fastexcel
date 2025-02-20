@@ -94,6 +94,7 @@ class RowSpliterator implements Spliterator<Row> {
             if ("row".equals(r.getLocalName())) {
                 break;
             }
+
             Cell cell = parseCell(trackedColIndex++);
             CellAddress addr = cell.getAddress();
             ensureSize(cells, addr.getColumn() + 1);
