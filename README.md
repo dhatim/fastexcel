@@ -1,6 +1,6 @@
 fastexcel
 =========
-[![Build Status](https://github.com/dhatim/fastexcel/workflows/build/badge.svg)](https://github.com/dhatim/fastexcel/actions)
+[![Build Status](https://github.com/dhatim/fastexcel/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/dhatim/fastexcel/actions)
 [![Coverage Status](https://coveralls.io/repos/github/dhatim/fastexcel/badge.svg?branch=master)](https://coveralls.io/github/dhatim/fastexcel?branch=master)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.dhatim/fastexcel/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.dhatim/fastexcel)
 [![Javadocs](http://www.javadoc.io/badge/org.dhatim/fastexcel.svg)](http://www.javadoc.io/doc/org.dhatim/fastexcel)
