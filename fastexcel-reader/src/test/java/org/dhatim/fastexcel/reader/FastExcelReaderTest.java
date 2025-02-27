@@ -17,6 +17,7 @@ package org.dhatim.fastexcel.reader;
 
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.util.IOUtils;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -155,6 +156,7 @@ class FastExcelReaderTest {
             "/xlsx/write.xlsx",
             "/xlsx/issue143.xlsx",
             "/xlsx/issue161.xlsx",
+            "/xlsx/issue514.xlsx",
             // "/xlsx/xlsx-stream-d-date-cell.xlsx"
     })
     void testFile(String file) {
