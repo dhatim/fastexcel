@@ -32,6 +32,7 @@ class RowSpliterator implements Spliterator<Row> {
     private final HashMap<Integer, BaseFormulaCell> sharedFormula = new HashMap<>();
     private final HashMap<CellRangeAddress, String> arrayFormula = new HashMap<>();
     private int rowCapacity = 16;
+    private int trackedRowIndex = 0;
 
     public RowSpliterator(ReadableWorkbook workbook, InputStream inputStream) throws XMLStreamException {
         this.workbook = workbook;
@@ -82,7 +83,10 @@ class RowSpliterator implements Spliterator<Row> {
         if (!"row".equals(r.getLocalName())) {
             throw new NoSuchElementException();
         }
-        int rowIndex = r.getIntAttribute("r");
+
+        int trackedColIndex = 0;
+        int rowIndex = getRowIndexWithFallback(++trackedRowIndex);
+
         List<Cell> cells = new ArrayList<>(rowCapacity);
         int physicalCellCount = 0;
 
@@ -91,7 +95,7 @@ class RowSpliterator implements Spliterator<Row> {
                 break;
             }
 
-            Cell cell = parseCell();
+            Cell cell = parseCell(trackedColIndex++);
             CellAddress addr = cell.getAddress();
             ensureSize(cells, addr.getColumn() + 1);
 
@@ -102,9 +106,20 @@ class RowSpliterator implements Spliterator<Row> {
         return new Row(rowIndex, physicalCellCount, cells);
     }
 
-    private Cell parseCell() throws XMLStreamException {
-        String cellRef = r.getAttribute("r");
-        CellAddress addr = new CellAddress(cellRef);
+    private int getRowIndexWithFallback(int fallbackRowIndex) {
+        Integer rowIndexOrNull = r.getIntAttribute("r");
+        return rowIndexOrNull != null ? rowIndexOrNull : fallbackRowIndex;
+    }
+
+    private CellAddress getCellAddressWithFallback(int trackedColIndex) {
+        String cellRefOrNull = r.getAttribute("r");
+        return cellRefOrNull != null ?
+                new CellAddress(cellRefOrNull) :
+                new CellAddress(trackedRowIndex, trackedColIndex);
+    }
+
+    private Cell parseCell(int trackedColIndex) throws XMLStreamException {
+        CellAddress addr = getCellAddressWithFallback(trackedColIndex);
         String type = r.getOptionalAttribute("t").orElse("n");
         String styleString = r.getAttribute("s");
         String formatId = null;
