@@ -15,6 +15,7 @@
  */
 package org.dhatim.fastexcel.reader;
 
+import java.util.stream.Collectors;
 import javax.xml.stream.XMLStreamException;
 import java.io.*;
 import java.util.ArrayList;
@@ -146,7 +147,13 @@ public class ReadableWorkbook implements Closeable {
     Stream<Row> openStream(Sheet sheet) throws IOException {
         try {
             InputStream inputStream = pkg.getSheetContent(sheet);
-            Stream<Row> stream = StreamSupport.stream(new RowSpliterator(this, inputStream), false);
+
+            Stream<CellRangeAddress> mergedCellStream = StreamSupport.stream(new MergeCellSpliterator(inputStream), false);
+            List<CellRangeAddress> mergedCells = mergedCellStream.onClose(asUncheckedRunnable(inputStream)).collect(Collectors.toList());
+
+            inputStream = pkg.getSheetContent(sheet);
+
+            Stream<Row> stream = StreamSupport.stream(new RowSpliterator(this, mergedCells, inputStream), false);
             return stream.onClose(asUncheckedRunnable(inputStream));
         } catch (XMLStreamException e) {
             throw new IOException(e);

@@ -31,10 +31,13 @@ class RowSpliterator implements Spliterator<Row> {
 
     private final HashMap<Integer, BaseFormulaCell> sharedFormula = new HashMap<>();
     private final HashMap<CellRangeAddress, String> arrayFormula = new HashMap<>();
+
+    private final List<CellRangeAddress> mergedCells;
     private int rowCapacity = 16;
 
-    public RowSpliterator(ReadableWorkbook workbook, InputStream inputStream) throws XMLStreamException {
+    public RowSpliterator(ReadableWorkbook workbook, List<CellRangeAddress> mergedCells, InputStream inputStream) throws XMLStreamException {
         this.workbook = workbook;
+        this.mergedCells = mergedCells;
         this.r = new SimpleXmlReader(factory, inputStream);
 
         r.goTo("sheetData");
@@ -105,6 +108,16 @@ class RowSpliterator implements Spliterator<Row> {
     private Cell parseCell() throws XMLStreamException {
         String cellRef = r.getAttribute("r");
         CellAddress addr = new CellAddress(cellRef);
+
+        CellAddress mergedCellAddress = null;
+
+        for(CellRangeAddress mergedCell : mergedCells) {
+            if (mergedCell.isInRange(addr.getRow(), addr.getColumn())) {
+                mergedCellAddress = new CellAddress(mergedCell.getFirstRow(), mergedCell.getFirstColumn());
+                break;
+            }
+        }
+
         String type = r.getOptionalAttribute("t").orElse("n");
         String styleString = r.getAttribute("s");
         String formatId = null;
@@ -118,15 +131,15 @@ class RowSpliterator implements Spliterator<Row> {
         }
 
         if ("inlineStr".equals(type)) {
-            return parseInlineStr(addr);
+            return parseInlineStr(addr, mergedCellAddress);
         } else if ("s".equals(type)) {
-            return parseString(addr);
+            return parseString(addr, mergedCellAddress);
         } else {
-            return parseOther(addr, type, formatId, formatString);
+            return parseOther(addr, type, formatId, formatString, mergedCellAddress);
         }
     }
 
-    private Cell parseOther(CellAddress addr, String type, String dataFormatId, String dataFormatString)
+    private Cell parseOther(CellAddress addr, String type, String dataFormatId, String dataFormatString, CellAddress mergedCellAddress)
             throws XMLStreamException {
         CellType definedType = parseType(type);
         Function<String, ?> parser = getParserForType(definedType);
@@ -174,10 +187,10 @@ class RowSpliterator implements Spliterator<Row> {
         }
 
         if (formula == null && value == null && definedType == CellType.NUMBER) {
-            return new Cell(workbook, CellType.EMPTY, null, addr, null, rawValue);
+            return new Cell(workbook, CellType.EMPTY, null, addr, null, rawValue, mergedCellAddress);
         } else {
             CellType cellType = (formula != null) ? CellType.FORMULA : definedType;
-            return new Cell(workbook, cellType, value, addr, formula, rawValue, dataFormatId, dataFormatString);
+            return new Cell(workbook, cellType, value, addr, formula, rawValue, mergedCellAddress, dataFormatId, dataFormatString);
         }
     }
 
@@ -263,28 +276,28 @@ class RowSpliterator implements Spliterator<Row> {
     }
 
 
-    private Cell parseString(CellAddress addr) throws XMLStreamException {
+    private Cell parseString(CellAddress addr, CellAddress mergedCellAddress) throws XMLStreamException {
         r.goTo(() -> r.isStartElement("v") || r.isEndElement("c"));
         if (r.isEndElement("c")) {
-            return empty(addr, CellType.STRING);
+            return empty(addr, CellType.STRING, mergedCellAddress);
         }
         String v = r.getValueUntilEndElement("v");
         if (v.isEmpty()) {
-            return empty(addr, CellType.STRING);
+            return empty(addr, CellType.STRING, mergedCellAddress);
         }
         int index = Integer.parseInt(v);
         String sharedStringValue = workbook.getSharedStringsTable().getItemAt(index);
         Object value = sharedStringValue;
         String formula = null;
         String rawValue = sharedStringValue;
-        return new Cell(workbook, CellType.STRING, value, addr, formula, rawValue);
+        return new Cell(workbook, CellType.STRING, value, addr, formula, rawValue, mergedCellAddress);
     }
 
-    private Cell empty(CellAddress addr, CellType type) {
-        return new Cell(workbook, type, "", addr, null, "");
+    private Cell empty(CellAddress addr, CellType type, CellAddress mergedCellAddress) {
+        return new Cell(workbook, type, "", addr, null, "", mergedCellAddress);
     }
 
-    private Cell parseInlineStr(CellAddress addr) throws XMLStreamException {
+    private Cell parseInlineStr(CellAddress addr, CellAddress mergedCellAddress) throws XMLStreamException {
         Object value = null;
         String formula = null;
         String rawValue = null;
@@ -299,7 +312,7 @@ class RowSpliterator implements Spliterator<Row> {
             }
         }
         CellType cellType = formula == null ? CellType.STRING : CellType.FORMULA;
-        return new Cell(workbook, cellType, value, addr, formula, rawValue);
+        return new Cell(workbook, cellType, value, addr, formula, rawValue, mergedCellAddress);
     }
 
     private Optional<String> getArrayFormula(CellAddress addr) {
@@ -368,5 +381,4 @@ class RowSpliterator implements Spliterator<Row> {
             list.add(null);
         }
     }
-
 }

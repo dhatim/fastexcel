@@ -32,19 +32,21 @@ public class Cell {
     private final String rawValue;
     private final String dataFormatId;
     private final String dataFormatString;
+    private final CellAddress mergedCellAddress;
 
-    Cell(ReadableWorkbook workbook, CellType type, Object value, CellAddress address, String formula, String rawValue) {
-        this(workbook, type, value, address, formula, rawValue, null, null);
+    Cell(ReadableWorkbook workbook, CellType type, Object value, CellAddress address, String formula, String rawValue, CellAddress mergedCellAddress) {
+        this(workbook, type, value, address, formula, rawValue, mergedCellAddress, null, null);
     }
 
     Cell(ReadableWorkbook workbook, CellType type, Object value, CellAddress address, String formula, String rawValue,
-         String dataFormatId, String dataFormatString) {
+        CellAddress mergedCellAddress, String dataFormatId, String dataFormatString) {
         this.workbook = workbook;
         this.type = type;
         this.value = value;
         this.address = address;
         this.formula = formula;
         this.rawValue = rawValue;
+        this.mergedCellAddress = mergedCellAddress;
         this.dataFormatId = dataFormatId;
         this.dataFormatString = dataFormatString;
     }
@@ -175,4 +177,11 @@ public class Cell {
         return sb.append(']').toString();
     }
 
+    public boolean isMerged() {
+        return mergedCellAddress != null;
+    }
+
+    public CellAddress getMergedCellAddress() {
+        return mergedCellAddress;
+    }
 }
