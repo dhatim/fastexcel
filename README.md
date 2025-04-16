@@ -383,6 +383,17 @@ row.forEach(cell -> {
     ...
 });
 ```
+
+By default, format information is not read.  To include it, call a `ReadableWorkbook` constructor that takes `ReadingOptions`:
+
+```java
+boolean withCellFormat = true; // If true, extract cell formatting 
+boolean cellInErrorIfParseError = true; // If true, cell type is ERROR if it is not possible to parse cell value
+                                        // If false, an exception is throw when there is a parsing error
+ReadingOptions readingOptions = new ReadingOptions(withCellFormat, cellInErrorIfParseError);
+try (ReadableWorkbook wb = new ReadableWorkbook(is, readingOptions)) {
+```
+
 ## More Information
 ### Reading and Writing of encryption-protected documents
 
@@ -390,3 +401,4 @@ This project does not implement read-write encryption
 protected excel documents, but it can be realized by combining `poi` and `poi-ooxml`.
 This test class is a reference implementation :
 [EncryptionTest](./e2e/src/test/java/org/dhatim/fastexcel/EncryptionTest.java) 
+
