@@ -11,7 +11,7 @@ class Column {
     /**
      * Worksheet where this column is defined.
      */
-    private final Worksheet worksheet;
+    private final AbstractWorksheet worksheet;
     /**
      * Position of the column
      */
@@ -24,13 +24,13 @@ class Column {
      * @param worksheet Worksheet where this column is defined.
      * @param colNumber Position of the column
      */
-    Column(Worksheet worksheet, int colNumber) {
+    Column(AbstractWorksheet worksheet, int colNumber) {
         this.worksheet = Objects.requireNonNull(worksheet);
         this.colNumber = Objects.requireNonNull(colNumber);
         this.style = 0;
     }
 
-    static Column noStyle(Worksheet worksheet, int c) {
+    static Column noStyle(AbstractWorksheet worksheet, int c) {
         return new Column(worksheet, c);
     }
 
@@ -39,7 +39,7 @@ class Column {
      *
      * @return Parent worksheet.
      */
-    public Worksheet getWorksheet() {
+    public AbstractWorksheet getWorksheet() {
         return worksheet;
     }
 
