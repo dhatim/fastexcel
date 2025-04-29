@@ -120,7 +120,9 @@ public class ReadableWorkbook implements Closeable {
                 r.forEach("sheet", "sheets", this::createSheet);
             } else if ("workbookPr".equals(r.getLocalName())) {
                 String date1904Value = r.getAttribute("date1904");
-                date1904 = Boolean.parseBoolean(date1904Value);
+                if(date1904Value != null) {
+                    date1904 = "true".equalsIgnoreCase(date1904Value) || "1".equals(date1904Value);
+                }
             } else {
                 break;
             }
