@@ -26,6 +26,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -40,7 +41,7 @@ public class Workbook implements Closeable {
     private boolean finished = false;
     private final String applicationName;
     private final String applicationVersion;
-    private final List<Worksheet> worksheets = new ArrayList<>();
+    private final List<AbstractWorksheet> worksheets = new ArrayList<>();
     private final StringCache stringCache = new StringCache();
     private final StyleCache styleCache = new StyleCache();
     private final Properties properties = new Properties();
@@ -111,7 +112,7 @@ public class Workbook implements Closeable {
      *
      * @param comparator The Comparator used to sort the worksheets
      */
-    public void sortWorksheets(Comparator<Worksheet> comparator) {
+    public void sortWorksheets(Comparator<AbstractWorksheet> comparator) {
         worksheets.sort(comparator);
     }
 
@@ -135,7 +136,7 @@ public class Workbook implements Closeable {
             throw new IllegalArgumentException("A workbook must contain at least one worksheet.");
         }
 
-        for (Worksheet ws : worksheets) {
+        for (AbstractWorksheet ws : worksheets) {
             ws.close();
         }
 
@@ -145,17 +146,20 @@ public class Workbook implements Closeable {
                 w.append("<Default ContentType=\"application/vnd.openxmlformats-officedocument.vmlDrawing\" Extension=\"vml\"/>");
             }
             w.append("<Override PartName=\"/xl/sharedStrings.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml\"/><Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/><Override PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/>");
-            for (Worksheet ws : worksheets) {
+            for (AbstractWorksheet ws : worksheets) {
                 int index = getIndex(ws);
                 w.append("<Override PartName=\"/xl/worksheets/sheet").append(index).append(".xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>");
-                if (!ws.comments.isEmpty()) {
-                    w.append("<Override ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.comments+xml\" PartName=\"/xl/comments").append(index).append(".xml\"/>");
-                    w.append("<Override ContentType=\"application/vnd.openxmlformats-officedocument.drawing+xml\" PartName=\"/xl/drawings/drawing").append(index).append(".xml\"/>");
-                }
-                if (!ws.tables.isEmpty()) {
-                    for (Map.Entry<String, Table> entry : ws.tables.entrySet()) {
-                        Table table = entry.getValue();
-                        w.append("<Override PartName=\"/xl/tables/table" + table.index + ".xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.table+xml\"/>");
+                if (ws instanceof Worksheet) {
+                    Worksheet worksheet = (Worksheet) ws;
+                    if (!worksheet.comments.isEmpty()) {
+                        w.append("<Override ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.comments+xml\" PartName=\"/xl/comments").append(index).append(".xml\"/>");
+                        w.append("<Override ContentType=\"application/vnd.openxmlformats-officedocument.drawing+xml\" PartName=\"/xl/drawings/drawing").append(index).append(".xml\"/>");
+                    }
+                    if (!worksheet.tables.isEmpty()) {
+                        for (Map.Entry<String, Table> entry : worksheet.tables.entrySet()) {
+                            Table table = entry.getValue();
+                            w.append("<Override PartName=\"/xl/tables/table" + table.index + ".xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.table+xml\"/>");
+                        }
                     }
                 }
             }
@@ -187,7 +191,7 @@ public class Workbook implements Closeable {
 
         writeFile("xl/_rels/workbook.xml.rels", w -> {
             w.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"rId1\" Target=\"sharedStrings.xml\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings\"/><Relationship Id=\"rId2\" Target=\"styles.xml\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\"/>");
-            for (Worksheet ws : worksheets) {
+            for (AbstractWorksheet ws : worksheets) {
                 w.append("<Relationship Id=\"rId").append(getIndex(ws) + 2).append("\" Target=\"worksheets/sheet").append(getIndex(ws)).append(".xml\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\"/>");
             }
             w.append("</Relationships>");
@@ -275,9 +279,12 @@ public class Workbook implements Closeable {
      * @return true when any sheet has any comments
      */
     private boolean hasComments() {
-        for (Worksheet ws : worksheets) {
-            if (!ws.comments.isEmpty()) {
-                return true;
+        for (AbstractWorksheet ws : worksheets) {
+            if (ws instanceof Worksheet) {
+                Worksheet worksheet = (Worksheet) ws;
+                if (!worksheet.comments.isEmpty()) {
+                    return true;
+                }
             }
         }
         return false;
@@ -300,7 +307,7 @@ public class Workbook implements Closeable {
                      "</bookViews>" +
                      "<sheets>");
 
-            for (Worksheet ws : worksheets) {
+            for (AbstractWorksheet ws : worksheets) {
                 writeWorkbookSheet(w, ws);
             }
             w.append("</sheets>");
@@ -309,51 +316,54 @@ public class Workbook implements Closeable {
              *  This is defined for each sheet separately
              * (if there are any repeating rows or cols in the sheet at all) **/
             w.append("<definedNames>");
-            for (Worksheet ws : worksheets) {
-                int worksheetIndex = getIndex(ws) - 1;
-                List<Object> repeatingColsAndRows = Stream.of(ws.getRepeatingCols(), ws.getRepeatingRows())
-                                                          .filter(Objects::nonNull)
-                                                          .collect(Collectors.toList());
-                if (!repeatingColsAndRows.isEmpty()) {
-                    w.append("<definedName function=\"false\" hidden=\"false\" localSheetId=\"")
-                     .append(worksheetIndex)
-                     .append("\" name=\"_xlnm.Print_Titles\" vbProcedure=\"false\">");
-                    for (int i = 0; i < repeatingColsAndRows.size(); ++i) {
-                        if (i > 0) {
-                            w.append(",");
+            for (AbstractWorksheet ws : worksheets) {
+                if (ws instanceof Worksheet) {
+                    Worksheet worksheet = (Worksheet) ws;
+                    int worksheetIndex = getIndex(ws) - 1;
+                    List<Object> repeatingColsAndRows = Stream.of(worksheet.getRepeatingCols(), worksheet.getRepeatingRows())
+                            .filter(Objects::nonNull)
+                            .collect(Collectors.toList());
+                    if (!repeatingColsAndRows.isEmpty()) {
+                        w.append("<definedName function=\"false\" hidden=\"false\" localSheetId=\"")
+                                .append(worksheetIndex)
+                                .append("\" name=\"_xlnm.Print_Titles\" vbProcedure=\"false\">");
+                        for (int i = 0; i < repeatingColsAndRows.size(); ++i) {
+                            if (i > 0) {
+                                w.append(",");
+                            }
+                            w.append("'").appendEscaped(ws.getName()).append("'!").append(repeatingColsAndRows.get(i).toString());
                         }
-                        w.append("'").appendEscaped(ws.getName()).append("'!").append(repeatingColsAndRows.get(i).toString());
+                        w.append("</definedName>");
                     }
-                    w.append("</definedName>");
-                }
-                /** define specifically named ranges **/
-                for (Map.Entry<String, Range> nr : ws.getNamedRanges().entrySet()) {
-                    String rangeName = nr.getKey();
-                    Range range = nr.getValue();
-                    w.append("<definedName function=\"false\" hidden=\"false\"");
+                    /** define specifically named ranges **/
+                    for (Map.Entry<String, Range> nr : worksheet.getNamedRanges().entrySet()) {
+                        String rangeName = nr.getKey();
+                        Range range = nr.getValue();
+                        w.append("<definedName function=\"false\" hidden=\"false\"");
 
-                    if (!range.isFolderScope()) {
-                        w.append(" localSheetId=\"")
-                         .append(worksheetIndex).append("\"");
+                        if (!range.isFolderScope()) {
+                            w.append(" localSheetId=\"")
+                                    .append(worksheetIndex).append("\"");
+                        }
+
+                        w.append(" name=\"")
+                                .append(rangeName)
+                                .append("\" vbProcedure=\"false\">'")
+                                .appendEscaped(ws.getName())
+                                .append("'!")
+                                .append(range.toAbsoluteString())
+                                .append("</definedName>");
                     }
-
-                    w.append(" name=\"")
-                     .append(rangeName)
-                     .append("\" vbProcedure=\"false\">'")
-                     .appendEscaped(ws.getName())
-                     .append("'!")
-                     .append(range.toAbsoluteString())
-                     .append("</definedName>");
-                }
-                Range af = ws.getAutoFilterRange();
-                if (af != null) {
-                    w.append("<definedName function=\"false\" hidden=\"true\" localSheetId=\"")
-                     .append(worksheetIndex)
-                     .append("\" name=\"_xlnm._FilterDatabase\" vbProcedure=\"false\">'")
-                     .appendEscaped(ws.getName())
-                     .append("'!")
-                     .append(af.toAbsoluteString())
-                     .append("</definedName>");
+                    Range af = worksheet.getAutoFilterRange();
+                    if (af != null) {
+                        w.append("<definedName function=\"false\" hidden=\"true\" localSheetId=\"")
+                                .append(worksheetIndex)
+                                .append("\" name=\"_xlnm._FilterDatabase\" vbProcedure=\"false\">'")
+                                .appendEscaped(ws.getName())
+                                .append("'!")
+                                .append(af.toAbsoluteString())
+                                .append("</definedName>");
+                    }
                 }
             }
             w.append("</definedNames>");
@@ -368,7 +378,7 @@ public class Workbook implements Closeable {
      * @param ws The WorkSheet that is resembled by the {@code sheet} tag.
      * @throws IOException If an I/O error occurs.
      */
-    private void writeWorkbookSheet(Writer w, Worksheet ws) throws IOException {
+    private void writeWorkbookSheet(Writer w, AbstractWorksheet ws) throws IOException {
         w.append("<sheet name=\"").appendEscaped(ws.getName()).append("\" r:id=\"rId").append(getIndex(ws) + 2)
          .append("\" sheetId=\"").append(getIndex(ws));
 
@@ -448,7 +458,7 @@ public class Workbook implements Closeable {
      *           {@link #newWorksheet(java.lang.String)} on this workbook.
      * @return Worksheet index.
      */
-    int getIndex(Worksheet ws) {
+    int getIndex(AbstractWorksheet ws) {
         synchronized (worksheets) {
             return worksheets.indexOf(ws) + 1;
         }
@@ -461,6 +471,28 @@ public class Workbook implements Closeable {
      * @return The new blank worksheet.
      */
     public Worksheet newWorksheet(String name) {
+        return newWorksheet(name, sheetName -> new Worksheet(this, sheetName));
+    }
+
+    /**
+     * Create a new stream worksheet in this workbook.
+     *
+     * @param name Name of the new stream worksheet.
+     * @return The new blank stream worksheet.
+     */
+    public StreamWorksheet newStreamWorksheet(String name) {
+        return newWorksheet(name, sheetName -> new StreamWorksheet(this, sheetName));
+    }
+
+    /**
+     * Create a worksheet.
+     *
+     * @param name Name of the new worksheet
+     * @param supplier The supplier of new worksheet.
+     * @return The new blank worksheet.
+     * @param <R> The type of the worksheet.
+     */
+    private <R extends AbstractWorksheet> R newWorksheet(String name, Function<String, R> supplier) {
         // Replace chars forbidden in worksheet names (backslahses and colons) by dashes
         String sheetName = name.replaceAll("[/\\\\?*\\]\\[:]", "-");
 
@@ -472,7 +504,7 @@ public class Workbook implements Closeable {
         synchronized (worksheets) {
             // If the worksheet name already exists, append a number
             int number = 1;
-            Set<String> names = worksheets.stream().map(Worksheet::getName).collect(Collectors.toSet());
+            Set<String> names = worksheets.stream().map(AbstractWorksheet::getName).collect(Collectors.toSet());
             while (names.contains(sheetName)) {
                 String suffix = String.format(Locale.ROOT, "_%d", number);
                 if (sheetName.length() + suffix.length() > 31) {
@@ -482,7 +514,7 @@ public class Workbook implements Closeable {
                 }
                 ++number;
             }
-            Worksheet worksheet = new Worksheet(this, sheetName);
+            R worksheet = supplier.apply(sheetName);
             worksheets.add(worksheet);
             return worksheet;
         }
