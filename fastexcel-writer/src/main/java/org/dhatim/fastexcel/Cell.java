@@ -56,7 +56,7 @@ class Cell implements Ref {
             }
             w.append(">");
             if (value instanceof Formula) {
-                w.append("<f>").append(((Formula) value).getExpression()).append("</f>");
+                w.append("<f>").appendEscaped(((Formula) value).getExpression()).append("</f>");
             } else if (value instanceof String) {
                 w.append("<is><t>").appendEscaped((String) value).append("</t></is>");
             } else if (value != null) {

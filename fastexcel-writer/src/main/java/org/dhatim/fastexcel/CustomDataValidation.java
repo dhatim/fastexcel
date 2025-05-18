@@ -117,11 +117,11 @@ public class CustomDataValidation implements DataValidation {
                 .append("\" showErrorMessage=\"")
                 .append(String.valueOf(showErrorMessage))
                 .append("\" errorTitle=\"")
-                .append(errorTitle)
+                .appendEscaped(errorTitle)
                 .append("\" error=\"")
-                .append(error)
+                .appendEscaped(error)
                 .append("\"><formula1>")
-                .append(formula.getExpression())
+                .appendEscaped(formula.getExpression())
                 .append("</formula1></dataValidation>");
     }
 }
