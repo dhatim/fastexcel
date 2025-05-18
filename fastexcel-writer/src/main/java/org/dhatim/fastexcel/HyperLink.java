@@ -1,5 +1,7 @@
 package org.dhatim.fastexcel;
 
+import java.util.Objects;
+
 public class HyperLink {
     private final String displayStr;
 
@@ -54,13 +56,22 @@ public class HyperLink {
     }
 
     @Override
-    public int hashCode() {
-        return super.hashCode();
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        HyperLink hyperLink = (HyperLink) o;
+        return Objects.equals(displayStr, hyperLink.displayStr)
+                && Objects.equals(linkStr, hyperLink.linkStr)
+                && hyperLinkType == hyperLink.hyperLinkType;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj);
+    public int hashCode() {
+        return Objects.hash(displayStr, linkStr, hyperLinkType);
+    }
+
+    @Override
+    public String toString() {
+        return linkStr;
     }
 
     public String getDisplayStr() {

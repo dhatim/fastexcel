@@ -23,6 +23,8 @@ import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.IntStream;
 
+import static org.dhatim.fastexcel.XmlEscapeHelper.escape;
+
 /**
  * A worksheet is a set of cells.
  */
@@ -930,7 +932,7 @@ public class Worksheet implements Closeable {
                     String rId = relationships.setHyperLinkRels(hyperLink.getLinkStr(), "External");
                     writer.append("r:id=\"" + rId +"\" ");
                 }else{
-                    writer.append("location=\"").append(hyperLink.getLinkStr()).append("\"");
+                    writer.append("location=\"").append(escape(hyperLink.getLinkStr())).append("\"");
                 }
                 writer.append("/>");
             }

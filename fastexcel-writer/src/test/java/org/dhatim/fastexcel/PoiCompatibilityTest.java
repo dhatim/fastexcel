@@ -44,6 +44,7 @@ class PoiCompatibilityTest {
         int intValue = 2_016;
         long longValue = 2_016_000_000_000L;
         BigDecimal bigDecimalValue = BigDecimal.TEN;
+        HyperLink hyperlinkValue = new HyperLink("https://github.com/dhatim/fastexcel?a=1&b=2");
         byte[] data = writeWorkbook(wb -> {
             Worksheet ws = wb.newWorksheet(sheetName);
             ws.paperSize(PaperSize.A4_PAPER);
@@ -63,6 +64,7 @@ class PoiCompatibilityTest {
             ws.value(i, i++, bigDecimalValue);
             ws.value(i, i++, Boolean.TRUE);
             ws.value(i, i++, Boolean.FALSE);
+            ws.hyperlink(i,i++, hyperlinkValue);
             try {
                 ws.close();
             } catch (IOException ex) {
@@ -101,6 +103,7 @@ class PoiCompatibilityTest {
         assertThat(new BigDecimal(xws.getRow(i).getCell(i++).getRawValue())).isEqualTo(bigDecimalValue);
         assertThat(xws.getRow(i).getCell(i++).getBooleanCellValue()).isTrue();
         assertThat(xws.getRow(i).getCell(i++).getBooleanCellValue()).isFalse();
+        assertThat(xws.getRow(i).getCell(i++).getHyperlink().getAddress()).isEqualTo(hyperlinkValue.getLinkStr());
     }
 
 

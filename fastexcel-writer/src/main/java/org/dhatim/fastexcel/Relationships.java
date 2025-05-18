@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.dhatim.fastexcel.XmlEscapeHelper.escape;
+
 public class Relationships {
 
     private static final String TYPE_OF_HYPERLINK= "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink";
@@ -66,7 +68,7 @@ public class Relationships {
             relsWr.append("<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">");
             for (Relationship rs : relationship) {
                 relsWr.append("<Relationship Id=\"" + rs.id + "\" ");
-                relsWr.append("Target=\"" + rs.target + "\" ");
+                relsWr.append("Target=\"" + escape(rs.target) + "\" ");
                 if (rs.targetMode!=null) {
                     relsWr.append("TargetMode=\""+rs.targetMode+"\" " );
                 }
