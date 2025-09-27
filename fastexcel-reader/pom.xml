@@ -14,7 +14,7 @@
         <dependency>
             <groupId>com.fasterxml</groupId>
             <artifactId>aalto-xml</artifactId>
-            <version>1.3.3</version>
+            <version>1.3.4</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
