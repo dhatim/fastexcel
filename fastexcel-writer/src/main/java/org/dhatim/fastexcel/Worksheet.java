@@ -55,6 +55,11 @@ public class Worksheet implements Closeable {
      */
     public static final double MAX_ROW_HEIGHT = 409.5;
 
+    /**
+     * Helper for calculating column names
+     */
+    private static final Ref REF_HELPER = new Ref() {};
+
     private final Workbook workbook;
     private final String name;
     /**
@@ -855,9 +860,12 @@ public class Worksheet implements Closeable {
      * Helper method to get a cell name from (x, y) cell position.
      * e.g. "B3" from cell position (2, 1)
      */
-    private static String getCellMark(int row, int coll) {
-        char columnLetter = (char) ('A' + coll);
-        return String.valueOf(columnLetter) + String.valueOf(row+1);
+    static String getCellMark(int row, int coll) {
+        if (0 <= coll && coll <= 'Z' - 'A') {
+            char columnLetter = (char) ('A' + coll);
+            return String.valueOf(columnLetter) + String.valueOf(row+1);
+        }
+        return REF_HELPER.colToString(coll) + String.valueOf(row+1);
     }
 
 	@Override

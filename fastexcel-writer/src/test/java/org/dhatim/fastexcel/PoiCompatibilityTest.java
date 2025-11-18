@@ -857,4 +857,16 @@ class PoiCompatibilityTest {
         assertEquals(worksheetName, xws.getSheetName());
     }
 
+
+    @Test
+    void testFreezePaneWithDoubleDigitColumn() throws IOException {
+        byte[] data = writeWorkbook(wb -> {
+            Worksheet worksheet1 = wb.newWorksheet("Sheet1");
+            worksheet1.freezePane(27, 2);
+        });
+        XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
+        XSSFSheet xws = xwb.getSheetAt(0);
+        assertEquals(27, xws.getPaneInformation().getVerticalSplitLeftColumn());
+    }
+
 }
