@@ -86,6 +86,7 @@ class RowSpliterator implements Spliterator<Row> {
 
         int trackedColIndex = 0;
         int rowIndex = getRowIndexWithFallback(++trackedRowIndex);
+        boolean isHidden = "1".equals(r.getAttribute("hidden"));
 
         List<Cell> cells = new ArrayList<>(rowCapacity);
         int physicalCellCount = 0;
@@ -103,7 +104,7 @@ class RowSpliterator implements Spliterator<Row> {
             physicalCellCount++;
         }
         rowCapacity = Math.max(rowCapacity, cells.size());
-        return new Row(rowIndex, physicalCellCount, cells);
+        return new Row(rowIndex, physicalCellCount, cells, isHidden);
     }
 
     private int getRowIndexWithFallback(int fallbackRowIndex) {
