@@ -30,6 +30,7 @@ import java.util.TimeZone;
 import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.dhatim.fastexcel.CellAddress.convertNumToColString;
 import static org.dhatim.fastexcel.Color.BLACK;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -54,12 +55,9 @@ class CorrectnessTest {
 
     @Test
     void colToName() {
-        assertThat(new Ref() {
-        }.colToString(26)).isEqualTo("AA");
-        assertThat(new Ref() {
-        }.colToString(702)).isEqualTo("AAA");
-        assertThat(new Ref() {
-        }.colToString(Worksheet.MAX_COLS - 1)).isEqualTo("XFD");
+        assertThat(convertNumToColString(26)).isEqualTo("AA");
+        assertThat(convertNumToColString(702)).isEqualTo("AAA");
+        assertThat(convertNumToColString(Worksheet.MAX_COLS - 1)).isEqualTo("XFD");
     }
 
     @Test

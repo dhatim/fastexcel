@@ -2,6 +2,8 @@ package org.dhatim.fastexcel;
 
 import java.util.Comparator;
 
+import static org.dhatim.fastexcel.CellAddress.convertNumToColString;
+
 class Location implements Comparable<Location>, Ref {
     final int row;
     final int col;
@@ -28,7 +30,7 @@ class Location implements Comparable<Location>, Ref {
 
     @Override
     public String toString() {
-        return colToString(col) + (row + 1);
+        return convertNumToColString(col) + (row + 1);
     }
 
     @Override

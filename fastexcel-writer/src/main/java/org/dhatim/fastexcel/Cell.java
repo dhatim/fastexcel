@@ -18,9 +18,10 @@ package org.dhatim.fastexcel;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
+
+import static org.dhatim.fastexcel.CellAddress.convertNumToColString;
 
 /**
  * A cell contains a value and a cached style index.
@@ -47,7 +48,7 @@ class Cell implements Ref {
      */
     void write(Writer w, int r, int c) throws IOException {
         if (value != null || style != 0) {
-            w.append("<c r=\"").append(colToString(c)).append(r + 1).append('\"');
+            w.append("<c r=\"").append(convertNumToColString(c)).append(r + 1).append('\"');
             if (style != 0) {
                 w.append(" s=\"").append(style).append('\"');
             }

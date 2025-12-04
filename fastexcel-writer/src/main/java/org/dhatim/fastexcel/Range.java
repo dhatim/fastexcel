@@ -18,6 +18,8 @@ package org.dhatim.fastexcel;
 import java.util.*;
 import java.util.stream.IntStream;
 
+import static org.dhatim.fastexcel.CellAddress.convertNumToColString;
+
 /**
  * Definition of a range of cells.
  */
@@ -139,7 +141,7 @@ public class Range implements Ref {
 
     @Override
     public String toString() {
-        return colToString(left) + (top + 1) + ':' + colToString(right) + (bottom + 1);
+        return convertNumToColString(left) + (top + 1) + ':' + convertNumToColString(right) + (bottom + 1);
     }
 
     /**
@@ -150,7 +152,7 @@ public class Range implements Ref {
      * @return absolute reference
      */
     public String toAbsoluteString() {
-        return '$' + colToString(left) + '$' + (top + 1) + ":$" + colToString(right) + '$' + (bottom + 1);
+        return '$' + convertNumToColString(left) + '$' + (top + 1) + ":$" + convertNumToColString(right) + '$' + (bottom + 1);
     }
 
     /**

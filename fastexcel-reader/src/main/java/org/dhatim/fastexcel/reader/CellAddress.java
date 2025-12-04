@@ -100,14 +100,17 @@ public final class CellAddress implements Comparable<CellAddress> {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        format(sb, row, col);
-        return sb.toString();
+        return format(row, col).toString();
     }
 
-    static void format(StringBuilder sb, int row, int col) {
+    static StringBuilder format(int row, int col) {
+        return format(new StringBuilder(), row, col);
+    }
+
+    static StringBuilder format(StringBuilder sb, int row, int col) {
         sb.append(convertNumToColString(col));
         sb.append(row + 1);
+        return sb;
     }
 
     public static String convertNumToColString(int col) {

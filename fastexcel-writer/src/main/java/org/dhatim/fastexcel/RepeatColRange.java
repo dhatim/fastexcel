@@ -15,7 +15,9 @@
  */
 package org.dhatim.fastexcel;
 
-/** This class represents a range of columns for the 
+import static org.dhatim.fastexcel.CellAddress.convertNumToColString;
+
+/** This class represents a range of columns for the
  *      repeating columns feature in the print setup. */
 class RepeatColRange implements Ref {
     
@@ -32,6 +34,6 @@ class RepeatColRange implements Ref {
      */
     @Override
     public String toString() {
-        return "$" + colToString(from) + ":$" + colToString(to);
+        return "$" + convertNumToColString(from) + ":$" + convertNumToColString(to);
     }
 }
