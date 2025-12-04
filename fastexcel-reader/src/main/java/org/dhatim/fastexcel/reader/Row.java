@@ -25,11 +25,13 @@ public class Row implements Iterable<Cell> {
     private final int rowNum;
     private final List<Cell> cells;
     private final int physicalCellCount;
+    private final boolean isHidden;
 
-    Row(int rowNum, int physicalCellCount, List<Cell> cells) {
+    Row(int rowNum, int physicalCellCount, List<Cell> cells, boolean isHidden) {
         this.rowNum = rowNum;
         this.physicalCellCount = physicalCellCount;
         this.cells = cells;
+        this.isHidden = isHidden;
     }
 
     /**
@@ -79,6 +81,15 @@ public class Row implements Iterable<Cell> {
 
     public int getPhysicalCellCount() {
         return physicalCellCount;
+    }
+
+    /**
+     * Indicates whether this row is hidden in the worksheet.
+     *
+     * @return {@code true} if the row is hidden; {@code false} otherwise
+     */
+    public boolean isHidden() {
+        return isHidden;
     }
 
     @Override
