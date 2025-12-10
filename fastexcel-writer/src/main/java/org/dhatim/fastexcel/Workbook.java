@@ -144,13 +144,23 @@ public class Workbook implements Closeable {
             if (hasComments()) {
                 w.append("<Default ContentType=\"application/vnd.openxmlformats-officedocument.vmlDrawing\" Extension=\"vml\"/>");
             }
+            // Add image content types
+            Set<ImageType> usedImageTypes = collectUsedImageTypes();
+            for (ImageType imageType : usedImageTypes) {
+                w.append("<Default Extension=\"").append(imageType.getExtension())
+                 .append("\" ContentType=\"").append(imageType.getContentType()).append("\"/>");
+            }
             w.append("<Override PartName=\"/xl/sharedStrings.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml\"/><Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/><Override PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/>");
             for (Worksheet ws : worksheets) {
                 int index = getIndex(ws);
                 w.append("<Override PartName=\"/xl/worksheets/sheet").append(index).append(".xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>");
+                // Drawing content type (for pictures and/or comments)
+                if (!ws.pictures.isEmpty() || !ws.comments.isEmpty()) {
+                    w.append("<Override ContentType=\"application/vnd.openxmlformats-officedocument.drawing+xml\" PartName=\"/xl/drawings/drawing").append(index).append(".xml\"/>");
+                }
+                // Comments content type
                 if (!ws.comments.isEmpty()) {
                     w.append("<Override ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.comments+xml\" PartName=\"/xl/comments").append(index).append(".xml\"/>");
-                    w.append("<Override ContentType=\"application/vnd.openxmlformats-officedocument.drawing+xml\" PartName=\"/xl/drawings/drawing").append(index).append(".xml\"/>");
                 }
                 if (!ws.tables.isEmpty()) {
                     for (Map.Entry<String, Table> entry : ws.tables.entrySet()) {
@@ -284,6 +294,19 @@ public class Workbook implements Closeable {
     }
 
     /**
+     * Collect all used image types from all worksheets.
+     *
+     * @return Set of used ImageType values
+     */
+    private Set<ImageType> collectUsedImageTypes() {
+        Set<ImageType> types = new HashSet<>();
+        for (Worksheet ws : worksheets) {
+            types.addAll(ws.pictures.getUsedImageTypes());
+        }
+        return types;
+    }
+
+    /**
      * Writes the {@code xl/workbook.xml} file to the zip.
      *
      * @throws IOException If an I/O error occurs.
@@ -402,6 +425,21 @@ public class Workbook implements Closeable {
     void endFile() throws IOException {
         writer.flush();
         os.closeEntry();
+    }
+
+    /**
+     * Write a binary file to the output stream.
+     *
+     * @param name File name (path within the zip).
+     * @param data Binary data to write.
+     * @throws IOException If an I/O error occurs.
+     */
+    void writeBinaryFile(String name, byte[] data) throws IOException {
+        synchronized (os) {
+            os.putNextEntry(new ZipEntry(name));
+            os.write(data);
+            os.closeEntry();
+        }
     }
 
     /**

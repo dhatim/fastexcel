@@ -121,6 +121,8 @@ public class Worksheet implements Closeable {
 
     final Comments comments = new Comments();
 
+    final Pictures pictures = new Pictures();
+
     final Map<String,Table> tables = new LinkedHashMap<>();
 
     private final DynamicBitMatrix tablesMatrix = new DynamicBitMatrix(MAX_COLS, MAX_ROWS);
@@ -266,6 +268,11 @@ public class Worksheet implements Closeable {
     private Map<String, Range> namedRanges = new LinkedHashMap<>();
 
     private Map<HyperLink, Ref> hyperlinkRanges = new LinkedHashMap<>();
+
+    /**
+     * Relationship ID for the drawing element (for pictures).
+     */
+    private String drawingRelId;
 
     /**
      * The set of protection options that are applied on the sheet.
@@ -972,9 +979,22 @@ public class Worksheet implements Closeable {
         writer.append("</oddFooter></headerFooter>");
 
 
-        if(!comments.isEmpty()) {
-            writer.append("<drawing r:id=\"d\"/>");
-            writer.append("<legacyDrawing r:id=\"v\"/>");
+        // Drawing references
+        if (!pictures.isEmpty() || !comments.isEmpty()) {
+            if (!pictures.isEmpty()) {
+                // Pictures need drawing.xml reference
+                if (drawingRelId == null) {
+                    drawingRelId = relationships.setImageDrawingRels(index);
+                }
+                writer.append("<drawing r:id=\"").append(drawingRelId).append("\"/>");
+            } else if (!comments.isEmpty()) {
+                // Comments only need drawing reference with fixed ID
+                writer.append("<drawing r:id=\"d\"/>");
+            }
+            if (!comments.isEmpty()) {
+                // Comments need legacyDrawing (VML)
+                writer.append("<legacyDrawing r:id=\"v\"/>");
+            }
         }
         if (!tables.isEmpty()){
             writer.append("<tableParts count=\""+tables.size()+"\">");
@@ -987,12 +1007,29 @@ public class Worksheet implements Closeable {
         writer.append("</worksheet>");
         workbook.endFile();
 
+        /* write picture files */
+        if (!pictures.isEmpty()) {
+            // First, write the drawing relationships file (this assigns rIds to pictures)
+            workbook.writeFile("xl/drawings/_rels/drawing" + index + ".xml.rels",
+                w -> pictures.writeDrawingRels(w, index));
+            // Then write the drawing file
+            workbook.writeFile("xl/drawings/drawing" + index + ".xml", pictures::writeDrawing);
+            // Finally write the actual image binary files
+            pictures.writeMediaFiles(workbook, index);
+        }
+
         /* write comment files */
         if (!comments.isEmpty()) {
             workbook.writeFile("xl/comments" + index + ".xml", comments::writeComments);
             workbook.writeFile("xl/drawings/vmlDrawing" + index + ".vml", comments::writeVmlDrawing);
-            workbook.writeFile("xl/drawings/drawing" + index + ".xml", comments::writeDrawing);
-            relationships.setCommentsRels(index);
+            if (pictures.isEmpty()) {
+                // Only write empty drawing.xml for comments if no pictures
+                workbook.writeFile("xl/drawings/drawing" + index + ".xml", comments::writeDrawing);
+                relationships.setCommentsRels(index);
+            } else {
+                // Comments coexist with pictures - only set VML relationship
+                relationships.setCommentsOnlyRels(index);
+            }
         }
         //write table files
         for (Map.Entry<String, Table> entry : tables.entrySet()) {
@@ -1181,6 +1218,70 @@ public class Worksheet implements Closeable {
      */
     public void comment(int r, int c, String comment) {
         comments.set(r, c, comment);
+    }
+
+    /**
+     * Add an image at the specified cell position with explicit size.
+     * <p>
+     * Images are stored in memory till call to {@link #close()} (or {@link #finish()}) -
+     * calling {@link #flush()} does not write them to output stream.
+     *
+     * @param row      Zero-based row number
+     * @param col      Zero-based column number
+     * @param imageData Image bytes (PNG, JPEG, or GIF)
+     * @param widthPx  Image width in pixels
+     * @param heightPx Image height in pixels
+     * @return The created Picture object for further customization
+     */
+    public Picture addImage(int row, int col, byte[] imageData, int widthPx, int heightPx) {
+        return pictures.addPicture(row, col, imageData, widthPx, heightPx);
+    }
+
+    /**
+     * Add an image spanning from one cell to another.
+     * <p>
+     * Images are stored in memory till call to {@link #close()} (or {@link #finish()}) -
+     * calling {@link #flush()} does not write them to output stream.
+     *
+     * @param fromRow   Starting row (zero-based)
+     * @param fromCol   Starting column (zero-based)
+     * @param toRow     Ending row (zero-based)
+     * @param toCol     Ending column (zero-based)
+     * @param imageData Image bytes (PNG, JPEG, or GIF)
+     * @return The created Picture object for further customization
+     */
+    public Picture addImage(int fromRow, int fromCol, int toRow, int toCol, byte[] imageData) {
+        return pictures.addPicture(fromRow, fromCol, toRow, toCol, imageData);
+    }
+
+    /**
+     * Add an image with custom anchor configuration.
+     * <p>
+     * Images are stored in memory till call to {@link #close()} (or {@link #finish()}) -
+     * calling {@link #flush()} does not write them to output stream.
+     *
+     * @param anchor    The positioning anchor
+     * @param imageData Image bytes (PNG, JPEG, or GIF)
+     * @return The created Picture object
+     */
+    public Picture addImage(PictureAnchor anchor, byte[] imageData) {
+        return pictures.addPicture(anchor, imageData, null, true);
+    }
+
+    /**
+     * Add an image with custom anchor and name.
+     * <p>
+     * Images are stored in memory till call to {@link #close()} (or {@link #finish()}) -
+     * calling {@link #flush()} does not write them to output stream.
+     *
+     * @param anchor          The positioning anchor
+     * @param imageData       Image bytes (PNG, JPEG, or GIF)
+     * @param name            Name for the picture
+     * @param lockAspectRatio Whether to lock the aspect ratio
+     * @return The created Picture object
+     */
+    public Picture addImage(PictureAnchor anchor, byte[] imageData, String name, boolean lockAspectRatio) {
+        return pictures.addPicture(anchor, imageData, name, lockAspectRatio);
     }
 
     /**
