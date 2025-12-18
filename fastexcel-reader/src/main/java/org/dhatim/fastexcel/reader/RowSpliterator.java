@@ -92,7 +92,7 @@ class RowSpliterator implements Spliterator<Row> {
         }
 
         int trackedColIndex = 0;
-        int rowIndex = getRowIndexWithFallback(++trackedRowIndex);
+        int rowIndex = getRowIndexWithFallback(trackedRowIndex);
         boolean isHidden = "1".equals(r.getAttribute("hidden"));
 
         List<Cell> cells = new ArrayList<>(rowCapacity);
@@ -103,7 +103,7 @@ class RowSpliterator implements Spliterator<Row> {
                 break;
             }
 
-            Cell cell = parseCell(trackedColIndex++, rowIndex);
+            Cell cell = parseCell(trackedColIndex++);
             CellAddress addr = cell.getAddress();
             // we may have to adjust because we may have skipped blanks
             trackedColIndex = addr.getColumn() + 1;
@@ -112,6 +112,7 @@ class RowSpliterator implements Spliterator<Row> {
             cells.set(addr.getColumn(), cell);
             physicalCellCount++;
         }
+        trackedRowIndex++;
         rowCapacity = Math.max(rowCapacity, cells.size());
         return new Row(rowIndex, physicalCellCount, cells, isHidden);
     }
@@ -128,7 +129,7 @@ class RowSpliterator implements Spliterator<Row> {
                 new CellAddress(trackedRowIndex, trackedColIndex);
     }
 
-    private Cell parseCell(int trackedColIndex, int trackedRowIndex) throws XMLStreamException {
+    private Cell parseCell(int trackedColIndex) throws XMLStreamException {
         CellAddress addr = getCellAddressWithFallback(trackedColIndex, trackedRowIndex);
         String type = r.getOptionalAttribute("t").orElse("n");
         String styleString = r.getAttribute("s");
