@@ -757,4 +757,29 @@ class CorrectnessTest {
         });
     }
 
+    @Test
+    void testFormatCodeWithSpecialCharacters() throws Exception {
+        // Test for GitHub issue #472: Format codes with quotes should be XML-escaped
+        writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Sheet1");
+
+            // ISO 8601 format with literal "T" - this was causing XML parsing errors
+            ws.value(0, 0, LocalDateTime.of(2024, 1, 9, 14, 30, 0));
+            ws.style(0, 0).format("yyyy-MM-dd\"T\"HH:mm:ss").set();
+
+            // Format with other special XML characters
+            ws.value(1, 0, 1234.56);
+            ws.style(1, 0).format("#,##0.00 \"<units>\"").set();
+
+            // Format with ampersand
+            ws.value(2, 0, 100);
+            ws.style(2, 0).format("\"A&B: \"0").set();
+
+            // Format with apostrophe
+            ws.value(3, 0, 2024);
+            ws.style(3, 0).format("\"Year '\"0").set();
+        });
+        // If we reach here without exception, the XML was valid
+    }
+
 }
