@@ -164,7 +164,7 @@ final class StyleCache {
      */
     void write(Writer w) throws IOException {
         w.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?><styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">");
-        writeCache(w, valueFormattings, "numFmts", e -> w.append("<numFmt numFmtId=\"").append(e.getValue()).append("\" formatCode=\"").append(e.getKey()).append("\"/>"));
+        writeCache(w, valueFormattings, "numFmts", e -> w.append("<numFmt numFmtId=\"").append(e.getValue()).append("\" formatCode=\"").append(XmlEscapeHelper.escape(e.getKey())).append("\"/>"));
         writeCache(w, fonts, "fonts", e -> e.getKey().write(w));
         writeCache(w, fills, "fills", e -> e.getKey().write(w));
         writeCache(w, borders, "borders", e -> e.getKey().write(w));
