@@ -17,6 +17,9 @@ package org.dhatim.fastexcel;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -32,6 +35,18 @@ class Writer {
      * Char buffer.
      */
     private final StringBuilder sb;
+    /**
+     * UTF-8 encoder for flush; reused to avoid allocating String and byte[] on every flush.
+     */
+    private final CharsetEncoder encoder = StandardCharsets.UTF_8.newEncoder();
+    /**
+     * Reusable char array for getChars (avoids sb.toString() in flush).
+     */
+    private char[] encodeChars;
+    /**
+     * Reusable byte array for encoded output (avoids getBytes() allocation in flush).
+     */
+    private byte[] encodeBytes;
 
     /**
      * Constructor.
@@ -75,7 +90,7 @@ class Writer {
      */
     private Writer append(String s, boolean escape) throws IOException {
         if (escape) {
-            sb.append(XmlEscapeHelper.escape(s));
+            XmlEscapeHelper.appendEscaped(sb, s);
         } else {
             sb.append(s);
         }
@@ -149,11 +164,30 @@ class Writer {
 
     /**
      * Flush this writer.
+     * Encodes buffered characters to UTF-8 and writes to the output stream
+     * without allocating a full String and byte[] (avoids double copy).
      *
      * @throws IOException If an I/O error occurs.
      */
     void flush() throws IOException {
-        os.write(sb.toString().getBytes(StandardCharsets.UTF_8));
+        int len = sb.length();
+        if (len == 0) {
+            return;
+        }
+        if (encodeChars == null || encodeChars.length < len) {
+            encodeChars = new char[Math.max(len, 512 * 1024)];
+        }
+        sb.getChars(0, len, encodeChars, 0);
         sb.setLength(0);
+
+        int estimatedBytes = len * 4; // UTF-8 max bytes per code point
+        if (encodeBytes == null || encodeBytes.length < estimatedBytes) {
+            encodeBytes = new byte[Math.max(estimatedBytes, 512 * 1024 * 4)];
+        }
+        ByteBuffer out = ByteBuffer.wrap(encodeBytes);
+        encoder.reset();
+        encoder.encode(CharBuffer.wrap(encodeChars, 0, len), out, true);
+        encoder.flush(out);
+        os.write(encodeBytes, 0, out.position());
     }
 }
