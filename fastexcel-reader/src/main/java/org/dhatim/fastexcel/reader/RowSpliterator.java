@@ -134,9 +134,9 @@ class RowSpliterator implements Spliterator<Row> {
         }
 
         if ("inlineStr".equals(type)) {
-            return parseInlineStr(addr);
+            return parseInlineStr(addr, formatId, formatString);
         } else if ("s".equals(type)) {
-            return parseString(addr);
+            return parseString(addr, formatId, formatString);
         } else {
             return parseOther(addr, type, formatId, formatString);
         }
@@ -279,7 +279,7 @@ class RowSpliterator implements Spliterator<Row> {
     }
 
 
-    private Cell parseString(CellAddress addr) throws XMLStreamException {
+    private Cell parseString(CellAddress addr, final String formatId, final String formatString) throws XMLStreamException {
         r.goTo(() -> r.isStartElement("v") || r.isEndElement("c"));
         if (r.isEndElement("c")) {
             return empty(addr, CellType.STRING);
@@ -293,14 +293,14 @@ class RowSpliterator implements Spliterator<Row> {
         Object value = sharedStringValue;
         String formula = null;
         String rawValue = sharedStringValue;
-        return new Cell(workbook, CellType.STRING, value, addr, formula, rawValue);
+        return new Cell(workbook, CellType.STRING, value, addr, formula, rawValue, formatId, formatString);
     }
 
     private Cell empty(CellAddress addr, CellType type) {
         return new Cell(workbook, type, "", addr, null, "");
     }
 
-    private Cell parseInlineStr(CellAddress addr) throws XMLStreamException {
+    private Cell parseInlineStr(CellAddress addr, String formatId, String formatString) throws XMLStreamException {
         Object value = null;
         String formula = null;
         String rawValue = null;
@@ -315,7 +315,7 @@ class RowSpliterator implements Spliterator<Row> {
             }
         }
         CellType cellType = formula == null ? CellType.STRING : CellType.FORMULA;
-        return new Cell(workbook, cellType, value, addr, formula, rawValue);
+        return new Cell(workbook, cellType, value, addr, formula, rawValue, formatId, formatString);
     }
 
     private Optional<String> getArrayFormula(CellAddress addr) {
