@@ -74,4 +74,36 @@ public class RowTest {
             });
         }
     }
+
+    @ParameterizedTest
+    @CsvSource({
+            "0, false, 1, Lorem",
+            "1, true, 2, ipsum",
+            "2, true, 3, dolor",
+            "3, false, 4, sit",
+            "4, false, 5, amet",
+            "5, false, 6, consectetur",
+            "6, true, 7, adipiscing",
+            "7, true, 8, elit",
+            "8, true, 9, Ut",
+            "9, false, 10, nec"
+    })
+    public void shouldGetVisibleAndHiddenRowsOpenOffice(int index, boolean isHidden, String cellIndex0, String cellIndex1) throws IOException {
+        try (InputStream inputStream = open("/xlsx/simple-with-hidden-rows-openoffice.xlsx");
+             ReadableWorkbook excel = new ReadableWorkbook(inputStream)) {
+            Sheet firstSheet = excel.getFirstSheet();
+
+            Row row = firstSheet.read().get(index);
+
+            assertThat(row.isHidden()).isEqualTo(isHidden);
+            assertThat(row.getCell(0)).satisfies(cell -> {
+                assertThat(cell.getType()).isEqualTo(CellType.NUMBER);
+                assertThat(cell.asNumber()).isEqualTo(new BigDecimal(cellIndex0));
+            });
+            assertThat(row.getCell(1)).satisfies(cell -> {
+                assertThat(cell.getType()).isEqualTo(CellType.STRING);
+                assertThat(cell.asString()).isEqualTo(cellIndex1);
+            });
+        }
+    }
 }

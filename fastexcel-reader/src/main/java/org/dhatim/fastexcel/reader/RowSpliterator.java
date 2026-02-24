@@ -86,7 +86,8 @@ class RowSpliterator implements Spliterator<Row> {
 
         int trackedColIndex = 0;
         int rowIndex = getRowIndexWithFallback(++trackedRowIndex);
-        boolean isHidden = "1".equals(r.getAttribute("hidden"));
+        String hiddenAttribute = r.getAttribute("hidden");
+        boolean isHidden = "1".equals(hiddenAttribute) || "true".equals(hiddenAttribute);
 
         List<Cell> cells = new ArrayList<>(rowCapacity);
         int physicalCellCount = 0;
