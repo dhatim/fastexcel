@@ -42,6 +42,26 @@ public class Relationships {
         relationship.add(new Relationship("v", TYPE_OF_VMLDRAWING, "../drawings/vmlDrawing" + index + ".vml", null));
     }
 
+    /**
+     * Set relationships for comments when pictures also exist (no separate drawing.xml for comments).
+     */
+    void setCommentsOnlyRels(int index) {
+        relationship.add(new Relationship("c", TYPE_OF_COMMENTS, "../comments" + index + ".xml", null));
+        relationship.add(new Relationship("v", TYPE_OF_VMLDRAWING, "../drawings/vmlDrawing" + index + ".vml", null));
+    }
+
+    /**
+     * Set relationship for picture drawing.
+     *
+     * @param index The sheet index
+     * @return The relationship ID
+     */
+    String setImageDrawingRels(int index) {
+        String id = "rId" + (maxIndex.getAndIncrement());
+        relationship.add(new Relationship(id, TYPE_OF_DRAWING, "../drawings/drawing" + index + ".xml", null));
+        return id;
+    }
+
     boolean isEmpty() {
         return relationship.isEmpty();
     }
