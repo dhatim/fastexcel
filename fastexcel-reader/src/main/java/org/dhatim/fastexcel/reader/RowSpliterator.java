@@ -15,14 +15,21 @@
  */
 package org.dhatim.fastexcel.reader;
 
-import javax.xml.stream.XMLStreamException;
+import static org.dhatim.fastexcel.reader.DefaultXMLInputFactory.factory;
+
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static org.dhatim.fastexcel.reader.DefaultXMLInputFactory.factory;
+import javax.xml.stream.XMLStreamException;
 
 class RowSpliterator implements Spliterator<Row> {
 
@@ -85,7 +92,7 @@ class RowSpliterator implements Spliterator<Row> {
         }
 
         int trackedColIndex = 0;
-        int rowIndex = getRowIndexWithFallback(++trackedRowIndex);
+        int rowIndex = getRowIndexWithFallback(trackedRowIndex);
         String hiddenAttribute = r.getAttribute("hidden");
         boolean isHidden = "1".equals(hiddenAttribute) || "true".equals(hiddenAttribute);
 
@@ -99,11 +106,14 @@ class RowSpliterator implements Spliterator<Row> {
 
             Cell cell = parseCell(trackedColIndex++);
             CellAddress addr = cell.getAddress();
+            // we may have to adjust because we may have skipped blanks
+            trackedColIndex = addr.getColumn() + 1;
             ensureSize(cells, addr.getColumn() + 1);
 
             cells.set(addr.getColumn(), cell);
             physicalCellCount++;
         }
+        trackedRowIndex++;
         rowCapacity = Math.max(rowCapacity, cells.size());
         return new Row(rowIndex, physicalCellCount, cells, isHidden);
     }
@@ -113,7 +123,7 @@ class RowSpliterator implements Spliterator<Row> {
         return rowIndexOrNull != null ? rowIndexOrNull : fallbackRowIndex;
     }
 
-    private CellAddress getCellAddressWithFallback(int trackedColIndex) {
+    private CellAddress getCellAddressWithFallback(int trackedColIndex, int trackedRowIndex) {
         String cellRefOrNull = r.getAttribute("r");
         return cellRefOrNull != null ?
                 new CellAddress(cellRefOrNull) :
@@ -121,7 +131,7 @@ class RowSpliterator implements Spliterator<Row> {
     }
 
     private Cell parseCell(int trackedColIndex) throws XMLStreamException {
-        CellAddress addr = getCellAddressWithFallback(trackedColIndex);
+        CellAddress addr = getCellAddressWithFallback(trackedColIndex, trackedRowIndex);
         String type = r.getOptionalAttribute("t").orElse("n");
         String styleString = r.getAttribute("s");
         String formatId = null;
@@ -193,7 +203,7 @@ class RowSpliterator implements Spliterator<Row> {
         if (formula == null && value == null && definedType == CellType.NUMBER) {
             return new Cell(workbook, CellType.EMPTY, null, addr, null, rawValue);
         } else {
-            CellType cellType = (formula != null) ? CellType.FORMULA : definedType;
+            CellType cellType = formula != null ? CellType.FORMULA : definedType;
             return new Cell(workbook, cellType, value, addr, formula, rawValue, dataFormatId, dataFormatString);
         }
     }
@@ -210,7 +220,7 @@ class RowSpliterator implements Spliterator<Row> {
      * @see <a href="https://github.com/qax-os/excelize/blob/master/cell.go">here</a>
      */
     private String parseSharedFormula(Integer dCol, Integer dRow, String baseFormula) {
-        String res = "";
+        StringBuilder res = new StringBuilder();
         int start = 0;
         boolean stringLiteral = false;
         for (int end = 0; end < baseFormula.length(); end++) {
@@ -223,7 +233,7 @@ class RowSpliterator implements Spliterator<Row> {
             }
             if (c >= 'A' && c <= 'Z' || c == '$') {
 
-                res += baseFormula.substring(start, end);
+                res.append(baseFormula.substring(start, end));
                 start = end;
                 end++;
                 boolean foundNum = false;
@@ -241,17 +251,17 @@ class RowSpliterator implements Spliterator<Row> {
                 }
                 if (foundNum) {
                     String cellID = baseFormula.substring(start, end);
-                    res += shiftCell(cellID, dCol, dRow);
+                    res.append(shiftCell(cellID, dCol, dRow));
                     start = end;
                 }
             }
         }
 
         if (start < baseFormula.length()) {
-            res += baseFormula.substring(start);
+            res.append(baseFormula.substring(start));
         }
 
-        return res;
+        return res.toString();
     }
 
     /**

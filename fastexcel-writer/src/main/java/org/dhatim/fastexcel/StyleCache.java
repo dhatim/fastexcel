@@ -36,6 +36,7 @@ final class StyleCache {
     private final ConcurrentMap<Fill, Integer> fills = new ConcurrentHashMap<>();
     private final ConcurrentMap<Border, Integer> borders = new ConcurrentHashMap<>();
     private final ConcurrentMap<Style, Integer> styles = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Integer, Style> styleIndexToStyle = new ConcurrentHashMap<>();
     private final ConcurrentMap<DifferentialFormat, Integer> dxfs = new ConcurrentHashMap<>();
 
     /**
@@ -58,6 +59,19 @@ final class StyleCache {
      */
     private static <T> int cacheStuff(ConcurrentMap<T, Integer> cache, T t, Function<T, Integer> indexFunction) {
         return cache.computeIfAbsent(t, indexFunction);
+    }
+
+    /**
+     * Cache a style and maintain reverse index for O(1) lookup.
+     *
+     * @param style Style to cache.
+     * @param indexFunction Function to compute the index of the newly cached style.
+     * @return Index of the cached style.
+     */
+    private int cacheStyle(Style style, Function<Style, Integer> indexFunction) {
+        Integer index = styles.computeIfAbsent(style, indexFunction);
+        styleIndexToStyle.putIfAbsent(index, style);
+        return index;
     }
 
     /**
@@ -126,9 +140,9 @@ final class StyleCache {
     }
 
     int mergeAndCacheStyle(int currentStyle, String numberingFormat, Font font, Fill fill, Border border, Alignment alignment, Protection protection) {
-        Style original = styles.entrySet().stream().filter(e -> e.getValue().equals(currentStyle)).map(Entry::getKey).findFirst().orElse(null);
+        Style original = styleIndexToStyle.get(currentStyle);
         Style s = new Style(original, cacheValueFormatting(numberingFormat), cacheFont(font), cacheFill(fill), cacheBorder(border), alignment, protection);
-        return cacheStuff(styles, s);
+        return cacheStyle(s, k -> styles.size());
     }
 
     void replaceDefaultFont(Font font) {

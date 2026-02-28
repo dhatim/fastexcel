@@ -149,7 +149,7 @@
                         <dependency>
                             <groupId>org.apache.maven.surefire</groupId>
                             <artifactId>surefire-junit-platform</artifactId>
-                            <version>3.5.4</version>
+                            <version>3.5.5</version>
                         </dependency>
                     </dependencies>
                 </plugin>
@@ -196,7 +196,7 @@
                     <dependency>
                         <groupId>org.kordamp.maven</groupId>
                         <artifactId>pomchecker-enforcer-rules</artifactId>
-                        <version>1.14.0</version>
+                        <version>1.15.0</version>
                     </dependency>
                     <dependency>
                         <groupId>org.codehaus.mojo</groupId>
