@@ -2,7 +2,7 @@ fastexcel
 =========
 [![Build Status](https://github.com/dhatim/fastexcel/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/dhatim/fastexcel/actions)
 [![Coverage Status](https://coveralls.io/repos/github/dhatim/fastexcel/badge.svg?branch=master)](https://coveralls.io/github/dhatim/fastexcel?branch=master)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.dhatim/fastexcel/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.dhatim/fastexcel)
+[![Maven Central](https://maven-badges.sml.io/maven-central/org.dhatim/fastexcel/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.dhatim/fastexcel)
 [![Javadocs](http://www.javadoc.io/badge/org.dhatim/fastexcel.svg)](http://www.javadoc.io/doc/org.dhatim/fastexcel)
 
 # fastexcel-writer
@@ -40,7 +40,7 @@ Note heap memory usage is measured just before flushing the workbook to the outp
 <dependency>
     <groupId>org.dhatim</groupId>
     <artifactId>fastexcel</artifactId>
-    <version>0.19.1</version>
+    <version>0.20.0</version>
 </dependency>
 ```
 
