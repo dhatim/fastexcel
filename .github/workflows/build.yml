@@ -14,9 +14,10 @@ jobs:
                     distribution: 'zulu'
                     java-version: '11'
             -   name: maven build
-                run: mvn --batch-mode --errors --show-version --no-transfer-progress clean verify jacoco:report-aggregate
+                run: mvn --batch-mode --errors --show-version --no-transfer-progress clean verify jacoco:report
             -   name: code coverage
                 uses: coverallsapp/github-action@v2
                 with:
-                    file: "target/site/jacoco-aggregate/jacoco.xml"
+                    file: "**/target/site/jacoco/jacoco.xml"
                     format: jacoco
+                    debug: true
