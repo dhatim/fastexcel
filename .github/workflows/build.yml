@@ -20,4 +20,3 @@ jobs:
                 with:
                     file: "**/target/site/jacoco/jacoco.xml"
                     format: jacoco
-                    base-path: .
