@@ -18,7 +18,5 @@ jobs:
             -   name: code coverage
                 uses: coverallsapp/github-action@v2
                 with:
-                file: |
-                    fastexcel-writer/target/site/jacoco/jacoco.xml
-                    fastexcel-reader/target/site/jacoco/jacoco.xml
-                github-token: ${{ secrets.GITHUB_TOKEN }}
+                    file: "**/target/site/jacoco/jacoco.xml"
+                    coveralls-token: ${{ secrets.COVERALLS_REPO_TOKEN }}
