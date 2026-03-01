@@ -156,7 +156,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.12</version> <executions>
+                <version>0.8.14</version> <executions>
                 <execution>
                     <id>prepare-agent</id>
                     <goals>
@@ -178,6 +178,10 @@
                 <version>4.5.0</version>
                 <configuration>
                     <repoToken>${env.COVERALLS_REPO_TOKEN}</repoToken>
+                    <jacocoReports>
+                        <jacocoReport>${project.basedir}/fastexcel-writer/target/site/jacoco/jacoco.xml</jacocoReport>
+                        <jacocoReport>${project.basedir}/fastexcel-reader/target/site/jacoco/jacoco.xml</jacocoReport>
+                    </jacocoReports>
                 </configuration>
             </plugin>
             <plugin>
