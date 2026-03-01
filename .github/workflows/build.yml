@@ -15,3 +15,5 @@ jobs:
                     java-version: '11'
             -   name: maven build
                 run: mvn --batch-mode --errors --show-version --no-transfer-progress clean verify
+            -   name: code coverage
+                run: mvn --batch-mode --errors --show-version --no-transfer-progress clean test jacoco:report coveralls:report
