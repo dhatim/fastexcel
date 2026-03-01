@@ -19,4 +19,5 @@ jobs:
                 uses: coverallsapp/github-action@v2
                 with:
                     file: "**/target/site/jacoco/jacoco.xml"
+                    format: jacoco
                     base-path: .
