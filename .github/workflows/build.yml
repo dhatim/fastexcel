@@ -19,6 +19,7 @@ jobs:
                 uses: coverallsapp/github-action@v2
                 with:
                     file: fastexcel-reader/target/site/jacoco/jacoco.xml
+                    format: jacoco
                     base-path: fastexcel-reader/src/main/java  # Points to the start of the 'org' package
                     parallel: true
 
@@ -26,6 +27,7 @@ jobs:
                 uses: coverallsapp/github-action@v2
                 with:
                     file: fastexcel-writer/target/site/jacoco/jacoco.xml
+                    format: jacoco
                     base-path: fastexcel-writer/src/main/java  # Points to the start of the 'org' package
                     parallel: true
 
