@@ -14,10 +14,11 @@ jobs:
                     distribution: 'zulu'
                     java-version: '11'
             -   name: maven build
-                run: mvn --batch-mode --errors --show-version --no-transfer-progress clean verify
+                run: mvn --batch-mode --errors --show-version --no-transfer-progress clean verify jacoco-report
             -   name: code coverage
-                env:
-                    COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-                run: |
-                    echo $COVERALLS_REPO_TOKEN
-                    mvn --batch-mode --errors --show-version --no-transfer-progress clean test jacoco:report coveralls:report
+                uses: coverallsapp/github-action@v2
+                with:
+                file: |
+                    fastexcel-writer/target/site/jacoco/jacoco.xml
+                    fastexcel-reader/target/site/jacoco/jacoco.xml
+                github-token: ${{ secrets.GITHUB_TOKEN }}
