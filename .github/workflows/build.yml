@@ -20,7 +20,7 @@ jobs:
                 with:
                     file: fastexcel-reader/target/site/jacoco/jacoco.xml
                     format: jacoco
-                    base-path: fastexcel-reader/src/main/java  # Points to the start of the 'org' package
+                    base-path: .
                     parallel: true
 
             -   name: code coverage (fastexcel-writer)
@@ -28,7 +28,7 @@ jobs:
                 with:
                     file: fastexcel-writer/target/site/jacoco/jacoco.xml
                     format: jacoco
-                    base-path: fastexcel-writer/src/main/java  # Points to the start of the 'org' package
+                    base-path: .
                     parallel: true
 
             -   uses: coverallsapp/github-action@v2
