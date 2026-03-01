@@ -16,4 +16,6 @@ jobs:
             -   name: maven build
                 run: mvn --batch-mode --errors --show-version --no-transfer-progress clean verify
             -   name: code coverage
+                env:
+                    COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
                 run: mvn --batch-mode --errors --show-version --no-transfer-progress clean test jacoco:report coveralls:report
