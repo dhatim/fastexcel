@@ -15,9 +15,20 @@ jobs:
                     java-version: '11'
             -   name: maven build
                 run: mvn --batch-mode --errors --show-version --no-transfer-progress clean verify jacoco:report
-            -   name: code coverage
+            -   name: code coverage (fastexcel-reader)
                 uses: coverallsapp/github-action@v2
                 with:
-                    file: "**/target/site/jacoco/jacoco.xml"
-                    format: jacoco
-                    debug: true
+                    file: fastexcel-reader/target/site/jacoco/jacoco.xml
+                    base-path: fastexcel-reader/src/main/java  # Points to the start of the 'org' package
+                    parallel: true
+
+            -   name: code coverage (fastexcel-writer)
+                uses: coverallsapp/github-action@v2
+                with:
+                    file: fastexcel-writer/target/site/jacoco/jacoco.xml
+                    base-path: fastexcel-writer/src/main/java  # Points to the start of the 'org' package
+                    parallel: true
+
+            -   uses: coverallsapp/github-action@v2
+                with:
+                    parallel-finished: true
