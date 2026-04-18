@@ -16,6 +16,7 @@
 package org.dhatim.fastexcel;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -104,22 +105,25 @@ class Cell implements Ref {
     void setValue(Boolean v) {
         value = v;
     }
+
     void setValue(Date v) {
         value = v == null ? null : TimestampUtil.convertDate(v);
     }
 
     void setValue(LocalDateTime v) {
-        value = v == null ? null :
-            TimestampUtil.convertDate(v);
+        value = v == null ? null : TimestampUtil.convertDate(v);
     }
 
     void setValue(LocalDate v) {
         value = v == null ? null : TimestampUtil.convertDate(v);
-
     }
 
     void setValue(ZonedDateTime v) {
         value = v == null ? null : TimestampUtil.convertZonedDateTime(v);
+    }
+
+    void setValue(Instant v) {
+        value = v == null ? null : TimestampUtil.convertInstant(v);
     }
 
     /**

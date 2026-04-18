@@ -16,7 +16,9 @@
 package org.dhatim.fastexcel.benchmarks;
 
 import java.io.IOException;
-import java.util.Date;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 import org.apache.commons.io.output.CountingOutputStream;
 import org.apache.commons.io.output.NullOutputStream;
@@ -51,13 +53,14 @@ public class WriterBenchmark extends BenchmarkLauncher {
     @Benchmark
     public Object fastExcel() throws IOException {
         CountingOutputStream count = new CountingOutputStream(new NullOutputStream());
-        try(Workbook wb = new Workbook(count, "Perf", "1.0")){
+        LocalDateTime localDateTime = Instant.ofEpochMilli(1549915044).atOffset(ZoneOffset.UTC).toLocalDateTime();
+        try (Workbook wb = new Workbook(count, "Perf", "1.0")){
           Worksheet ws = wb.newWorksheet("Sheet 1");
           for (int r = 0; r < NB_ROWS; ++r) {
               ws.value(r, 0, r);
               ws.value(r, 1, Integer.toString(r % 1000));
               ws.value(r, 2, r / 87.0);
-              ws.value(r, 3, new Date(1549915044));
+              ws.value(r, 3, localDateTime);
           }
           ws.range(0, 3, NB_ROWS - 1, 3).style().format("yyyy-mm-dd hh:mm:ss").set();
         }
@@ -68,6 +71,7 @@ public class WriterBenchmark extends BenchmarkLauncher {
         Sheet ws = wb.createSheet("Sheet 1");
         CellStyle dateStyle = wb.createCellStyle();
         dateStyle.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat("yyyy-mm-dd hh:mm:ss"));
+        LocalDateTime localDateTime = Instant.ofEpochMilli(1549915044).atOffset(ZoneOffset.UTC).toLocalDateTime();
         for (int r = 0; r < NB_ROWS; ++r) {
             Row row = ws.createRow(r);
             row.createCell(0).setCellValue(r);
@@ -75,7 +79,7 @@ public class WriterBenchmark extends BenchmarkLauncher {
             row.createCell(2).setCellValue(r / 87.0);
             Cell c = row.createCell(3);
             c.setCellStyle(dateStyle);
-            c.setCellValue(new Date(1549915044));
+            c.setCellValue(localDateTime);
         }
         CountingOutputStream count = new CountingOutputStream(new NullOutputStream());
         wb.write(count);
