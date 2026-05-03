@@ -509,10 +509,8 @@ class CorrectnessTest {
         cal.set(Calendar.MINUTE, 0);
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
-        Date time = cal.getTime();
-        return time;
+        return cal.getTime();
     }
-
 
     @Test
     void testForIssue261() throws Exception {
