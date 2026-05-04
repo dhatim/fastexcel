@@ -744,6 +744,20 @@ public class Worksheet implements Closeable {
     }
 
     /**
+     * Set the cell value at the given coordinates as a rich inline string.
+     * Each {@link RichText.Run} carries its own font formatting, so a single
+     * cell can mix bold/italic/colored/sized fragments. Built via
+     * {@link RichText#builder()}.
+     *
+     * @param r Zero-based row number.
+     * @param c Zero-based column number.
+     * @param value Cell value.
+     */
+    public void inlineString(int r, int c, RichText value) {
+        cell(r, c).setInlineString(value);
+    }
+
+    /**
      * Get a new style setter for a cell.
      *
      * @param r Zero-based row number.

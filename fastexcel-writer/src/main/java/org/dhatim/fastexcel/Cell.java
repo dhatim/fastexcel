@@ -58,6 +58,8 @@ class Cell implements Ref {
             w.append(">");
             if (value instanceof Formula) {
                 w.append("<f>").append(((Formula) value).getExpression()).append("</f>");
+            } else if (value instanceof RichText) {
+                ((RichText) value).write(w);
             } else if (value instanceof String) {
                 w.append("<is><t>").appendEscaped((String) value).append("</t></is>");
             } else if (value != null) {
@@ -86,7 +88,7 @@ class Cell implements Ref {
             return "s";
         } else if (value instanceof Boolean) {
             return "b";
-        } else if (value instanceof String) {
+        } else if (value instanceof String || value instanceof RichText) {
             return "inlineStr";
         } else {
             return "n";
@@ -152,6 +154,15 @@ class Cell implements Ref {
      * @param v String value.
      */
     void setInlineString(String v) {
+        value = v;
+    }
+
+    /**
+     * Assign a rich inline string to this cell.
+     *
+     * @param v Rich inline string value.
+     */
+    void setInlineString(RichText v) {
         value = v;
     }
 
