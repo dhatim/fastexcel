@@ -17,6 +17,7 @@ package org.dhatim.fastexcel;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -632,6 +633,7 @@ public class Worksheet implements Closeable {
     public void value(int r, int c, String value) {
         cell(r, c).setValue(workbook, value);
     }
+
     /**
      * Set the cell value at the given coordinates.
      *
@@ -642,6 +644,7 @@ public class Worksheet implements Closeable {
     public void value(int r, int c, Number value) {
         cell(r, c).setValue(value);
     }
+
     /**
      * Set the cell value at the given coordinates.
      *
@@ -652,6 +655,7 @@ public class Worksheet implements Closeable {
     public void value(int r, int c, Boolean value) {
         cell(r, c).setValue(value);
     }
+
     /**
      * Set the cell value at the given coordinates.
      *
@@ -665,6 +669,7 @@ public class Worksheet implements Closeable {
     public void value(int r, int c, Date value) {
         cell(r, c).setValue(value);
     }
+
     /**
      * Set the cell value at the given coordinates.
      *
@@ -678,6 +683,7 @@ public class Worksheet implements Closeable {
     public void value(int r, int c, LocalDateTime value) {
         cell(r, c).setValue(value);
     }
+
     /**
      * Set the cell value at the given coordinates.
      *
@@ -691,6 +697,7 @@ public class Worksheet implements Closeable {
     public void value(int r, int c, LocalDate value) {
         cell(r, c).setValue(value);
     }
+
     /**
      * Set the cell value at the given coordinates.
      *
@@ -699,6 +706,20 @@ public class Worksheet implements Closeable {
      * @param value Cell value.
      */
     public void value(int r, int c, ZonedDateTime value) {
+        cell(r, c).setValue(value);
+    }
+
+    /**
+     * Set the cell value at the given coordinates.
+     *
+     * @param r Zero-based row number.
+     * @param c Zero-based column number.
+     * @param value Cell value. Note Excel timestamps do not carry
+     * any timezone information; {@link Instant} values are converted to an Excel
+     * serial number with {@code UTC}. If you need a specific timezone,
+     * prefer passing a {@link ZonedDateTime}.
+     */
+    public void value(int r, int c, Instant value) {
         cell(r, c).setValue(value);
     }
 

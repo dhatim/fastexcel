@@ -19,6 +19,13 @@ import java.nio.charset.StandardCharsets;
 
 final class CellAddress {
     private static final int COL_RADIX = 'Z' - 'A' + 1;
+    private static final String[] CACHED_COLS = new String[1024];
+
+    static {
+        for (int i = 0; i < CACHED_COLS.length; i++) {
+            CACHED_COLS[i] = convertNumToColStringImpl(i);
+        }
+    }
 
     static StringBuilder format(int row, int col) {
         return format(new StringBuilder(), row, col);
@@ -31,6 +38,13 @@ final class CellAddress {
     }
 
     static String convertNumToColString(int col) {
+        if (col < CACHED_COLS.length) {
+            return CACHED_COLS[col];
+        }
+        return convertNumToColStringImpl(col);
+    }
+
+    private static String convertNumToColStringImpl(int col) {
         // Excel counts column A as the 1st column, we
         // treat it as the 0th one
         int excelColNum = col + 1;
