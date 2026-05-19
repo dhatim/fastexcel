@@ -869,4 +869,72 @@ class PoiCompatibilityTest {
         assertEquals(27, xws.getPaneInformation().getVerticalSplitLeftColumn());
     }
 
+    @Test
+    void richInlineStringPreservesPerRunFormatting() throws IOException {
+        RichText rt = RichText.builder()
+                .run("Pickable (A)")
+                    .fontSize(11).fontName("Calibri").fontColor("FF000000")
+                    .end()
+                .run("\n*Direct contract only")
+                    .bold().fontSize(11).fontName("Calibri").fontColor("FF70AD47")
+                    .end()
+                .build();
+
+        byte[] data = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Sheet1");
+            ws.inlineString(0, 0, rt);
+        });
+
+        XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
+        XSSFCell cell = xwb.getSheetAt(0).getRow(0).getCell(0);
+        XSSFRichTextString rts = cell.getRichStringCellValue();
+
+        assertEquals("Pickable (A)\n*Direct contract only", rts.getString());
+        assertEquals(2, rts.numFormattingRuns());
+
+        XSSFFont run0Font = rts.getFontOfFormattingRun(0);
+        assertFalse(run0Font.getBold(), "first run is not bold");
+
+        XSSFFont run1Font = rts.getFontOfFormattingRun(1);
+        assertTrue(run1Font.getBold(), "second run is bold");
+        byte[] run1Rgb = run1Font.getXSSFColor().getRGB();
+        assertNotNull(run1Rgb);
+        assertEquals((byte) 0x70, run1Rgb[run1Rgb.length - 3]);
+        assertEquals((byte) 0xAD, run1Rgb[run1Rgb.length - 2]);
+        assertEquals((byte) 0x47, run1Rgb[run1Rgb.length - 1]);
+    }
+
+    @Test
+    void richInlineStringPreservesLeadingAndTrailingWhitespace() throws IOException {
+        RichText rt = RichText.builder()
+                .run("  leading and trailing  ").bold().end()
+                .build();
+
+        byte[] data = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Sheet1");
+            ws.inlineString(0, 0, rt);
+        });
+
+        XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
+        XSSFCell cell = xwb.getSheetAt(0).getRow(0).getCell(0);
+        assertEquals("  leading and trailing  ", cell.getRichStringCellValue().getString());
+    }
+
+    @Test
+    void richInlineStringWithoutAnyFormattingPropertiesEmitsBareRun() throws IOException {
+        RichText rt = RichText.builder()
+                .run("plain a").end()
+                .run("plain b").end()
+                .build();
+
+        byte[] data = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Sheet1");
+            ws.inlineString(0, 0, rt);
+        });
+
+        XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data));
+        XSSFCell cell = xwb.getSheetAt(0).getRow(0).getCell(0);
+        assertEquals("plain aplain b", cell.getRichStringCellValue().getString());
+    }
+
 }
