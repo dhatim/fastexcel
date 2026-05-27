@@ -15,12 +15,14 @@
  */
 package org.dhatim.fastexcel;
 
-import java.time.*;
-import java.time.chrono.ChronoZonedDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.Calendar;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Date;
-import java.util.TimeZone;
 
 /**
  * Excel timestamp utility methods. For more information, check
@@ -29,12 +31,32 @@ import java.util.TimeZone;
  */
 public final class TimestampUtil {
 
-    private static final int BAD_DATE = -1;
+    private static final double BAD_DATE = -1;
+    @Deprecated
     public static final int SECONDS_PER_MINUTE = 60;
+    @Deprecated
     public static final int MINUTES_PER_HOUR = 60;
+    @Deprecated
     public static final int HOURS_PER_DAY = 24;
+    @Deprecated
     public static final int SECONDS_PER_DAY = (HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE);
+    @Deprecated
     public static final long DAY_MILLISECONDS = SECONDS_PER_DAY * 1000L;
+
+    private static final long DAYS_TO_MILLIS = 86_400_000L;
+    private static final long EXCEL_EPOCH_MILLIS = LocalDate.of(1899, 12, 31)
+            .atStartOfDay(ZoneOffset.UTC)
+            .toInstant()
+            .toEpochMilli();
+
+    private static double epochMillisToExcel(long epochMillis) {
+        double value = (epochMillis - EXCEL_EPOCH_MILLIS) / (double) DAYS_TO_MILLIS;
+        // Excel leap year bug: serial >= 60 is off by one
+        if (value >= 60) {
+            value++;
+        }
+        return value;
+    }
 
     /**
      * Convert a {@link Date} to a serial number. Note Excel timestamps do not
@@ -47,91 +69,60 @@ public final class TimestampUtil {
      * @return Serial number value.
      */
     public static Double convertDate(Date date) {
-        Calendar calStart = Calendar.getInstance();
-        calStart.setTime(date);
-        int year = calStart.get(Calendar.YEAR);
-        int dayOfYear = calStart.get(Calendar.DAY_OF_YEAR);
-        int hour = calStart.get(Calendar.HOUR_OF_DAY);
-        int minute = calStart.get(Calendar.MINUTE);
-        int second = calStart.get(Calendar.SECOND);
-        int milliSecond = calStart.get(Calendar.MILLISECOND);
-        return internalGetExcelDate(year, dayOfYear, hour, minute, second, milliSecond);
+        return convertDate(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
     }
 
-    public static Double convertDate(LocalDateTime date) {
-        int year = date.getYear();
-        int dayOfYear = date.getDayOfYear();
-        int hour = date.getHour();
-        int minute = date.getMinute();
-        int second = date.getSecond();
-        int milliSecond = date.getNano() / 1_000_000;
-        return internalGetExcelDate(year, dayOfYear, hour, minute, second, milliSecond);
+    /**
+     * Convert a {@link LocalDateTime} to a serial number.
+     *
+     * @param localDateTime Local date time value.
+     * @return Serial number value.
+     */
+    public static Double convertDate(LocalDateTime localDateTime) {
+        if (localDateTime.getYear() < 1900) {
+            return BAD_DATE;
+        }
+        LocalTime time = localDateTime.toLocalTime();
+        long epochMillis = localDateTime.toLocalDate().toEpochDay() * DAYS_TO_MILLIS
+                + time.getHour() * 3_600_000L
+                + time.getMinute() * 60_000L
+                + time.getSecond() * 1_000L
+                + time.getNano() / 1_000_000L;
+        return epochMillisToExcel(epochMillis);
     }
 
     /**
      * Convert a {@link LocalDate} to a serial number.
      *
-     * @param date Local date value.
+     * @param localDate Local date value.
      * @return Serial number value.
      */
-    public static Double convertDate(LocalDate date) {
-        int year = date.getYear();
-        int dayOfYear = date.getDayOfYear();
-        int hour = 0;
-        int minute = 0;
-        int second = 0;
-        int milliSecond = 0;
-        return internalGetExcelDate(year, dayOfYear, hour, minute, second, milliSecond);
+    public static Double convertDate(LocalDate localDate) {
+        if (localDate.getYear() < 1900) {
+            return BAD_DATE;
+        }
+        return epochMillisToExcel(localDate.toEpochDay() * DAYS_TO_MILLIS);
     }
 
     /**
-     * Convert a {@link ChronoZonedDateTime} to a serial number.
+     * Convert a {@link ZonedDateTime} to a serial number.
      *
-     * @param zdt Date and timezone values.
+     * @param zonedDateTime Date and timezone values.
      * @return Serial number value.
      */
-    public static Double convertZonedDateTime(ZonedDateTime zdt) {
-        return convertDate(zdt.toLocalDateTime());
+    public static Double convertZonedDateTime(ZonedDateTime zonedDateTime) {
+        return convertDate(zonedDateTime.toLocalDateTime());
     }
 
-    private static double internalGetExcelDate(int year, int dayOfYear, int hour, int minute, int second, int milliSecond) {
-        if (year < 1900) {
-            return BAD_DATE;
-        }
-
-        // Because of daylight time saving we cannot use
-        //     date.getTime() - calStart.getTimeInMillis()
-        // as the difference in milliseconds between 00:00 and 04:00
-        // can be 3, 4 or 5 hours but Excel expects it to always
-        // be 4 hours.
-        // E.g. 2004-03-28 04:00 CEST - 2004-03-28 00:00 CET is 3 hours
-        // and 2004-10-31 04:00 CET - 2004-10-31 00:00 CEST is 5 hours
-        double fraction = (((hour * 60.0 + minute) * 60.0 + second) * 1000.0 + milliSecond) / DAY_MILLISECONDS;
-
-        double value = fraction + absoluteDay(year, dayOfYear);
-
-        if (value >= 60) {
-            value++;
-        }
-
-        return value;
-    }
-
-    private static int absoluteDay(int year, int dayOfYear) {
-        return dayOfYear + daysInPriorYears(year);
-    }
-
-    static int daysInPriorYears(int yr) {
-        if (yr < 1900) {
-            throw new IllegalArgumentException("'year' must be 1900 or greater");
-        }
-        int yr1 = yr - 1;
-        int leapDays = yr1 / 4   // plus julian leap days in prior years
-                - yr1 / 100 // minus prior century years
-                + yr1 / 400 // plus years divisible by 400
-                - 460;      // leap days in previous 1900 years
-
-        return 365 * (yr - 1900) + leapDays;
+    /**
+     * Convert an {@link Instant} to a serial number. This method does care about
+     * timestamp information, all conversions are done in UTC.
+     *
+     * @param instant Instant value.
+     * @return Serial number value.
+     */
+    public static Double convertInstant(Instant instant) {
+        return epochMillisToExcel(instant.toEpochMilli());
     }
 
 }
