@@ -193,6 +193,11 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <useModulePath>false</useModulePath>
+                    <argLine>
+                            @{argLine}
+                            --add-opens java.base/java.util.logging=ALL-UNNAMED
+                            --add-opens java.logging/java.util.logging=ALL-UNNAMED
+                        </argLine>
                 </configuration>
             </plugin>
             <plugin>

@@ -537,6 +537,18 @@ public class Worksheet implements Closeable {
         this.sheetProtectionOptions = options;
         this.passwordHash = hashPassword(password);
     }
+    /**
+     * Protects the sheet from viewing by hiding it and locking
+     * the workbook structure with a password.
+     * Unauthorized users will not be able to unhide the sheet
+     * without the correct password.
+     * (Note that this is not very secure and only meant for discouraging changes.)
+     * @param password The password required to unhide the sheet.
+     */
+    public void protectWithViewPassword(String password) {
+        this.setVisibilityState(VisibilityState.HIDDEN);
+        this.workbook.protectStructure(password);
+    }
 
     /**
      * Applies autofilter specifically to the given cell range
