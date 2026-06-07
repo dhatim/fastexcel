@@ -486,43 +486,20 @@ class CorrectnessTest {
 
     @Test
     void testForOffBy1ErrorFor1900_utilDate() {
-
-        
-        Date d1 = getCalendarDate(1900, 1, 1);
-        Date d2 = getCalendarDate(1901, 1, 1);
-        Date d3 = getCalendarDate(2000, 1, 1);
-        Date d4 = getCalendarDate(2023, 1, 1);
-        Date d5 = getCalendarDate(1960, 1, 1);
-        System.out.println(d1);
-
-        assertThat(TimestampUtil.convertDate(d1))
-            .isEqualTo(TimestampUtil.convertDate(
-                d1.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()));
-        assertThat(TimestampUtil.convertDate(d2))
-            .isEqualTo(TimestampUtil.convertDate(
-                d2.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()));
-        assertThat(TimestampUtil.convertDate(d3))
-            .isEqualTo(TimestampUtil.convertDate(
-                d3.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()));
-        assertThat(TimestampUtil.convertDate(d4))
-            .isEqualTo(TimestampUtil.convertDate(
-                d4.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()));
-        assertThat(TimestampUtil.convertDate(d5))
-            .isEqualTo(TimestampUtil.convertDate(
-                d5.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()));
+        LocalDate d1 = getLocalDate(1900, 1, 1);
+        LocalDate d2 = getLocalDate(1901, 1, 1);
+        LocalDate d3 = getLocalDate(2000, 1, 1);
+        LocalDate d4 = getLocalDate(2023, 1, 1);
+        LocalDate d5 = getLocalDate(1960, 1, 1);
+        assertThat(TimestampUtil.convertDate(d1)).isEqualTo(1.0);
+        assertThat(TimestampUtil.convertDate(d2)).isEqualTo(367.0);
+        assertThat(TimestampUtil.convertDate(d3)).isEqualTo(36526.0);
+        assertThat(TimestampUtil.convertDate(d4)).isEqualTo(44927.0);
+        assertThat(TimestampUtil.convertDate(d5)).isEqualTo(21916.0);
     }
 
-    private static Date getCalendarDate(int year, int month, int day) {
-        Calendar cal = Calendar.getInstance();
-        cal.setTimeZone(TimeZone.getDefault());
-        cal.set(Calendar.YEAR, year);
-        cal.set(Calendar.MONTH, month - 1);
-        cal.set(Calendar.DAY_OF_MONTH, day);
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        return cal.getTime();
+    private static LocalDate getLocalDate(int year, int month, int day) {
+        return LocalDate.of(year, month, day);
     }
 
     @Test
