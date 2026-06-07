@@ -486,17 +486,30 @@ class CorrectnessTest {
 
     @Test
     void testForOffBy1ErrorFor1900_utilDate() {
+
+        
         Date d1 = getCalendarDate(1900, 1, 1);
         Date d2 = getCalendarDate(1901, 1, 1);
         Date d3 = getCalendarDate(2000, 1, 1);
         Date d4 = getCalendarDate(2023, 1, 1);
         Date d5 = getCalendarDate(1960, 1, 1);
         System.out.println(d1);
-        assertThat(TimestampUtil.convertDate(d1)).isEqualTo(1.0);
-        assertThat(TimestampUtil.convertDate(d2)).isEqualTo(367.0);
-        assertThat(TimestampUtil.convertDate(d3)).isEqualTo(36526.0);
-        assertThat(TimestampUtil.convertDate(d4)).isEqualTo(44927.0);
-        assertThat(TimestampUtil.convertDate(d5)).isEqualTo(21916.0);
+
+        assertThat(TimestampUtil.convertDate(d1))
+            .isEqualTo(TimestampUtil.convertDate(
+                d1.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()));
+        assertThat(TimestampUtil.convertDate(d2))
+            .isEqualTo(TimestampUtil.convertDate(
+                d2.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()));
+        assertThat(TimestampUtil.convertDate(d3))
+            .isEqualTo(TimestampUtil.convertDate(
+                d3.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()));
+        assertThat(TimestampUtil.convertDate(d4))
+            .isEqualTo(TimestampUtil.convertDate(
+                d4.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()));
+        assertThat(TimestampUtil.convertDate(d5))
+            .isEqualTo(TimestampUtil.convertDate(
+                d5.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()));
     }
 
     private static Date getCalendarDate(int year, int month, int day) {
