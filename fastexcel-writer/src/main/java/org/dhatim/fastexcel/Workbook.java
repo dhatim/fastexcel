@@ -38,6 +38,7 @@ public class Workbook implements Closeable {
 
     private int activeTab = 0;
     private boolean finished = false;
+    private String workbookPasswordHash;
     private final String applicationName;
     private final String applicationVersion;
     private final List<Worksheet> worksheets = new ArrayList<>();
@@ -92,6 +93,41 @@ public class Workbook implements Closeable {
     public void setActiveTab(int tabIndex) {
         this.activeTab = tabIndex;
     }
+    /**
+    * Protects the workbook structure with a password.
+    * Prevents users from unhiding, adding, moving, or deleting sheets.
+    * (Note that this is not very secure and only meant for discouraging changes. Same amount of
+    * protection as the edit password for worksheets.)
+    * @param password The password to use.
+    */
+    public void protectStructure(String password) {
+        this.workbookPasswordHash = password != null ? hashPassword(password) : null;
+    }
+
+    /**
+    * Hash the password using the same algorithm as worksheet protection.
+    * @param password The password to hash.
+    * @return The password hash as a hex string.
+    */
+    private static String hashPassword(String password) {
+        byte[] passwordCharacters = password.getBytes();
+        int hash = 0;
+        if (passwordCharacters.length > 0) {
+            int charIndex = passwordCharacters.length;
+            while (charIndex-- > 0) {
+                hash = ((hash >> 14) & 0x01) | ((hash << 1) & 0x7fff);
+                hash ^= passwordCharacters[charIndex];
+            }
+            hash = ((hash >> 14) & 0x01) | ((hash << 1) & 0x7fff);
+            hash ^= passwordCharacters.length;
+            hash ^= (0x8000 | ('N' << 8) | 'K');
+        }
+        return Integer.toHexString(hash & 0xffff);
+    }
+
+
+
+
 
     public void setGlobalDefaultFont(String fontName, double fontSize) {
         this.setGlobalDefaultFont(Font.build(null, null, null, fontName, BigDecimal.valueOf(fontSize), null, null));
@@ -313,15 +349,22 @@ public class Workbook implements Closeable {
      */
     private void writeWorkbookFile() throws IOException {
         writeFile("xl/workbook.xml", w -> {
-            w.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-                     "<workbook " +
-                     "xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" " +
-                     "xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">" +
-                     "<workbookPr date1904=\"false\"/>" +
-                     "<bookViews>" +
-                     "<workbookView activeTab=\"" + activeTab + "\"/>" +
-                     "</bookViews>" +
-                     "<sheets>");
+                w.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                         "<workbook " +
+                         "xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" " +
+                         "xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">" +
+                         "<workbookPr date1904=\"false\"/>");
+
+                         if (workbookPasswordHash != null) {
+                            w.append("<workbookProtection workbookPassword=\"")
+                             .append(workbookPasswordHash)
+                             .append("\" lockStructure=\"1\"/>");
+                        }
+
+                        w.append("<bookViews>" +
+                                 "<workbookView activeTab=\"" + activeTab + "\"/>" +
+                                 "</bookViews>" +
+                                 "<sheets>");
 
             for (Worksheet ws : worksheets) {
                 writeWorkbookSheet(w, ws);

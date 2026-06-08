@@ -15,9 +15,13 @@
  */
 package org.dhatim.fastexcel;
 
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class WriterTest {
@@ -41,6 +45,57 @@ class WriterTest {
         w.flush();
         String s = baos.toString("UTF-8");
         assertThat(s).isEqualTo("some characters are ignored:  or ");
+    }
+    @Test
+    void protectStructureLocksWorkbookStructure() throws IOException {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+
+        try (Workbook wb = new Workbook(os, "Test", "1.0")) {
+            Worksheet ws = wb.newWorksheet("Sheet1");
+            ws.value(0, 0, "Hello");
+
+            wb.protectStructure("myPassword");
+        }
+
+        try (XSSFWorkbook poiWb = new XSSFWorkbook(
+                new ByteArrayInputStream(os.toByteArray()))) {
+            assertThat(poiWb.isStructureLocked()).isTrue();
+         }
+    }
+    @Test
+    void protectStructureWithNullPasswordDoesNotLockWorkbookStructure() throws IOException {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+
+        try (Workbook wb = new Workbook(os, "Test", "1.0")) {
+            Worksheet ws = wb.newWorksheet("Sheet1");
+            ws.value(0, 0, "Hello");
+
+            wb.protectStructure(null);
+        }
+
+        try (XSSFWorkbook poiWb = new XSSFWorkbook(
+                new ByteArrayInputStream(os.toByteArray()))) {
+            assertThat(poiWb.isStructureLocked()).isFalse();
+        }
+    }
+    @Test
+    void protectWithViewPasswordOnlyHidesTargetSheet() throws IOException {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+
+        try (Workbook wb = new Workbook(os, "Test", "1.0")) {
+            Worksheet secretSheet = wb.newWorksheet("SecretSheet");
+            secretSheet.value(0, 0, "Sensitive Data");
+            secretSheet.protectWithViewPassword("viewPassword");
+
+            Worksheet publicSheet = wb.newWorksheet("PublicSheet");
+            publicSheet.value(0, 0, "Public Data");
+        }
+
+        try (XSSFWorkbook poiWb = new XSSFWorkbook(
+                new ByteArrayInputStream(os.toByteArray()))) {
+            assertThat(poiWb.isSheetHidden(0)).isTrue();
+            assertThat(poiWb.isSheetHidden(1)).isFalse();
+        }
     }
 
 }
