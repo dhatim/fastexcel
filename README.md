@@ -402,3 +402,21 @@ protected excel documents, but it can be realized by combining `poi` and `poi-oo
 This test class is a reference implementation :
 [EncryptionTest](./e2e/src/test/java/org/dhatim/fastexcel/EncryptionTest.java) 
 
+### Protect a worksheet from viewing
+
+A worksheet can be hidden and the workbook structure can be protected with a password using `protectWithViewPassword`.
+
+```java
+try (OutputStream os = new FileOutputStream("protected.xlsx");
+     Workbook wb = new Workbook(os, "Application", "1.0")) {
+
+    Worksheet ws = wb.newWorksheet("SecretSheet");
+    ws.value(0, 0, "Sensitive Data");
+
+    ws.protectWithViewPassword("viewPassword");
+}
+```
+
+This hides the worksheet and protects the workbook structure, so users cannot unhide, move, rename, or delete sheets without the workbook structure password.
+
+Note: this is different from `protect(...)`, which protects a worksheet from editing. `protectWithViewPassword(...)` is intended to restrict viewing by hiding the worksheet and protecting the workbook structure.
