@@ -17,8 +17,12 @@ package org.dhatim.fastexcel;
 
 import com.github.rzymek.opczip.OpcOutputStream;
 
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -29,6 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 
 /**
@@ -39,6 +44,9 @@ public class Workbook implements Closeable {
     private int activeTab = 0;
     private boolean finished = false;
     private String workbookPasswordHash;
+    private String codeName = "ThisWorkbook";
+    private byte[] vbaProject = null;
+    private boolean featurePropertyBag = false;
     private final String applicationName;
     private final String applicationVersion;
     private final List<Worksheet> worksheets = new ArrayList<>();
@@ -186,7 +194,13 @@ public class Workbook implements Closeable {
                 w.append("<Default Extension=\"").append(imageType.getExtension())
                  .append("\" ContentType=\"").append(imageType.getContentType()).append("\"/>");
             }
-            w.append("<Override PartName=\"/xl/sharedStrings.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml\"/><Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/><Override PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/>");
+            w.append("<Override PartName=\"/xl/sharedStrings.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml\"/><Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/>");
+            if (hasMacros()) {
+                w.append("<Override PartName=\"/xl/vbaProject.bin\" ContentType=\"application/vnd.ms-office.vbaProject\"/>");
+                w.append("<Override PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.ms-excel.sheet.macroEnabled.main+xml\"/>");
+            } else {
+                w.append("<Override PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/>");
+            }
             for (Worksheet ws : worksheets) {
                 int index = getIndex(ws);
                 w.append("<Override PartName=\"/xl/worksheets/sheet").append(index).append(".xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>");
@@ -210,6 +224,9 @@ public class Workbook implements Closeable {
             if (properties.hasCustomProperties()) {
                 w.append("<Override PartName=\"/docProps/custom.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.custom-properties+xml\"/>");
             }
+            if (featurePropertyBag) {
+                w.append("<Override PartName=\"/xl/featurePropertyBag/featurePropertyBag.xml\" ContentType=\"application/vnd.ms-excel.featurepropertybag+xml\"/>");
+            }
             w.append("</Types>");
         });
         writeProperties();
@@ -220,26 +237,46 @@ public class Workbook implements Closeable {
         writeFile("_rels/.rels", w -> {
             w.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>");
             w.append("<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">");
-            w.append("<Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties\" Target=\"docProps/app.xml\"/>");
-            w.append("<Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties\" Target=\"docProps/core.xml\"/>");
-            w.append("<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"xl/workbook.xml\"/>");
             if (properties.hasCustomProperties()) {
                 w.append("<Relationship Id=\"rId4\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/custom-properties\" Target=\"docProps/custom.xml\"/>");
             }
+            w.append("<Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties\" Target=\"docProps/app.xml\"/>");
+            w.append("<Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties\" Target=\"docProps/core.xml\"/>");
+            w.append("<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"xl/workbook.xml\"/>");
             w.append("</Relationships>");
         });
+
+        if (featurePropertyBag) {
+            writeFile("xl/featurePropertyBag/featurePropertyBag.xml", w -> {
+                w.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>");
+                w.append("<FeaturePropertyBags xmlns=\"http://schemas.microsoft.com/office/spreadsheetml/2022/featurepropertybag\">");
+                w.append("<bag type=\"Checkbox\"/><bag type=\"XFControls\"><bagId k=\"CellControl\">0</bagId></bag><bag type=\"XFComplement\"><bagId k=\"XFControls\">1</bagId></bag><bag type=\"XFComplements\" extRef=\"XFComplementsMapperExtRef\"><a k=\"MappedFeaturePropertyBags\"><bagId>2</bagId></a></bag>");
+                w.append("</FeaturePropertyBags>");
+            });
+        }
 
         writeWorkbookFile();
 
         writeFile("xl/_rels/workbook.xml.rels", w -> {
             w.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"rId1\" Target=\"sharedStrings.xml\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings\"/><Relationship Id=\"rId2\" Target=\"styles.xml\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\"/>");
+            int rels = 3;
             for (Worksheet ws : worksheets) {
-                w.append("<Relationship Id=\"rId").append(getIndex(ws) + 2).append("\" Target=\"worksheets/sheet").append(getIndex(ws)).append(".xml\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\"/>");
+                w.append("<Relationship Id=\"rId").append(rels++).append("\" Target=\"worksheets/sheet").append(getIndex(ws)).append(".xml\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\"/>");
+            }
+            if (featurePropertyBag) {
+                w.append("<Relationship Id=\"rId").append(rels).append("\" Type=\"http://schemas.microsoft.com/office/2022/11/relationships/FeaturePropertyBag\" Target=\"featurePropertyBag/featurePropertyBag.xml\"/>");
+            }
+            if (hasMacros()) {
+                w.append("<Relationship Id=\"rId").append(rels).append("\" Target=\"vbaProject.bin\" Type=\"http://schemas.microsoft.com/office/2006/relationships/vbaProject\"/>");
             }
             w.append("</Relationships>");
         });
         writeFile("xl/sharedStrings.xml", stringCache::write);
         writeFile("xl/styles.xml", styleCache::write);
+        if (hasMacros()) {
+            writeBinaryFile("xl/vbaProject.bin", vbaProject);
+            vbaProject = null;
+        }
         this.os.finish();
         finished = true;
     }
@@ -318,6 +355,13 @@ public class Workbook implements Closeable {
     }
 
     /**
+     * @return true when macros have been injected
+     */
+    private boolean hasMacros() {
+        return vbaProject != null;
+    }
+
+    /**
      * @return true when any sheet has any comments
      */
     private boolean hasComments() {
@@ -353,7 +397,7 @@ public class Workbook implements Closeable {
                          "<workbook " +
                          "xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" " +
                          "xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">" +
-                         "<workbookPr date1904=\"false\"/>");
+                         "<workbookPr date1904=\"false\" codeName=\"" + codeName + "\"/>");
 
                          if (workbookPasswordHash != null) {
                             w.append("<workbookProtection workbookPassword=\"")
@@ -506,8 +550,8 @@ public class Workbook implements Closeable {
      * @param alignment       Alignment attributes.
      * @return Cached style index.
      */
-    int mergeAndCacheStyle(int currentStyle, String numberingFormat, Font font, Fill fill, Border border, Alignment alignment, Protection protection) {
-        return styleCache.mergeAndCacheStyle(currentStyle, numberingFormat, font, fill, border, alignment, protection);
+    int mergeAndCacheStyle(int currentStyle, String numberingFormat, Font font, Fill fill, Border border, boolean checkbox, Alignment alignment, Protection protection) {
+        return styleCache.mergeAndCacheStyle(currentStyle, numberingFormat, font, fill, border, checkbox, alignment, protection);
     }
 
     /**
@@ -569,7 +613,71 @@ public class Workbook implements Closeable {
         }
     }
 
+    /**
+     * Embed a macro into this workbook
+     * @param vbaProject the byte array containing the vbaProject.bin file
+     */
+    private void embedMacro(byte[] vbaProject) {
+        this.vbaProject = Objects.requireNonNull(vbaProject);
+    }
+
+    /**
+     *
+     * @param input the input stream to copy macros from
+     * @throws IllegalArgumentException thrown if file is not a valid XLSX file
+     * @throws NullPointerException if file is null
+     */
+    public void copyMacrosFromInputStream(InputStream input) throws IllegalArgumentException, NullPointerException {
+        Objects.requireNonNull(input);
+        try (ZipInputStream zis = new ZipInputStream(input)) {
+            ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                if ("xl/vbaProject.bin".equals(entry.getName())) {
+                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                    byte[] buffer = new byte[1024];
+                    int len = 0;
+                    while ((len = zis.read(buffer)) > 0) {
+                        bos.write(buffer, 0, len);
+                    }
+                    embedMacro(bos.toByteArray());
+                    return;
+                }
+            }
+            throw new IllegalArgumentException("File did not contains vbaProject.bin file");
+        } catch (IOException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    /**
+     *
+     * @param file the file to copy macros from
+     * @throws IllegalArgumentException thrown if file is not a valid XLSX file
+     * @throws NullPointerException if file is null
+     */
+    public void copyMacrosFromFile(File file) throws IllegalArgumentException, NullPointerException {
+        Objects.requireNonNull(file);
+        try (FileInputStream fis = new FileInputStream(file)) {
+            copyMacrosFromInputStream(fis);
+
+        } catch (IOException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    /**
+     * Sets the code name for this Workbook to be references in macros
+     * @param codeName the code name of this workbook
+     */
+    public void setCodeName(String codeName) {
+        this.codeName = Objects.requireNonNull(codeName);
+    }
+
     int nextTableIndex() {
         return maxTableIndex.getAndIncrement();
+    }
+
+    public void addFeaturePropertyBag() {
+        this.featurePropertyBag = true;
     }
 }
