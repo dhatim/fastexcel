@@ -16,6 +16,7 @@
 package org.dhatim.fastexcel.reader;
 
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLInputFactory;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,13 +25,12 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import static org.dhatim.fastexcel.reader.DefaultXMLInputFactory.factory;
-
 public class ReadableWorkbook implements Closeable {
 
     private final OPCPackage pkg;
     private final SST sst;
     private final ReadingOptions readingOptions;
+    private final XMLInputFactory xmlInputFactory;
 
     private boolean date1904;
     private final List<Sheet> sheets = new ArrayList<>();
@@ -64,11 +64,12 @@ public class ReadableWorkbook implements Closeable {
 
         try {
             this.pkg = pkg;
-            sst = SST.fromInputStream(pkg.getSharedStrings());
+            this.xmlInputFactory = pkg.getXmlInputFactory();
+            sst = SST.fromInputStream(pkg.getSharedStrings(), xmlInputFactory);
         } catch (XMLStreamException e) {
             throw new ExcelReaderException(e);
         }
-        try (SimpleXmlReader workbookReader = new SimpleXmlReader(factory, pkg.getWorkbookContent())) {
+        try (SimpleXmlReader workbookReader = new SimpleXmlReader(xmlInputFactory, pkg.getWorkbookContent())) {
             readWorkbook(workbookReader);
         } catch (XMLStreamException e) {
             throw new ExcelReaderException(e);
@@ -148,7 +149,7 @@ public class ReadableWorkbook implements Closeable {
     Stream<Row> openStream(Sheet sheet) throws IOException {
         try {
             InputStream inputStream = pkg.getSheetContent(sheet);
-            Stream<Row> stream = StreamSupport.stream(new RowSpliterator(this, inputStream), false);
+            Stream<Row> stream = StreamSupport.stream(new RowSpliterator(this, inputStream, xmlInputFactory), false);
             return stream.onClose(asUncheckedRunnable(inputStream));
         } catch (XMLStreamException e) {
             throw new IOException(e);
@@ -161,6 +162,14 @@ public class ReadableWorkbook implements Closeable {
 
     public Map<String, String> getNumFmtIdToFormat() {
         return pkg.getFmtIdToFmtString();
+    }
+
+    String getFormatId(int styleIndex) {
+        return pkg.getFormatCatalog().getFormatId(styleIndex);
+    }
+
+    String getFormatString(String formatId) {
+        return pkg.getFormatCatalog().getFormatString(formatId);
     }
 
     SST getSharedStringsTable() {

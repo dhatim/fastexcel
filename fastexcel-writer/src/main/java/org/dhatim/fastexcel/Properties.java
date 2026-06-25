@@ -9,6 +9,8 @@ import java.util.*;
 
 public class Properties {
 
+    private static final int MAX_METADATA_LENGTH = 65536;
+
     //*****  core properties  *****
     private String title;
     private String subject;
@@ -30,10 +32,7 @@ public class Properties {
     }
 
     public Properties setTitle(String title) {
-        if (title != null && title.length() > 65536) {
-            throw new IllegalStateException("The length of title must be less than or equal to 65536: " + title.length());
-        }
-        this.title = title;
+        this.title = validateMetadataValue("title", title);
         return this;
     }
 
@@ -42,10 +41,7 @@ public class Properties {
     }
 
     public Properties setSubject(String subject) {
-        if (subject != null && subject.length() > 65536) {
-            throw new IllegalStateException("The length of subject must be less than or equal to 65536: " + subject.length());
-        }
-        this.subject = subject;
+        this.subject = validateMetadataValue("subject", subject);
         return this;
     }
 
@@ -54,10 +50,7 @@ public class Properties {
     }
 
     public Properties setKeywords(String keywords) {
-        if (keywords != null && keywords.length() > 65536) {
-            throw new IllegalStateException("The length of keywords must be less than or equal to 65536: " + keywords.length());
-        }
-        this.keywords = keywords;
+        this.keywords = validateMetadataValue("keywords", keywords);
         return this;
     }
 
@@ -66,10 +59,7 @@ public class Properties {
     }
 
     public Properties setDescription(String description) {
-        if (description != null && description.length() > 65536) {
-            throw new IllegalStateException("The length of description must be less than or equal to 65536: " + description.length());
-        }
-        this.description = description;
+        this.description = validateMetadataValue("description", description);
         return this;
     }
 
@@ -78,10 +68,7 @@ public class Properties {
     }
 
     public Properties setCategory(String category) {
-        if (category != null && category.length() > 65536) {
-            throw new IllegalStateException("The length of category must be less than or equal to 65536: " + category.length());
-        }
-        this.category = category;
+        this.category = validateMetadataValue("category", category);
         return this;
     }
 
@@ -90,10 +77,7 @@ public class Properties {
     }
 
     public Properties setManager(String manager) {
-        if (manager != null && manager.length() > 65536) {
-            throw new IllegalStateException("The length of manager must be less than or equal to 65536: " + manager.length());
-        }
-        this.manager = manager;
+        this.manager = validateMetadataValue("manager", manager);
         return this;
     }
 
@@ -102,10 +86,7 @@ public class Properties {
     }
 
     public Properties setCompany(String company) {
-        if (company != null && company.length() > 65536) {
-            throw new IllegalStateException("The length of company must be less than or equal to 65536: " + title.length());
-        }
-        this.company = company;
+        this.company = validateMetadataValue("company", company);
         return this;
     }
 
@@ -114,11 +95,15 @@ public class Properties {
     }
 
     public Properties setHyperlinkBase(String hyperlinkBase) {
-        if (hyperlinkBase != null && hyperlinkBase.length() > 65536) {
-            throw new IllegalStateException("The length of hyperlinkBase must be less than or equal to 65536: " + title.length());
-        }
-        this.hyperlinkBase = hyperlinkBase;
+        this.hyperlinkBase = validateMetadataValue("hyperlinkBase", hyperlinkBase);
         return this;
+    }
+
+    private static String validateMetadataValue(String fieldName, String value) {
+        if (value != null && value.length() > MAX_METADATA_LENGTH) {
+            throw new IllegalStateException("The length of " + fieldName + " must be less than or equal to " + MAX_METADATA_LENGTH + ": " + value.length());
+        }
+        return value;
     }
 
     interface CustomProty {

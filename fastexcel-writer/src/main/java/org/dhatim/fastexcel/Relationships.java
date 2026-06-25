@@ -16,12 +16,9 @@ public class Relationships {
 
     private final AtomicInteger maxIndex = new AtomicInteger(1);
 
-    final Worksheet worksheet;
-
     private ArrayList<Relationship> relationship = new ArrayList<>();
 
-    public Relationships(Worksheet worksheet) {
-        this.worksheet = worksheet;
+    public Relationships() {
     }
 
     String setHyperLinkRels(String target, String targetMode) {

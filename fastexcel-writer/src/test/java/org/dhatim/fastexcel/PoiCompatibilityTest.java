@@ -51,20 +51,8 @@ class PoiCompatibilityTest {
             ws.pageOrientation("landscape");
             ws.pageScale(80);
             ws.width(0, 2);
-            int i = 1;
-            ws.hideRow(i);
-            ws.value(i, i++, stringValue);
-            ws.inlineString(i, i++, stringValue);
-            ws.value(i, i++, dateValue);
-            ws.value(i, i++, localDateTimeValue);
-            ws.value(i, i++, zonedDateValue);
-            ws.value(i, i++, doubleValue);
-            ws.value(i, i++, intValue);
-            ws.value(i, i++, longValue);
-            ws.value(i, i++, bigDecimalValue);
-            ws.value(i, i++, Boolean.TRUE);
-            ws.value(i, i++, Boolean.FALSE);
-            ws.hyperlink(i,i++, hyperlinkValue);
+            writeSingleWorksheetValues(ws, stringValue, dateValue, localDateTimeValue, zonedDateValue,
+                    doubleValue, intValue, longValue, bigDecimalValue, hyperlinkValue);
             try {
                 ws.close();
             } catch (IOException ex) {
@@ -84,6 +72,35 @@ class PoiCompatibilityTest {
         assertThat(xws.getPrintSetup().getScale()).isEqualTo((short)80);
         Comparable<XSSFRow> row = xws.getRow(0);
         assertThat(row).isNull();
+        assertSingleWorksheetValues(xws, stringValue, dateValue, localDateTimeValue, zonedDateValue,
+                timezone, doubleValue, intValue, longValue, bigDecimalValue, hyperlinkValue);
+    }
+
+    private static void writeSingleWorksheetValues(Worksheet ws, String stringValue, Date dateValue,
+                                                   LocalDateTime localDateTimeValue, ZonedDateTime zonedDateValue,
+                                                   double doubleValue, int intValue, long longValue,
+                                                   BigDecimal bigDecimalValue, HyperLink hyperlinkValue) {
+        int i = 1;
+        ws.hideRow(i);
+        ws.value(i, i++, stringValue);
+        ws.inlineString(i, i++, stringValue);
+        ws.value(i, i++, dateValue);
+        ws.value(i, i++, localDateTimeValue);
+        ws.value(i, i++, zonedDateValue);
+        ws.value(i, i++, doubleValue);
+        ws.value(i, i++, intValue);
+        ws.value(i, i++, longValue);
+        ws.value(i, i++, bigDecimalValue);
+        ws.value(i, i++, Boolean.TRUE);
+        ws.value(i, i++, Boolean.FALSE);
+        ws.hyperlink(i,i++, hyperlinkValue);
+    }
+
+    private static void assertSingleWorksheetValues(XSSFSheet xws, String stringValue, Date dateValue,
+                                                    LocalDateTime localDateTimeValue, ZonedDateTime zonedDateValue,
+                                                    ZoneId timezone, double doubleValue, int intValue,
+                                                    long longValue, BigDecimal bigDecimalValue,
+                                                    HyperLink hyperlinkValue) {
         int i = 1;
         // poi column width is in 1/256 characters
         assertThat(xws.getColumnWidth(0) / 256).isEqualTo(2);
@@ -91,8 +108,6 @@ class PoiCompatibilityTest {
         assertThat(xws.getRow(i).getCell(i++).getStringCellValue()).isEqualTo(stringValue);
         assertThat(xws.getRow(i).getCell(i++).getStringCellValue()).isEqualTo(stringValue);
         assertThat(xws.getRow(i).getCell(i++).getDateCellValue()).isEqualTo(dateValue);
-        // Check zoned timestamps have the same textual representation as the Dates extracted from the workbook
-        // (Excel date serial numbers do not carry timezone information)
         assertThat(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(xws.getRow(i).getCell(i++).getLocalDateTimeCellValue()))
                 .isEqualTo(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(localDateTimeValue));
         assertThat(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(ZonedDateTime.of(xws.getRow(i).getCell(i++).getLocalDateTimeCellValue(), timezone)))
@@ -120,44 +135,7 @@ class PoiCompatibilityTest {
                 ws.rowSumsRight(i == 0);
                 ws.rowSumsBelow(i == 0);
                 CompletableFuture<Void> cf = CompletableFuture.runAsync(() -> {
-                    for (int j = 0; j < numCols; ++j) {
-                        ws.value(0, j, "Column " + j);
-                        ws.style(0, j).bold().fontSize(12).fillColor(Color.GRAY2).set();
-                        for (int k = 1; k <= numRows; ++k) {
-                            switch (j) {
-                                case 0:
-                                    ws.value(k, j, "String value " + k);
-                                    break;
-                                case 1:
-                                    ws.value(k, j, 2);
-                                    break;
-                                case 2:
-                                    ws.value(k, j, 3L);
-                                    break;
-                                case 3:
-                                    ws.value(k, j, 0.123);
-                                    break;
-                                case 4:
-                                    ws.value(k, j, new Date());
-                                    ws.style(k, j).format("yyyy-MM-dd HH:mm:ss").set();
-                                    break;
-                                case 5:
-                                    ws.value(k, j, LocalDate.now());
-                                    ws.style(k, j).format("yyyy-MM-dd").set();
-                                    break;
-                                default:
-                                    throw new IllegalArgumentException();
-                            }
-                        }
-                    }
-                    ws.formula(numRows + 1, 1, "SUM(" + ws.range(1, 1, numRows, 1).toString() + ")");
-                    ws.formula(numRows + 1, 2, "SUM(" + ws.range(1, 2, numRows, 2).toString() + ")");
-                    ws.formula(numRows + 1, 3, "SUM(" + ws.range(1, 3, numRows, 3).toString() + ")");
-                    ws.formula(numRows + 1, 4, "AVERAGE(" + ws.range(1, 4, numRows, 4).toString() + ")");
-                    ws.style(numRows + 1, 4).format("yyyy-MM-dd HH:mm:ss").set();
-                    ws.formula(numRows + 1, 5, "AVERAGE(" + ws.range(1, 5, numRows, 5).toString() + ")");
-                    ws.style(numRows + 1, 5).format("yyyy-MM-dd").bold().italic().fontColor(Color.RED).fontName("Garamond").fontSize(new BigDecimal("14.5")).horizontalAlignment("center").verticalAlignment("top").wrapText(true).set();
-                    ws.range(1, 0, numRows, numCols - 1).style().borderColor(Color.RED).borderStyle(BorderStyle.THICK).shadeAlternateRows(Color.RED).set();
+                    populateConcurrentWorksheet(ws, numRows, numCols);
                 });
                 cfs[i] = cf;
             }
@@ -186,6 +164,51 @@ class PoiCompatibilityTest {
             assertThat(xws.getRow(numRows+1).getCell(3).getCellFormula()).isEqualTo("SUM(D2:D5001)");
             assertThat(xws.getRow(numRows+1).getCell(4).getCellFormula()).isEqualTo("AVERAGE(E2:E5001)");
             assertThat(xws.getRow(numRows+1).getCell(5).getCellFormula()).isEqualTo("AVERAGE(F2:F5001)");
+        }
+    }
+
+    private static void populateConcurrentWorksheet(Worksheet ws, int numRows, int numCols) {
+        for (int j = 0; j < numCols; ++j) {
+            ws.value(0, j, "Column " + j);
+            ws.style(0, j).bold().fontSize(12).fillColor(Color.GRAY2).set();
+            for (int k = 1; k <= numRows; ++k) {
+                writeConcurrentCell(ws, k, j);
+            }
+        }
+        ws.formula(numRows + 1, 1, "SUM(" + ws.range(1, 1, numRows, 1).toString() + ")");
+        ws.formula(numRows + 1, 2, "SUM(" + ws.range(1, 2, numRows, 2).toString() + ")");
+        ws.formula(numRows + 1, 3, "SUM(" + ws.range(1, 3, numRows, 3).toString() + ")");
+        ws.formula(numRows + 1, 4, "AVERAGE(" + ws.range(1, 4, numRows, 4).toString() + ")");
+        ws.style(numRows + 1, 4).format("yyyy-MM-dd HH:mm:ss").set();
+        ws.formula(numRows + 1, 5, "AVERAGE(" + ws.range(1, 5, numRows, 5).toString() + ")");
+        ws.style(numRows + 1, 5).format("yyyy-MM-dd").bold().italic().fontColor(Color.RED).fontName("Garamond").fontSize(new BigDecimal("14.5")).horizontalAlignment("center").verticalAlignment("top").wrapText(true).set();
+        ws.range(1, 0, numRows, numCols - 1).style().borderColor(Color.RED).borderStyle(BorderStyle.THICK).shadeAlternateRows(Color.RED).set();
+    }
+
+    private static void writeConcurrentCell(Worksheet ws, int row, int col) {
+        switch (col) {
+            case 0:
+                ws.value(row, col, "String value " + row);
+                break;
+            case 1:
+                ws.value(row, col, 2);
+                break;
+            case 2:
+                ws.value(row, col, 3L);
+                break;
+            case 3:
+                ws.value(row, col, 0.123);
+                break;
+            case 4:
+                ws.value(row, col, new Date());
+                ws.style(row, col).format("yyyy-MM-dd HH:mm:ss").set();
+                break;
+            case 5:
+                ws.value(row, col, LocalDate.now());
+                ws.style(row, col).format("yyyy-MM-dd").set();
+                break;
+            default:
+                throw new IllegalArgumentException();
         }
     }
 

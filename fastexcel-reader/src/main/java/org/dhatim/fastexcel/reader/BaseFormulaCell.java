@@ -1,6 +1,6 @@
 package org.dhatim.fastexcel.reader;
 
-public class BaseFormulaCell {
+class BaseFormulaCell {
     private final CellAddress baseCelAddr;
 
     private final String formula;

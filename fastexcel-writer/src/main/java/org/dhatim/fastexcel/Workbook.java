@@ -48,6 +48,7 @@ public class Workbook implements Closeable {
     private final OpcOutputStream os;
     private final Writer writer;
     private final AtomicInteger maxTableIndex = new AtomicInteger(1);
+    private Font defaultFont = Font.DEFAULT;
 
     /**
      * Constructor.
@@ -101,28 +102,7 @@ public class Workbook implements Closeable {
     * @param password The password to use.
     */
     public void protectStructure(String password) {
-        this.workbookPasswordHash = password != null ? hashPassword(password) : null;
-    }
-
-    /**
-    * Hash the password using the same algorithm as worksheet protection.
-    * @param password The password to hash.
-    * @return The password hash as a hex string.
-    */
-    private static String hashPassword(String password) {
-        byte[] passwordCharacters = password.getBytes();
-        int hash = 0;
-        if (passwordCharacters.length > 0) {
-            int charIndex = passwordCharacters.length;
-            while (charIndex-- > 0) {
-                hash = ((hash >> 14) & 0x01) | ((hash << 1) & 0x7fff);
-                hash ^= passwordCharacters[charIndex];
-            }
-            hash = ((hash >> 14) & 0x01) | ((hash << 1) & 0x7fff);
-            hash ^= passwordCharacters.length;
-            hash ^= (0x8000 | ('N' << 8) | 'K');
-        }
-        return Integer.toHexString(hash & 0xffff);
+        this.workbookPasswordHash = password != null ? LegacyProtectionHash.hashPassword(password) : null;
     }
 
 
@@ -130,12 +110,16 @@ public class Workbook implements Closeable {
 
 
     public void setGlobalDefaultFont(String fontName, double fontSize) {
-        this.setGlobalDefaultFont(Font.build(null, null, null, fontName, BigDecimal.valueOf(fontSize), null, null));
+        this.setGlobalDefaultFont(Font.build(defaultFont, null, null, null, fontName, BigDecimal.valueOf(fontSize), null, null));
     }
 
     public void setGlobalDefaultFont(Font font) {
-        Font.DEFAULT = font;
+        this.defaultFont = font;
         this.styleCache.replaceDefaultFont(font);
+    }
+
+    Font getDefaultFont() {
+        return defaultFont;
     }
 
     public Properties properties() {
@@ -171,10 +155,32 @@ public class Workbook implements Closeable {
             throw new IllegalArgumentException("A workbook must contain at least one worksheet.");
         }
 
+        closeWorksheets();
+        writePackageParts();
+        this.os.finish();
+        finished = true;
+    }
+
+    private void closeWorksheets() throws IOException {
         for (Worksheet ws : worksheets) {
             ws.close();
         }
+    }
 
+    private void writePackageParts() throws IOException {
+        writeContentTypes();
+        writeProperties();
+        if (properties.hasCustomProperties()) {
+            writeFile("docProps/custom.xml", properties::writeCustomProperties);
+        }
+        writeRootRelationships();
+        writeWorkbookFile();
+        writeWorkbookRelationships();
+        writeFile("xl/sharedStrings.xml", stringCache::write);
+        writeFile("xl/styles.xml", styleCache::write);
+    }
+
+    private void writeContentTypes() throws IOException {
         writeFile("[Content_Types].xml", w -> {
             w.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"><Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/><Default Extension=\"xml\" ContentType=\"application/xml\"/>");
             if (hasComments()) {
@@ -212,11 +218,9 @@ public class Workbook implements Closeable {
             }
             w.append("</Types>");
         });
-        writeProperties();
-        if (properties.hasCustomProperties()) {
-            writeFile("docProps/custom.xml", properties::writeCustomProperties);
-        }
+    }
 
+    private void writeRootRelationships() throws IOException {
         writeFile("_rels/.rels", w -> {
             w.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>");
             w.append("<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">");
@@ -228,9 +232,9 @@ public class Workbook implements Closeable {
             }
             w.append("</Relationships>");
         });
+    }
 
-        writeWorkbookFile();
-
+    private void writeWorkbookRelationships() throws IOException {
         writeFile("xl/_rels/workbook.xml.rels", w -> {
             w.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"rId1\" Target=\"sharedStrings.xml\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings\"/><Relationship Id=\"rId2\" Target=\"styles.xml\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\"/>");
             for (Worksheet ws : worksheets) {
@@ -238,10 +242,6 @@ public class Workbook implements Closeable {
             }
             w.append("</Relationships>");
         });
-        writeFile("xl/sharedStrings.xml", stringCache::write);
-        writeFile("xl/styles.xml", styleCache::write);
-        this.os.finish();
-        finished = true;
     }
 
     private void writeProperties() throws IOException {
@@ -393,7 +393,7 @@ public class Workbook implements Closeable {
                     w.append("</definedName>");
                 }
                 /** define specifically named ranges **/
-                for (Map.Entry<String, Range> nr : ws.getNamedRanges().entrySet()) {
+                for (Map.Entry<String, Range> nr : ws.namedRanges().entrySet()) {
                     String rangeName = nr.getKey();
                     Range range = nr.getValue();
                     w.append("<definedName function=\"false\" hidden=\"false\"");
@@ -508,6 +508,10 @@ public class Workbook implements Closeable {
      */
     int mergeAndCacheStyle(int currentStyle, String numberingFormat, Font font, Fill fill, Border border, Alignment alignment, Protection protection) {
         return styleCache.mergeAndCacheStyle(currentStyle, numberingFormat, font, fill, border, alignment, protection);
+    }
+
+    int mergeAndCacheStyle(int currentStyle, StyleSpec styleSpec) {
+        return styleCache.mergeAndCacheStyle(currentStyle, styleSpec);
     }
 
     /**
