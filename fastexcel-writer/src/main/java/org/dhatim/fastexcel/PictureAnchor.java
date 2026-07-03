@@ -46,20 +46,7 @@ public class PictureAnchor {
      */
     public static final int EMU_PER_CM = 360000;
 
-    private final int fromCol;
-    private final int fromColOff; // offset in EMUs
-    private final int fromRow;
-    private final int fromRowOff; // offset in EMUs
-
-    // For two-cell anchor
-    private final Integer toCol;
-    private final Integer toColOff;
-    private final Integer toRow;
-    private final Integer toRowOff;
-
-    // For one-cell anchor (explicit size in EMUs)
-    private final Long widthEmu;
-    private final Long heightEmu;
+    private final AnchorGeometry geometry;
 
     /**
      * Create a one-cell anchor with explicit size in pixels.
@@ -71,8 +58,8 @@ public class PictureAnchor {
      * @return A new PictureAnchor configured for one-cell anchoring
      */
     public static PictureAnchor oneCellAnchor(int row, int col, int widthPx, int heightPx) {
-        return new PictureAnchor(col, 0, row, 0, null, null, null, null,
-                (long) widthPx * EMU_PER_PIXEL, (long) heightPx * EMU_PER_PIXEL);
+        return new PictureAnchor(new OneCellAnchorGeometry(new AnchorMarker(row, col, 0, 0),
+                new AnchorExtent((long) widthPx * EMU_PER_PIXEL, (long) heightPx * EMU_PER_PIXEL)));
     }
 
     /**
@@ -88,9 +75,9 @@ public class PictureAnchor {
      */
     public static PictureAnchor oneCellAnchor(int row, int col, int colOffPx, int rowOffPx,
                                                int widthPx, int heightPx) {
-        return new PictureAnchor(col, colOffPx * EMU_PER_PIXEL, row, rowOffPx * EMU_PER_PIXEL,
-                null, null, null, null,
-                (long) widthPx * EMU_PER_PIXEL, (long) heightPx * EMU_PER_PIXEL);
+        return new PictureAnchor(new OneCellAnchorGeometry(new AnchorMarker(row, col,
+                colOffPx * EMU_PER_PIXEL, rowOffPx * EMU_PER_PIXEL),
+                new AnchorExtent((long) widthPx * EMU_PER_PIXEL, (long) heightPx * EMU_PER_PIXEL)));
     }
 
     /**
@@ -103,7 +90,8 @@ public class PictureAnchor {
      * @return A new PictureAnchor configured for two-cell anchoring
      */
     public static PictureAnchor twoCellAnchor(int fromRow, int fromCol, int toRow, int toCol) {
-        return new PictureAnchor(fromCol, 0, fromRow, 0, toCol, 0, toRow, 0, null, null);
+        return new PictureAnchor(new TwoCellAnchorGeometry(new AnchorMarker(fromRow, fromCol, 0, 0),
+                new AnchorMarker(toRow, toCol, 0, 0)));
     }
 
     /**
@@ -121,23 +109,13 @@ public class PictureAnchor {
      */
     public static PictureAnchor twoCellAnchor(int fromRow, int fromCol, int fromColOffPx, int fromRowOffPx,
                                                int toRow, int toCol, int toColOffPx, int toRowOffPx) {
-        return new PictureAnchor(fromCol, fromColOffPx * EMU_PER_PIXEL, fromRow, fromRowOffPx * EMU_PER_PIXEL,
-                toCol, toColOffPx * EMU_PER_PIXEL, toRow, toRowOffPx * EMU_PER_PIXEL, null, null);
+        return new PictureAnchor(new TwoCellAnchorGeometry(new AnchorMarker(fromRow, fromCol,
+                fromColOffPx * EMU_PER_PIXEL, fromRowOffPx * EMU_PER_PIXEL),
+                new AnchorMarker(toRow, toCol, toColOffPx * EMU_PER_PIXEL, toRowOffPx * EMU_PER_PIXEL)));
     }
 
-    private PictureAnchor(int fromCol, int fromColOff, int fromRow, int fromRowOff,
-                          Integer toCol, Integer toColOff, Integer toRow, Integer toRowOff,
-                          Long widthEmu, Long heightEmu) {
-        this.fromCol = fromCol;
-        this.fromColOff = fromColOff;
-        this.fromRow = fromRow;
-        this.fromRowOff = fromRowOff;
-        this.toCol = toCol;
-        this.toColOff = toColOff;
-        this.toRow = toRow;
-        this.toRowOff = toRowOff;
-        this.widthEmu = widthEmu;
-        this.heightEmu = heightEmu;
+    private PictureAnchor(AnchorGeometry geometry) {
+        this.geometry = geometry;
     }
 
     /**
@@ -146,51 +124,160 @@ public class PictureAnchor {
      * @return true if two-cell anchor, false if one-cell anchor
      */
     public boolean isTwoCellAnchor() {
-        return toCol != null;
+        return geometry.isTwoCellAnchor();
     }
 
     /**
      * Write the "from" position element.
      */
     void writeFrom(Writer w) throws IOException {
-        w.append("<xdr:from>");
-        w.append("<xdr:col>").append(fromCol).append("</xdr:col>");
-        w.append("<xdr:colOff>").append(fromColOff).append("</xdr:colOff>");
-        w.append("<xdr:row>").append(fromRow).append("</xdr:row>");
-        w.append("<xdr:rowOff>").append(fromRowOff).append("</xdr:rowOff>");
-        w.append("</xdr:from>");
+        geometry.writeFrom(w);
     }
 
     /**
      * Write the "to" position element (for two-cell anchors).
      */
     void writeTo(Writer w) throws IOException {
-        w.append("<xdr:to>");
-        w.append("<xdr:col>").append(toCol).append("</xdr:col>");
-        w.append("<xdr:colOff>").append(toColOff).append("</xdr:colOff>");
-        w.append("<xdr:row>").append(toRow).append("</xdr:row>");
-        w.append("<xdr:rowOff>").append(toRowOff).append("</xdr:rowOff>");
-        w.append("</xdr:to>");
+        geometry.writeTo(w);
     }
 
     /**
      * Write the extent element (for one-cell anchors).
      */
     void writeExt(Writer w) throws IOException {
-        w.append("<xdr:ext cx=\"").append(widthEmu).append("\" cy=\"").append(heightEmu).append("\"/>");
+        geometry.writeExt(w);
     }
 
     /**
      * Get width in EMUs (for one-cell anchors).
      */
     public Long getWidthEmu() {
-        return widthEmu;
+        return geometry.getWidthEmu();
     }
 
     /**
      * Get height in EMUs (for one-cell anchors).
      */
     public Long getHeightEmu() {
-        return heightEmu;
+        return geometry.getHeightEmu();
+    }
+
+    private interface AnchorGeometry {
+        boolean isTwoCellAnchor();
+
+        void writeFrom(Writer w) throws IOException;
+
+        void writeTo(Writer w) throws IOException;
+
+        void writeExt(Writer w) throws IOException;
+
+        Long getWidthEmu();
+
+        Long getHeightEmu();
+    }
+
+    private static final class OneCellAnchorGeometry implements AnchorGeometry {
+        private final AnchorMarker from;
+        private final AnchorExtent extent;
+
+        private OneCellAnchorGeometry(AnchorMarker from, AnchorExtent extent) {
+            this.from = from;
+            this.extent = extent;
+        }
+
+        public boolean isTwoCellAnchor() {
+            return false;
+        }
+
+        public void writeFrom(Writer w) throws IOException {
+            from.write(w, "from");
+        }
+
+        public void writeTo(Writer w) {
+            throw new UnsupportedOperationException("One-cell anchors do not have a to marker.");
+        }
+
+        public void writeExt(Writer w) throws IOException {
+            extent.write(w);
+        }
+
+        public Long getWidthEmu() {
+            return extent.widthEmu;
+        }
+
+        public Long getHeightEmu() {
+            return extent.heightEmu;
+        }
+    }
+
+    private static final class TwoCellAnchorGeometry implements AnchorGeometry {
+        private final AnchorMarker from;
+        private final AnchorMarker to;
+
+        private TwoCellAnchorGeometry(AnchorMarker from, AnchorMarker to) {
+            this.from = from;
+            this.to = to;
+        }
+
+        public boolean isTwoCellAnchor() {
+            return true;
+        }
+
+        public void writeFrom(Writer w) throws IOException {
+            from.write(w, "from");
+        }
+
+        public void writeTo(Writer w) throws IOException {
+            to.write(w, "to");
+        }
+
+        public void writeExt(Writer w) {
+            throw new UnsupportedOperationException("Two-cell anchors do not have an extent.");
+        }
+
+        public Long getWidthEmu() {
+            return null;
+        }
+
+        public Long getHeightEmu() {
+            return null;
+        }
+    }
+
+    private static final class AnchorMarker {
+        private final int row;
+        private final int col;
+        private final int colOffsetEmu;
+        private final int rowOffsetEmu;
+
+        private AnchorMarker(int row, int col, int colOffsetEmu, int rowOffsetEmu) {
+            this.row = row;
+            this.col = col;
+            this.colOffsetEmu = colOffsetEmu;
+            this.rowOffsetEmu = rowOffsetEmu;
+        }
+
+        private void write(Writer w, String elementName) throws IOException {
+            w.append("<xdr:").append(elementName).append(">");
+            w.append("<xdr:col>").append(col).append("</xdr:col>");
+            w.append("<xdr:colOff>").append(colOffsetEmu).append("</xdr:colOff>");
+            w.append("<xdr:row>").append(row).append("</xdr:row>");
+            w.append("<xdr:rowOff>").append(rowOffsetEmu).append("</xdr:rowOff>");
+            w.append("</xdr:").append(elementName).append(">");
+        }
+    }
+
+    private static final class AnchorExtent {
+        private final long widthEmu;
+        private final long heightEmu;
+
+        private AnchorExtent(long widthEmu, long heightEmu) {
+            this.widthEmu = widthEmu;
+            this.heightEmu = heightEmu;
+        }
+
+        private void write(Writer w) throws IOException {
+            w.append("<xdr:ext cx=\"").append(widthEmu).append("\" cy=\"").append(heightEmu).append("\"/>");
+        }
     }
 }

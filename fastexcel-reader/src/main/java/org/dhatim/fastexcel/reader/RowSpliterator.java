@@ -15,20 +15,16 @@
  */
 package org.dhatim.fastexcel.reader;
 
-import static org.dhatim.fastexcel.reader.DefaultXMLInputFactory.factory;
-
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 
 class RowSpliterator implements Spliterator<Row> {
@@ -36,14 +32,17 @@ class RowSpliterator implements Spliterator<Row> {
     private final SimpleXmlReader r;
     private final ReadableWorkbook workbook;
 
-    private final HashMap<Integer, BaseFormulaCell> sharedFormula = new HashMap<>();
-    private final HashMap<CellRangeAddress, String> arrayFormula = new HashMap<>();
+    private final FormulaResolver formulaResolver = new FormulaResolver();
     private int rowCapacity = 16;
     private int trackedRowIndex = 0;
 
     public RowSpliterator(ReadableWorkbook workbook, InputStream inputStream) throws XMLStreamException {
+        this(workbook, inputStream, DefaultXMLInputFactory.create());
+    }
+
+    public RowSpliterator(ReadableWorkbook workbook, InputStream inputStream, XMLInputFactory xmlInputFactory) throws XMLStreamException {
         this.workbook = workbook;
-        this.r = new SimpleXmlReader(factory, inputStream);
+        this.r = new SimpleXmlReader(xmlInputFactory, inputStream);
 
         r.goTo("sheetData");
     }
@@ -138,9 +137,9 @@ class RowSpliterator implements Spliterator<Row> {
         String formatString = null;
         if (styleString != null) {
             int index = Integer.parseInt(styleString);
-            if (index < workbook.getFormats().size()) {
-                formatId = workbook.getFormats().get(index);
-                formatString = workbook.getNumFmtIdToFormat().get(formatId);
+            formatId = workbook.getFormatId(index);
+            if (formatId != null) {
+                formatString = workbook.getFormatString(formatId);
             }
         }
 
@@ -157,7 +156,18 @@ class RowSpliterator implements Spliterator<Row> {
             throws XMLStreamException {
         CellType definedType = parseType(type);
         Function<String, ?> parser = getParserForType(definedType);
+        ParsedCellContent content = parseCellContent(addr, definedType, parser);
 
+        if (content.formula == null && content.value == null && content.type == CellType.NUMBER) {
+            return new Cell(workbook, CellType.EMPTY, null, addr, null, content.rawValue);
+        } else {
+            CellType cellType = content.formula != null ? CellType.FORMULA : content.type;
+            return new Cell(workbook, cellType, content.value, addr, content.formula, content.rawValue, dataFormatId, dataFormatString);
+        }
+    }
+
+    private ParsedCellContent parseCellContent(CellAddress addr, CellType definedType, Function<String, ?> parser)
+            throws XMLStreamException {
         Object value = null;
         String formula = null;
         String rawValue = null;
@@ -180,15 +190,13 @@ class RowSpliterator implements Spliterator<Row> {
                 Integer siInt = si == null ? null : Integer.parseInt(si);
                 formula = r.getValueUntilEndElement("f");
                 if ("array".equals(t) && ref != null) {
-                    CellRangeAddress range = CellRangeAddress.valueOf(ref);
-                    arrayFormula.put(range, formula);
+                    formulaResolver.registerArrayFormula(ref, formula);
                 }
                 if ("shared".equals(t)) {
                     if (ref != null) {
-                        CellRangeAddress range = CellRangeAddress.valueOf(ref);
-                        sharedFormula.put(siInt, new BaseFormulaCell(addr, formula, range));
+                        formulaResolver.registerSharedFormula(siInt, addr, formula, ref);
                     } else {
-                        formula = parseSharedFormula(siInt, addr);
+                        formula = formulaResolver.resolveSharedFormula(siInt, addr);
                     }
                 }
             } else {
@@ -197,98 +205,11 @@ class RowSpliterator implements Spliterator<Row> {
         }
 
         if (formula == null || "".equals(formula)) {
-            formula = getArrayFormula(addr).orElse(null);
+            formula = formulaResolver.resolveArrayFormula(addr).orElse(null);
         }
 
-        if (formula == null && value == null && definedType == CellType.NUMBER) {
-            return new Cell(workbook, CellType.EMPTY, null, addr, null, rawValue);
-        } else {
-            CellType cellType = formula != null ? CellType.FORMULA : definedType;
-            return new Cell(workbook, cellType, value, addr, formula, rawValue, dataFormatId, dataFormatString);
-        }
+        return new ParsedCellContent(definedType, value, formula, rawValue);
     }
-
-    private String parseSharedFormula(Integer si, CellAddress addr) {
-        BaseFormulaCell baseFormulaCell = sharedFormula.get(si);
-        int dRow = addr.getRow() - baseFormulaCell.getBaseCelAddr().getRow();
-        int dCol = addr.getColumn() - baseFormulaCell.getBaseCelAddr().getColumn();
-        String baseFormula = baseFormulaCell.getFormula();
-        return parseSharedFormula(dCol, dRow, baseFormula);
-    }
-
-    /**
-     * @see <a href="https://github.com/qax-os/excelize/blob/master/cell.go">here</a>
-     */
-    private String parseSharedFormula(Integer dCol, Integer dRow, String baseFormula) {
-        StringBuilder res = new StringBuilder();
-        int start = 0;
-        boolean stringLiteral = false;
-        for (int end = 0; end < baseFormula.length(); end++) {
-            char c = baseFormula.charAt(end);
-            if ('"' == c) {
-                stringLiteral = !stringLiteral;
-            }
-            if (stringLiteral) {
-                continue;// Skip characters in quotes
-            }
-            if (c >= 'A' && c <= 'Z' || c == '$') {
-
-                res.append(baseFormula.substring(start, end));
-                start = end;
-                end++;
-                boolean foundNum = false;
-                for (; end < baseFormula.length(); end++) {
-                    char idc = baseFormula.charAt(end);
-                    if (idc >= '0' && idc <= '9' || idc == '$') {
-                        foundNum = true;
-                    } else if (idc >= 'A' && idc <= 'Z') {
-                        if (foundNum) {
-                            break;
-                        }
-                    } else {
-                        break;
-                    }
-                }
-                if (foundNum) {
-                    String cellID = baseFormula.substring(start, end);
-                    res.append(shiftCell(cellID, dCol, dRow));
-                    start = end;
-                }
-            }
-        }
-
-        if (start < baseFormula.length()) {
-            res.append(baseFormula.substring(start));
-        }
-
-        return res.toString();
-    }
-
-    /**
-     * @see <a href="https://github.com/qax-os/excelize/blob/master/cell.go">here</a>
-     */
-    private String shiftCell(String cellID, Integer dCol, Integer dRow) {
-        CellAddress cellAddress = new CellAddress(cellID);
-        int fCol = cellAddress.getColumn();
-        int fRow = cellAddress.getRow();
-
-        String signCol = "", signRow = "";
-        if (cellID.indexOf("$") == 0) {
-            signCol = "$";
-        } else {
-            // Shift column
-            fCol += dCol;
-        }
-        if (cellID.lastIndexOf("$") > 0) {
-            signRow = "$";
-        } else {
-            // Shift row
-            fRow += dRow;
-        }
-        String colName = CellAddress.convertNumToColString(fCol);
-        return signCol + colName + signRow + (++fRow);
-    }
-
 
     private Cell parseString(CellAddress addr) throws XMLStreamException {
         r.goTo(() -> r.isStartElement("v") || r.isEndElement("c"));
@@ -327,15 +248,6 @@ class RowSpliterator implements Spliterator<Row> {
         }
         CellType cellType = formula == null ? CellType.STRING : CellType.FORMULA;
         return new Cell(workbook, cellType, value, addr, formula, rawValue);
-    }
-
-    private Optional<String> getArrayFormula(CellAddress addr) {
-        for (Map.Entry<CellRangeAddress, String> entry : arrayFormula.entrySet()) {
-            if (entry.getKey().isInRange(addr.getRow(), addr.getColumn())) {
-                return Optional.of(entry.getValue());
-            }
-        }
-        return Optional.empty();
     }
 
     private CellType parseType(String type) {
@@ -393,6 +305,20 @@ class RowSpliterator implements Spliterator<Row> {
         int toAdd = newSize - list.size();
         for (int i = 0; i < toAdd; i++) {
             list.add(null);
+        }
+    }
+
+    private static final class ParsedCellContent {
+        private final CellType type;
+        private final Object value;
+        private final String formula;
+        private final String rawValue;
+
+        private ParsedCellContent(CellType type, Object value, String formula, String rawValue) {
+            this.type = type;
+            this.value = value;
+            this.formula = formula;
+            this.rawValue = rawValue;
         }
     }
 

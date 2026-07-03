@@ -43,7 +43,7 @@ final class StyleCache {
      * Default constructor. Pre-cache Excel-reserved stuff.
      */
     StyleCache() {
-        mergeAndCacheStyle(0, null, Font.DEFAULT, Fill.NONE, Border.NONE, null, null);
+        mergeAndCacheStyle(0, new StyleSpec(null, Font.DEFAULT, Fill.NONE, Border.NONE, null, null));
         cacheFill(Fill.GRAY125);
     }
 
@@ -140,8 +140,18 @@ final class StyleCache {
     }
 
     int mergeAndCacheStyle(int currentStyle, String numberingFormat, Font font, Fill fill, Border border, Alignment alignment, Protection protection) {
+        return mergeAndCacheStyle(currentStyle, new StyleSpec(numberingFormat, font, fill, border, alignment, protection));
+    }
+
+    int mergeAndCacheStyle(int currentStyle, StyleSpec styleSpec) {
         Style original = styleIndexToStyle.get(currentStyle);
-        Style s = new Style(original, cacheValueFormatting(numberingFormat), cacheFont(font), cacheFill(fill), cacheBorder(border), alignment, protection);
+        Style s = new Style(original,
+                cacheValueFormatting(styleSpec.getNumberingFormat()),
+                cacheFont(styleSpec.getFont()),
+                cacheFill(styleSpec.getFill()),
+                cacheBorder(styleSpec.getBorder()),
+                styleSpec.getAlignment(),
+                styleSpec.getProtection());
         return cacheStyle(s, k -> styles.size());
     }
 

@@ -15,7 +15,8 @@
  */
 package org.dhatim.fastexcel.reader;
 
-import java.nio.charset.StandardCharsets;
+import org.dhatim.fastexcel.common.CellAddressUtil;
+
 import java.util.Objects;
 
 public final class CellAddress implements Comparable<CellAddress> {
@@ -114,25 +115,7 @@ public final class CellAddress implements Comparable<CellAddress> {
     }
 
     public static String convertNumToColString(int col) {
-        // Excel counts column A as the 1st column, we
-        // treat it as the 0th one
-        int excelColNum = col + 1;
-
-        final int MAX_COL_CHARS = 3;
-        final byte[] colRef = new byte[MAX_COL_CHARS];
-        int colRemain = excelColNum;
-        int pos = 2;
-        while (colRemain > 0) {
-            int thisPart = colRemain % COL_RADIX;
-            if (thisPart == 0) {
-                thisPart = COL_RADIX;
-            }
-            colRemain = (colRemain - thisPart) / COL_RADIX;
-
-            colRef[pos--] = (byte) (thisPart + (int) 'A' - 1);
-        }
-        pos++;
-        return new String(colRef, pos, (MAX_COL_CHARS - pos), StandardCharsets.ISO_8859_1);
+        return CellAddressUtil.convertNumToColString(col);
     }
 
 

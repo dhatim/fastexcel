@@ -262,7 +262,7 @@ public class Worksheet implements Closeable {
      */
     private Range autoFilterRange = null;
 
-    private Relationships relationships = new Relationships(this);
+    private Relationships relationships = new Relationships();
     /**
      * List of named ranges.
      */
@@ -347,6 +347,10 @@ public class Worksheet implements Closeable {
      *              where keys are the names and values are cell ranges.
      */
     public Map<String, Range> getNamedRanges() {
+        return Collections.unmodifiableMap(namedRanges);
+    }
+
+    Map<String, Range> namedRanges() {
         return namedRanges;
     }
 
@@ -535,7 +539,7 @@ public class Worksheet implements Closeable {
             return;
         }
         this.sheetProtectionOptions = options;
-        this.passwordHash = hashPassword(password);
+        this.passwordHash = LegacyProtectionHash.hashPassword(password);
     }
     /**
      * Protects the sheet from viewing by hiding it and locking
@@ -576,29 +580,6 @@ public class Worksheet implements Closeable {
      */
     public void removeAutoFilter() {
         autoFilterRange = null;
-    }
-
-    /**
-     * Hash the password.
-     * @param password The password to hash.
-     * @return The password hash as a hex string (2 bytes)
-     */
-    private static String hashPassword(String password) {
-        byte[] passwordCharacters = password.getBytes();
-        int hash = 0;
-        if (passwordCharacters.length > 0) {
-            int charIndex = passwordCharacters.length;
-            while (charIndex-- > 0) {
-                hash = ((hash >> 14) & 0x01) | ((hash << 1) & 0x7fff);
-                hash ^= passwordCharacters[charIndex];
-            }
-            // also hash with charcount
-            hash = ((hash >> 14) & 0x01) | ((hash << 1) & 0x7fff);
-            hash ^= passwordCharacters.length;
-            hash ^= (0x8000 | ('N' << 8) | 'K');
-        }
-
-        return Integer.toHexString(hash & 0xffff);
     }
 
     /**
@@ -933,6 +914,27 @@ public class Worksheet implements Closeable {
         int index = workbook.getIndex(this);
         writer.append("</sheetData>");
 
+        writeSheetProtection();
+        writeAutoFilter();
+        writeMergedCells();
+        writeConditionalFormattings();
+        writeShading();
+        writeDataValidations();
+        writeHyperlinks();
+        writePageMargins();
+        writePageSetup();
+        writeHeaderFooter();
+        writeDrawingReferences(index);
+        writeTableParts();
+        writer.append("</worksheet>");
+        workbook.endFile();
+
+        writeRelatedParts(index);
+        rows.clear();
+        finished = true;
+    }
+
+    private void writeSheetProtection() throws IOException {
         if (passwordHash != null) {
             writer.append("<sheetProtection password=\"").append(passwordHash).append("\" ");
             for (SheetProtectionOption option : SheetProtectionOption.values()) {
@@ -942,11 +944,17 @@ public class Worksheet implements Closeable {
             }
             writer.append("/>");
         }
+    }
+
+    private void writeAutoFilter() throws IOException {
         if (autoFilterRange != null) {
             writer.append("<autoFilter ref=\"")
                     .append(autoFilterRange.toString())
                     .append("\">").append("</autoFilter>");
         }
+    }
+
+    private void writeMergedCells() throws IOException {
         if (!mergedRanges.isEmpty()) {
             writer.append("<mergeCells>");
             for (Range r : mergedRanges) {
@@ -954,6 +962,9 @@ public class Worksheet implements Closeable {
             }
             writer.append("</mergeCells>");
         }
+    }
+
+    private void writeConditionalFormattings() throws IOException {
         if (!conditionalFormattings.isEmpty()) {
             int priority = 1;
             for (ConditionalFormatting v: conditionalFormattings) {
@@ -961,12 +972,18 @@ public class Worksheet implements Closeable {
                 v.write(writer);
             }
         }
+    }
+
+    private void writeShading() throws IOException {
         for (AlternateShading a : alternateShadingRanges) {
             a.write(writer);
         }
         for (Shading s : shadingRanges) {
             s.write(writer);
         }
+    }
+
+    private void writeDataValidations() throws IOException {
         if (!dataValidations.isEmpty()) {
             writer.append("<dataValidations count=\"").append(dataValidations.size()).append("\">");
             for (DataValidation v: dataValidations) {
@@ -974,6 +991,9 @@ public class Worksheet implements Closeable {
             }
             writer.append("</dataValidations>");
         }
+    }
+
+    private void writeHyperlinks() throws IOException {
         if (!hyperlinkRanges.isEmpty()) {
             writer.append("<hyperlinks>");
             for (Map.Entry<HyperLink, Ref> hr : hyperlinkRanges.entrySet()) {
@@ -991,6 +1011,9 @@ public class Worksheet implements Closeable {
             }
             writer.append("</hyperlinks>");
         }
+    }
+
+    private void writePageMargins() throws IOException {
         /* set page margins for the print setup (see in print preview) */
         String margins = "<pageMargins bottom=\"" + bottomMargin +
                          "\" footer=\"" + footerMargin +
@@ -999,7 +1022,9 @@ public class Worksheet implements Closeable {
                          "\" right=\"" + rightMargin +
                          "\" top=\"" + topMargin + "\"/>";
         writer.append(margins);
+    }
 
+    private void writePageSetup() throws IOException {
         /* set page orientation for the print setup */
         writer.append("<pageSetup")
             .append(" paperSize=\"" + paperSize.xmlValue + "\"")
@@ -1011,7 +1036,9 @@ public class Worksheet implements Closeable {
             .append(" blackAndWhite=\"" + blackAndWhite.toString() + "\"")
             .append(" orientation=\"" + pageOrientation + "\"")
             .append("/>");
+    }
 
+    private void writeHeaderFooter() throws IOException {
         /* write to header and footer */
         writer.append("<headerFooter differentFirst=\"false\" differentOddEven=\"false\">");
         writer.append("<oddHeader>");
@@ -1024,8 +1051,9 @@ public class Worksheet implements Closeable {
             footerEntry.write(writer);
         }
         writer.append("</oddFooter></headerFooter>");
+    }
 
-
+    private void writeDrawingReferences(int index) throws IOException {
         // Drawing references
         if (!pictures.isEmpty() || !comments.isEmpty()) {
             if (!pictures.isEmpty()) {
@@ -1043,6 +1071,9 @@ public class Worksheet implements Closeable {
                 writer.append("<legacyDrawing r:id=\"v\"/>");
             }
         }
+    }
+
+    private void writeTableParts() throws IOException {
         if (!tables.isEmpty()){
             writer.append("<tableParts count=\""+tables.size()+"\">");
             for (Map.Entry<String, Table> entry : tables.entrySet()) {
@@ -1050,10 +1081,9 @@ public class Worksheet implements Closeable {
             }
             writer.append("</tableParts>");
         }
+    }
 
-        writer.append("</worksheet>");
-        workbook.endFile();
-
+    private void writeRelatedParts(int index) throws IOException {
         /* write picture files */
         if (!pictures.isEmpty()) {
             // First, write the drawing relationships file (this assigns rIds to pictures)
@@ -1088,9 +1118,6 @@ public class Worksheet implements Closeable {
         if (!relationships.isEmpty()) {
             workbook.writeFile("xl/worksheets/_rels/sheet"+index+".xml.rels",relationships::write);
         }
-        // Free memory; we no longer need this data
-        rows.clear();
-        finished = true;
     }
 
     /**
@@ -1108,73 +1135,94 @@ public class Worksheet implements Closeable {
      */
     public void flush() throws IOException {
         if (writer == null) {
-            int index = workbook.getIndex(this);
-            writer = workbook.beginFile("xl/worksheets/sheet" + index + ".xml");
-            writer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-            writer.append("<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">");
-            writer.append("<sheetPr filterMode=\"" + "false" + "\">");
-            if (tabColor != null) {
-                writer.append("<tabColor rgb=\"" + tabColor + "\"/>");
-            }
-            if (!rowSumsBelow || !rowSumsRight) {
-                writer.append("<outlinePr ");
-                if (!rowSumsBelow) {
-                    writer.append("summaryBelow=\"0\" ");
-                }
-                if (!rowSumsRight) {
-                    writer.append("summaryRight=\"0\" ");
-                }
-                writer.append("/>");
-            }
-            writer.append("<pageSetUpPr fitToPage=\"" + fitToPage + "\" " + "autoPageBreaks=\"" + autoPageBreaks + "\"/></sheetPr>");
-            writer.append("<dimension ref=\"A1\"/>");
-            writer.append("<sheetViews><sheetView workbookViewId=\"0\"");
-            if (!showGridLines) {
-                writer.append(" showGridLines=\"false\"");
-            }
-            if (rightToLeft) {
-                writer.append(" rightToLeft=\"true\"");
-            }
-            if (zoomScale != 100) {
-                writer.append(" zoomScale=\"").append(zoomScale).append("\"");
-            }
-            writer.append(">");
-            if (freezeLeftColumns > 0 || freezeTopRows > 0) {
-                writeFreezePane(writer);
-            }
-            writer.append("</sheetView>");
-            writer.append("</sheetViews><sheetFormatPr defaultRowHeight=\"15.0\"/>");
-            final int nbCols = rows.stream().filter(Objects::nonNull).mapToInt(r -> r.length).max().orElse(0);
-            final int maxHideCol = hiddenColumns.stream().mapToInt(a -> a).max().orElse(0);
-            final int maxStyleCol = colStyles.values().stream().mapToInt(Column::getColNumber).max().orElse(0);
-            final int maxNoZeroIndex = groupColumns.getMaxNoZeroIndex();
-            if (nbCols > 0 || !hiddenColumns.isEmpty()||maxNoZeroIndex!=-1 || !colStyles.isEmpty()) {
-                int maxCol = Math.max(nbCols, Math.max(Math.max(maxHideCol,maxNoZeroIndex), maxStyleCol) + 1);
-                writeCols(writer, maxCol);
-            }
-            writer.append("<sheetData>");
+            startSheet();
         }
+        writeRows();
+        writer.flush();
+    }
+
+    private void startSheet() throws IOException {
+        int index = workbook.getIndex(this);
+        writer = workbook.beginFile("xl/worksheets/sheet" + index + ".xml");
+        writer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+        writer.append("<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">");
+        writeSheetProperties();
+        writer.append("<dimension ref=\"A1\"/>");
+        writeSheetViews();
+        writer.append("</sheetViews><sheetFormatPr defaultRowHeight=\"15.0\"/>");
+        writeColumnsIfNeeded();
+        writer.append("<sheetData>");
+    }
+
+    private void writeSheetProperties() throws IOException {
+        writer.append("<sheetPr filterMode=\"" + "false" + "\">");
+        if (tabColor != null) {
+            writer.append("<tabColor rgb=\"" + tabColor + "\"/>");
+        }
+        if (!rowSumsBelow || !rowSumsRight) {
+            writer.append("<outlinePr ");
+            if (!rowSumsBelow) {
+                writer.append("summaryBelow=\"0\" ");
+            }
+            if (!rowSumsRight) {
+                writer.append("summaryRight=\"0\" ");
+            }
+            writer.append("/>");
+        }
+        writer.append("<pageSetUpPr fitToPage=\"" + fitToPage + "\" " + "autoPageBreaks=\"" + autoPageBreaks + "\"/></sheetPr>");
+    }
+
+    private void writeSheetViews() throws IOException {
+        writer.append("<sheetViews><sheetView workbookViewId=\"0\"");
+        if (!showGridLines) {
+            writer.append(" showGridLines=\"false\"");
+        }
+        if (rightToLeft) {
+            writer.append(" rightToLeft=\"true\"");
+        }
+        if (zoomScale != 100) {
+            writer.append(" zoomScale=\"").append(zoomScale).append("\"");
+        }
+        writer.append(">");
+        if (freezeLeftColumns > 0 || freezeTopRows > 0) {
+            writeFreezePane(writer);
+        }
+        writer.append("</sheetView>");
+    }
+
+    private void writeColumnsIfNeeded() throws IOException {
+        final int nbCols = rows.stream().filter(Objects::nonNull).mapToInt(r -> r.length).max().orElse(0);
+        final int maxHideCol = hiddenColumns.stream().mapToInt(a -> a).max().orElse(0);
+        final int maxStyleCol = colStyles.values().stream().mapToInt(Column::getColNumber).max().orElse(0);
+        final int maxNoZeroIndex = groupColumns.getMaxNoZeroIndex();
+        if (nbCols > 0 || !hiddenColumns.isEmpty()||maxNoZeroIndex!=-1 || !colStyles.isEmpty()) {
+            int maxCol = Math.max(nbCols, Math.max(Math.max(maxHideCol,maxNoZeroIndex), maxStyleCol) + 1);
+            writeCols(writer, maxCol);
+        }
+    }
+
+    private void writeRows() throws IOException {
         final int nbRows = rows.size();
         final int maxHideRow = hiddenRows.stream().mapToInt(a -> a).max().orElse(0);
         final int maxGroupRow = groupRows.getMaxNoZeroIndex();
         final int maxRow = Math.max(nbRows, Math.max(maxGroupRow,maxHideRow) + 1);
         for (int r = flushedRows; r < maxRow; ++r) {
-            boolean notEmptyRow = r < rows.size();
-            Cell[] row = notEmptyRow ? rows.get(r) : null;
-            boolean isHidden = hiddenRows.contains(r);
-            byte groupLevel = groupRows.get(r);
-            if (row != null || isHidden || groupLevel != 0) {
-                writeRow(writer, r, isHidden,groupLevel,
-                        rowHeights.get(r), row);
-            }
-            if (notEmptyRow) {
-                rows.set(r, null); // free flushed row data
-            }
+            writeRowIfPresent(r);
         }
         flushedRows = maxRow - 1;
+    }
 
-
-        writer.flush();
+    private void writeRowIfPresent(int rowIndex) throws IOException {
+        boolean notEmptyRow = rowIndex < rows.size();
+        Cell[] row = notEmptyRow ? rows.get(rowIndex) : null;
+        boolean isHidden = hiddenRows.contains(rowIndex);
+        byte groupLevel = groupRows.get(rowIndex);
+        if (row != null || isHidden || groupLevel != 0) {
+            writeRow(writer, rowIndex, isHidden, groupLevel, rowHeights.get(rowIndex), row);
+        }
+        if (notEmptyRow) {
+            rows.set(rowIndex, null); // free flushed row data
+        }
     }
 
     /**
