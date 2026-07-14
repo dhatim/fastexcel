@@ -18,4 +18,19 @@ jobs:
             -   name: code coverage
                 uses: coverallsapp/github-action@v2
                 with:
-                    file: "**/target/site/jacoco/jacoco.xml"
+                    file: fastexcel-reader/target/site/jacoco/jacoco.xml
+                    format: jacoco
+                    flag-name: reader
+                    parallel: true
+
+            -   name: code coverage (fastexcel-writer)
+                uses: coverallsapp/github-action@v2
+                with:
+                    file: fastexcel-writer/target/site/jacoco/jacoco.xml
+                    format: jacoco
+                    flag-name: writer
+                    parallel: true
+
+            -   uses: coverallsapp/github-action@v2
+                with:
+                    parallel-finished: true
