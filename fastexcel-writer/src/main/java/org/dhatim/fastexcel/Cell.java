@@ -62,7 +62,7 @@ class Cell implements Ref {
             } else if (value instanceof RichText) {
                 ((RichText) value).write(w);
             } else if (value instanceof String) {
-                w.append("<is><t>").appendEscaped((String) value).append("</t></is>");
+                w.append("<is><t xml:space=\"preserve\">").appendEscaped((String) value).append("</t></is>");
             } else if (value != null) {
                 w.append("<v>");
                 if (value instanceof CachedString) {
