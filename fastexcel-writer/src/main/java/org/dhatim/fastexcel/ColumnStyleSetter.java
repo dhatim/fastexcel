@@ -51,7 +51,7 @@ public class ColumnStyleSetter extends GenericStyleSetter<ColumnStyleSetter> {
      * done otherwise style changes are lost!</b>
      */
     public void set() {
-        super.setStyle(false, new HashSet<>(Collections.singletonList(column.getStyle())), column::applyStyle);
+        super.setStyle(true, new HashSet<>(Collections.singletonList(column.getStyle())), column::applyStyle);
     }
 
     @Override

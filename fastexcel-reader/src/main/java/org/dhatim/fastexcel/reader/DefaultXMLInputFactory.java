@@ -2,8 +2,14 @@ package org.dhatim.fastexcel.reader;
 
 import javax.xml.stream.XMLInputFactory;
 
-public class DefaultXMLInputFactory {
-    static final XMLInputFactory factory = defaultXmlInputFactory();
+final class DefaultXMLInputFactory {
+
+    private DefaultXMLInputFactory() {
+    }
+
+    static XMLInputFactory create() {
+        return defaultXmlInputFactory();
+    }
 
     private static XMLInputFactory defaultXmlInputFactory() {
         XMLInputFactory factory  = new com.fasterxml.aalto.stax.InputFactoryImpl();

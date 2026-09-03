@@ -313,101 +313,90 @@ class CorrectnessTest {
             //set tab color
             ws.setTabColor("F381E0");
 
-            //set values for cell
-            ws.value(0, 0, "Hello fastexcel");
-            ws.inlineString(0, 1, "Hello fastexcel (inline)");
-            ws.value(1, 0, 1024.2048);
-            ws.value(2, 0, true);
-            ws.value(3, 0, new Date());
-            ws.value(4, 0, LocalDateTime.now());
-            ws.value(5, 0, LocalDate.now());
-            ws.value(6, 0, ZonedDateTime.now());
-            //set hyperlink for cell
-            ws.hyperlink(7, 0, new HyperLink("https://github.com/dhatim/fastexcel", "Test_Hyperlink_For_Cell"));
-            //set comment for cell
-            ws.comment(8, 0, "Test_Comment");
-            //set header and footer
-            ws.header("Test_Header", Position.CENTER);
-            ws.footer("Test_Footer", Position.LEFT);
-            //set hide row
-            ws.value(9, 0, "You can't see this row");
-            ws.hideRow(9);
-            //set column width
-            ws.width(1, 20);
-            //set zoom
-            ws.setZoom(120);
-            //set formula
-            ws.value(10, 0, 44444);
-            ws.value(10, 1, 55555);
-            ws.formula(10, 2, "=SUM(A11,B11)");
-            //set style for cell
-            ws.value(11, 0, "Test_Cell_Style");
-            ws.style(11, 0)
-                    .borderStyle(BorderSide.DIAGONAL, BorderStyle.MEDIUM)
-                    .fontSize(20)
-                    .fontColor(Color.RED)
-                    .italic()
-                    .bold()
-                    .fillColor(Color.YELLOW)
-                    .fontName("Cooper Black")
-                    .borderColor(Color.SEA_BLUE)
-                    .underlined()
-                    .strikethrough()
-                    .rotation(90)
-                    .set();
-            //merge cells
-            ws.range(12, 0, 12, 3).merge();
-            //set hyperlink for range
-            ws.range(13, 0, 13, 3).setHyperlink(new HyperLink("https://github.com/dhatim/fastexcel", "Test_Hyperlink_For_Range"));
-            //set name for range
-            ws.range(14, 0, 14, 3).setName("Test_Set_Name");
-            //set style for range
-            ws.value(15, 0, "Test_Range_Style");
-            ws.range(15, 0, 19, 3).style()
-                    .borderStyle(BorderSide.DIAGONAL, BorderStyle.MEDIUM)
-                    .fontSize(20)
-                    .fontColor(Color.RED)
-                    .italic()
-                    .bold()
-                    .fillColor(Color.YELLOW)
-                    .fontName("Cooper Black")
-                    .borderColor(Color.SEA_BLUE)
-                    .underlined()
-                    .strikethrough()
-                    .shadeAlternateRows(Color.SEA_BLUE)
-                    .shadeRows(Color.RED, 1)
-                    .set();
-            //protect the sheet
-            ws.protect("1234");
-            //autoFilter
-            ws.value(21, 0, "A");
-            ws.value(21, 1, "A");
-            ws.value(21, 2, "A");
-            ws.value(22, 0, "B");
-            ws.value(22, 1, "B");
-            ws.value(22, 2, "B");
-            ws.setAutoFilter(20, 0, 22, 2);
-
-            //validation
-            ws.value(23, 0, "ABAB");
-            ws.value(23, 1, "CDCD");
-            ws.value(24, 0, "EFEF");
-            ws.value(24, 1, "GHGH");
-            ws.range(25, 0, 25, 1).validateWithList(ws.range(23, 0, 24, 1));
-
-            //table
-            ws.range(0, 0, 5, 2).createTable();
-
-            //group
-            ws.groupRows(3, 4);
-            ws.groupRows(2, 5);
-
-            ws.groupCols(6, 7);
-            ws.groupCols(4, 8);
-            //
-            ws.rowSumsBelow(false);
-            ws.rowSumsRight(false);
+            addAllFeatureValues(ws);
+            addAllFeatureStyleAndRanges(ws);
+            addAllFeatureSheetStructure(ws);
         });
+    }
+
+    private static void addAllFeatureValues(Worksheet ws) {
+        ws.value(0, 0, "Hello fastexcel");
+        ws.inlineString(0, 1, "Hello fastexcel (inline)");
+        ws.value(1, 0, 1024.2048);
+        ws.value(2, 0, true);
+        ws.value(3, 0, new Date());
+        ws.value(4, 0, LocalDateTime.now());
+        ws.value(5, 0, LocalDate.now());
+        ws.value(6, 0, ZonedDateTime.now());
+        ws.hyperlink(7, 0, new HyperLink("https://github.com/dhatim/fastexcel", "Test_Hyperlink_For_Cell"));
+        ws.comment(8, 0, "Test_Comment");
+        ws.header("Test_Header", Position.CENTER);
+        ws.footer("Test_Footer", Position.LEFT);
+        ws.value(9, 0, "You can't see this row");
+        ws.hideRow(9);
+        ws.width(1, 20);
+        ws.setZoom(120);
+        ws.value(10, 0, 44444);
+        ws.value(10, 1, 55555);
+        ws.formula(10, 2, "=SUM(A11,B11)");
+    }
+
+    private static void addAllFeatureStyleAndRanges(Worksheet ws) {
+        ws.value(11, 0, "Test_Cell_Style");
+        ws.style(11, 0)
+                .borderStyle(BorderSide.DIAGONAL, BorderStyle.MEDIUM)
+                .fontSize(20)
+                .fontColor(Color.RED)
+                .italic()
+                .bold()
+                .fillColor(Color.YELLOW)
+                .fontName("Cooper Black")
+                .borderColor(Color.SEA_BLUE)
+                .underlined()
+                .strikethrough()
+                .rotation(90)
+                .set();
+        ws.range(12, 0, 12, 3).merge();
+        ws.range(13, 0, 13, 3).setHyperlink(new HyperLink("https://github.com/dhatim/fastexcel", "Test_Hyperlink_For_Range"));
+        ws.range(14, 0, 14, 3).setName("Test_Set_Name");
+        ws.value(15, 0, "Test_Range_Style");
+        ws.range(15, 0, 19, 3).style()
+                .borderStyle(BorderSide.DIAGONAL, BorderStyle.MEDIUM)
+                .fontSize(20)
+                .fontColor(Color.RED)
+                .italic()
+                .bold()
+                .fillColor(Color.YELLOW)
+                .fontName("Cooper Black")
+                .borderColor(Color.SEA_BLUE)
+                .underlined()
+                .strikethrough()
+                .shadeAlternateRows(Color.SEA_BLUE)
+                .shadeRows(Color.RED, 1)
+                .set();
+    }
+
+    private static void addAllFeatureSheetStructure(Worksheet ws) {
+        ws.protect("1234");
+        ws.value(21, 0, "A");
+        ws.value(21, 1, "A");
+        ws.value(21, 2, "A");
+        ws.value(22, 0, "B");
+        ws.value(22, 1, "B");
+        ws.value(22, 2, "B");
+        ws.setAutoFilter(20, 0, 22, 2);
+        ws.value(23, 0, "ABAB");
+        ws.value(23, 1, "CDCD");
+        ws.value(24, 0, "EFEF");
+        ws.value(24, 1, "GHGH");
+        ws.range(25, 0, 25, 1).validateWithList(ws.range(23, 0, 24, 1));
+        ws.range(0, 0, 5, 2).createTable();
+        ws.groupRows(3, 4);
+        ws.groupRows(2, 5);
+        ws.groupCols(6, 7);
+        ws.groupCols(4, 8);
+        ws.rowSumsBelow(false);
+        ws.rowSumsRight(false);
     }
 
     @Test

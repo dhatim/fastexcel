@@ -32,7 +32,7 @@ class Cell implements Ref {
     /**
      * Cell value.
      */
-    private Object value;
+    private CellValue value;
 
     /**
      * Cached style index.
@@ -53,79 +53,47 @@ class Cell implements Ref {
             if (style != 0) {
                 w.append(" s=\"").append(style).append('\"');
             }
-            if (value != null && !(value instanceof Formula)) {
-                w.append(" t=\"").append(getCellType(value)).append('\"');
+            if (value != null && value.type() != null) {
+                w.append(" t=\"").append(value.type()).append('\"');
             }
             w.append(">");
-            if (value instanceof Formula) {
-                w.append("<f>").append(((Formula) value).getExpression()).append("</f>");
-            } else if (value instanceof RichText) {
-                ((RichText) value).write(w);
-            } else if (value instanceof String) {
-                w.append("<is><t>").appendEscaped((String) value).append("</t></is>");
-            } else if (value != null) {
-                w.append("<v>");
-                if (value instanceof CachedString) {
-                    w.append(((CachedString) value).getIndex());
-                } else if (value instanceof Integer) {
-                    w.append((int) value);
-                } else if (value instanceof Long) {
-                    w.append((long) value);
-                } else if (value instanceof Double) {
-                    w.append((double) value);
-                } else if (value instanceof Boolean) {
-                    w.append((Boolean) value ? '1' : '0');
-                } else {
-                    w.append(value.toString());
-                }
-                w.append("</v>");
+            if (value != null) {
+                value.write(w);
             }
             w.append("</c>");
         }
     }
 
-    static String getCellType(Object value) {
-        if (value instanceof CachedString) {
-            return "s";
-        } else if (value instanceof Boolean) {
-            return "b";
-        } else if (value instanceof String || value instanceof RichText) {
-            return "inlineStr";
-        } else {
-            return "n";
-        }
-    }
-
     void setValue(Workbook wb, String v) {
-        value = v == null ? null : wb.cacheString(v);
+        value = v == null ? null : new CachedStringValue(wb.cacheString(v));
     }
 
     void setValue(Number v) {
-        value = v;
+        value = v == null ? null : new NumericValue(v);
     }
 
     void setValue(Boolean v) {
-        value = v;
+        value = v == null ? null : new BooleanValue(v);
     }
 
     void setValue(Date v) {
-        value = v == null ? null : TimestampUtil.convertDate(v);
+        setValue(v == null ? null : TimestampUtil.convertDate(v));
     }
 
     void setValue(LocalDateTime v) {
-        value = v == null ? null : TimestampUtil.convertDate(v);
+        setValue(v == null ? null : TimestampUtil.convertDate(v));
     }
 
     void setValue(LocalDate v) {
-        value = v == null ? null : TimestampUtil.convertDate(v);
+        setValue(v == null ? null : TimestampUtil.convertDate(v));
     }
 
     void setValue(ZonedDateTime v) {
-        value = v == null ? null : TimestampUtil.convertZonedDateTime(v);
+        setValue(v == null ? null : TimestampUtil.convertZonedDateTime(v));
     }
 
     void setValue(Instant v) {
-        value = v == null ? null : TimestampUtil.convertInstant(v);
+        setValue(v == null ? null : TimestampUtil.convertInstant(v));
     }
 
     /**
@@ -134,13 +102,7 @@ class Cell implements Ref {
      * @return Value or {@link Formula}, or {@code null}.
      */
     Object getValue() {
-        Object result;
-        if (value instanceof CachedString) {
-            result = ((CachedString) value).getString();
-        } else {
-            result = value;
-        }
-        return result;
+        return value == null ? null : value.value();
     }
 
     /**
@@ -149,7 +111,7 @@ class Cell implements Ref {
      * @param expression Formula expression.
      */
     void setFormula(String expression) {
-        value = new Formula(expression);
+        value = new FormulaValue(new Formula(expression));
     }
 
     /**
@@ -158,7 +120,7 @@ class Cell implements Ref {
      * @param v String value.
      */
     void setInlineString(String v) {
-        value = v;
+        value = v == null ? null : new InlineStringValue(v);
     }
 
     /**
@@ -167,7 +129,7 @@ class Cell implements Ref {
      * @param v Rich inline string value.
      */
     void setInlineString(RichText v) {
-        value = v;
+        value = v == null ? null : new RichTextValue(v);
     }
 
     /**
@@ -186,6 +148,134 @@ class Cell implements Ref {
      */
     void setStyle(int style) {
         this.style = style;
+    }
+
+    private interface CellValue {
+        String type();
+
+        void write(Writer w) throws IOException;
+
+        Object value();
+    }
+
+    private static final class FormulaValue implements CellValue {
+        private final Formula formula;
+
+        private FormulaValue(Formula formula) {
+            this.formula = formula;
+        }
+
+        public String type() {
+            return null;
+        }
+
+        public void write(Writer w) throws IOException {
+            w.append("<f>").append(formula.getExpression()).append("</f>");
+        }
+
+        public Object value() {
+            return formula;
+        }
+    }
+
+    private static final class RichTextValue implements CellValue {
+        private final RichText richText;
+
+        private RichTextValue(RichText richText) {
+            this.richText = richText;
+        }
+
+        public String type() {
+            return "inlineStr";
+        }
+
+        public void write(Writer w) throws IOException {
+            richText.write(w);
+        }
+
+        public Object value() {
+            return richText;
+        }
+    }
+
+    private static final class InlineStringValue implements CellValue {
+        private final String string;
+
+        private InlineStringValue(String string) {
+            this.string = string;
+        }
+
+        public String type() {
+            return "inlineStr";
+        }
+
+        public void write(Writer w) throws IOException {
+            w.append("<is><t>").appendEscaped(string).append("</t></is>");
+        }
+
+        public Object value() {
+            return string;
+        }
+    }
+
+    private static final class CachedStringValue implements CellValue {
+        private final CachedString cachedString;
+
+        private CachedStringValue(CachedString cachedString) {
+            this.cachedString = cachedString;
+        }
+
+        public String type() {
+            return "s";
+        }
+
+        public void write(Writer w) throws IOException {
+            w.append("<v>").append(cachedString.getIndex()).append("</v>");
+        }
+
+        public Object value() {
+            return cachedString.getString();
+        }
+    }
+
+    private static final class NumericValue implements CellValue {
+        private final Number number;
+
+        private NumericValue(Number number) {
+            this.number = number;
+        }
+
+        public String type() {
+            return "n";
+        }
+
+        public void write(Writer w) throws IOException {
+            w.append("<v>").append(number.toString()).append("</v>");
+        }
+
+        public Object value() {
+            return number;
+        }
+    }
+
+    private static final class BooleanValue implements CellValue {
+        private final Boolean bool;
+
+        private BooleanValue(Boolean bool) {
+            this.bool = bool;
+        }
+
+        public String type() {
+            return "b";
+        }
+
+        public void write(Writer w) throws IOException {
+            w.append("<v>").append(bool ? '1' : '0').append("</v>");
+        }
+
+        public Object value() {
+            return bool;
+        }
     }
 
 }

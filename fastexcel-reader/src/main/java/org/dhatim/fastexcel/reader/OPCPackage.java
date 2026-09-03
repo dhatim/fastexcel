@@ -6,6 +6,7 @@ import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
 
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLInputFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,8 +21,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import static java.lang.String.format;
-import static org.dhatim.fastexcel.reader.DefaultXMLInputFactory.factory;
-
 class OPCPackage implements AutoCloseable {
     private static final Pattern filenameRegex = Pattern.compile("^(.*/)([^/]+)$");
     // Following is a listing of number formats whose formatCode
@@ -57,31 +56,32 @@ class OPCPackage implements AutoCloseable {
         put("49", "@");
     }};
     private final ZipFile zip;
+    private final XMLInputFactory xmlInputFactory;
     private final Map<String, String> workbookPartsById;
     private final PartEntryNames parts;
-    private final List<String> formatIdList;
-    private Map<String, String> fmtIdToFmtString;
+    private final FormatCatalog formatCatalog;
 
     private OPCPackage(File zipFile) throws IOException {
         this(zipFile, false);
     }
 
     private OPCPackage(File zipFile, boolean withFormat) throws IOException {
-        this(new ZipFile(zipFile), withFormat);
+        this(new ZipFile(zipFile), withFormat, DefaultXMLInputFactory.create());
     }
 
     private OPCPackage(SeekableInMemoryByteChannel channel, boolean withStyle) throws IOException {
-        this(new ZipFile(channel), withStyle);
+        this(new ZipFile(channel), withStyle, DefaultXMLInputFactory.create());
     }
 
-    private OPCPackage(ZipFile zip, boolean withFormat) throws IOException {
+    private OPCPackage(ZipFile zip, boolean withFormat, XMLInputFactory xmlInputFactory) throws IOException {
         try {
             this.zip = zip;
+            this.xmlInputFactory = xmlInputFactory;
             this.parts = extractPartEntriesFromContentTypes();
             if (withFormat) {
-                this.formatIdList = extractFormat(parts.style);
+                this.formatCatalog = extractFormat(parts.style);
             } else {
-                this.formatIdList = Collections.emptyList();
+                this.formatCatalog = FormatCatalog.EMPTY;
             }
             this.workbookPartsById = readWorkbookPartsIds(relsNameFor(parts.workbook));
         } catch (XMLStreamException e) {
@@ -96,7 +96,7 @@ class OPCPackage implements AutoCloseable {
     private Map<String, String> readWorkbookPartsIds(String workbookRelsEntryName) throws IOException, XMLStreamException {
         String xlFolder = workbookRelsEntryName.substring(0, workbookRelsEntryName.indexOf("_rel"));
         Map<String, String> partsIdById = new HashMap<>();
-        SimpleXmlReader rels = new SimpleXmlReader(factory, getRequiredEntryContent(workbookRelsEntryName));
+        SimpleXmlReader rels = new SimpleXmlReader(xmlInputFactory, getRequiredEntryContent(workbookRelsEntryName));
         while (rels.goTo("Relationship")) {
             String id = rels.getAttribute("Id");
             String target = rels.getAttribute("Target");
@@ -112,7 +112,7 @@ class OPCPackage implements AutoCloseable {
     private PartEntryNames extractPartEntriesFromContentTypes() throws XMLStreamException, IOException {
         PartEntryNames entries = new PartEntryNames();
         final String contentTypesXml = "[Content_Types].xml";
-        try (SimpleXmlReader reader = new SimpleXmlReader(factory, getRequiredEntryContent(contentTypesXml))) {
+        try (SimpleXmlReader reader = new SimpleXmlReader(xmlInputFactory, getRequiredEntryContent(contentTypesXml))) {
             while (reader.goTo(() -> reader.isStartElement("Override"))) {
                 String contentType = reader.getAttributeRequired("ContentType");
                 if (PartEntryNames.WORKBOOK_MAIN_CONTENT_TYPE.equals(contentType)
@@ -136,10 +136,10 @@ class OPCPackage implements AutoCloseable {
         return entries;
     }
 
-    private List<String> extractFormat(String styleXml) throws XMLStreamException, IOException {
+    private FormatCatalog extractFormat(String styleXml) throws XMLStreamException, IOException {
         List<String> fmtIdList = new ArrayList<>();
-        fmtIdToFmtString = new HashMap<>();
-        try (SimpleXmlReader reader = new SimpleXmlReader(factory, getRequiredEntryContent(styleXml))) {
+        Map<String, String> fmtIdToFmtString = new HashMap<>();
+        try (SimpleXmlReader reader = new SimpleXmlReader(xmlInputFactory, getRequiredEntryContent(styleXml))) {
             AtomicBoolean insideCellXfs = new AtomicBoolean(false);
             while (reader.goTo(() -> reader.isStartElement("numFmt") || reader.isStartElement("xf") ||
                     reader.isStartElement("cellXfs") || reader.isEndElement("cellXfs"))) {
@@ -160,7 +160,7 @@ class OPCPackage implements AutoCloseable {
                 }
             }
         }
-        return fmtIdList;
+        return new FormatCatalog(fmtIdList, fmtIdToFmtString);
     }
 
     private InputStream getRequiredEntryContent(String name) throws IOException {
@@ -231,11 +231,19 @@ class OPCPackage implements AutoCloseable {
     }
 
     public List<String> getFormatList() {
-        return formatIdList;
+        return formatCatalog.getFormatIdsByStyleIndex();
     }
 
     public Map<String, String> getFmtIdToFmtString() {
-        return fmtIdToFmtString;
+        return formatCatalog.getFormatsById();
+    }
+
+    FormatCatalog getFormatCatalog() {
+        return formatCatalog;
+    }
+
+    XMLInputFactory getXmlInputFactory() {
+        return xmlInputFactory;
     }
 
     private static class PartEntryNames {

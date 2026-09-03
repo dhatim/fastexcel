@@ -9,6 +9,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>fastexcel-core</module>
         <module>fastexcel-writer</module>
         <module>fastexcel-reader</module>
         <module>e2e</module>
@@ -75,6 +76,11 @@
                 <artifactId>commons-io</artifactId>
                 <version>2.22.0</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.dhatim</groupId>
+                <artifactId>fastexcel-core</artifactId>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.dhatim</groupId>

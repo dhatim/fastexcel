@@ -30,7 +30,7 @@ class Font {
     /**
      * Default font.
      */
-    public static Font DEFAULT = build(false, false, false, "Calibri", BigDecimal.valueOf(11.0), "FF000000", false);
+    public static final Font DEFAULT = new Font(false, false, false, "Calibri", BigDecimal.valueOf(11.0), "FF000000", false);
 
     /**
      * Bold flag.
@@ -98,7 +98,17 @@ class Font {
      * @return New font object.
      */
     public static Font build(Boolean bold, Boolean italic, Boolean underlined, String name, BigDecimal size, String rgbColor, Boolean strikethrough) {
-        return new Font(bold != null? bold : DEFAULT.bold, italic != null ? italic : DEFAULT.italic , underlined != null ? underlined : DEFAULT.underlined, name != null ? name : DEFAULT.name, size != null ?  size:DEFAULT.size, rgbColor != null ?  rgbColor: DEFAULT.rgbColor, strikethrough != null ? strikethrough : DEFAULT.strikethrough);
+        return build(DEFAULT, bold, italic, underlined, name, size, rgbColor, strikethrough);
+    }
+
+    static Font build(Font defaults, Boolean bold, Boolean italic, Boolean underlined, String name, BigDecimal size, String rgbColor, Boolean strikethrough) {
+        return new Font(bold != null ? bold : defaults.bold,
+                italic != null ? italic : defaults.italic,
+                underlined != null ? underlined : defaults.underlined,
+                name != null ? name : defaults.name,
+                size != null ? size : defaults.size,
+                rgbColor != null ? rgbColor : defaults.rgbColor,
+                strikethrough != null ? strikethrough : defaults.strikethrough);
     }
 
     @Override

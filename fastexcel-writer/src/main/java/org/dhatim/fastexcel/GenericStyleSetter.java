@@ -469,50 +469,69 @@ abstract class GenericStyleSetter<STYLE_SETTER extends GenericStyleSetter<STYLE_
      */
     protected void setStyle(boolean shadingEnabled, Set<Integer> currentStyles,
                     StylesFunction stylesFunction) {
-        Alignment alignment;
-        if (horizontalAlignment != null || verticalAlignment != null || wrapText || rotation != 0 || indent  != 0) {
-            alignment = new Alignment(horizontalAlignment, verticalAlignment, wrapText, rotation, indent);
-        } else {
-            alignment = null;
-        }
-        Font font;
-        if (!Font.equalsDefault(bold,italic,underlined,fontName,fontSize,fontColor, strikethrough)) {
-            font = Font.build(bold, italic, underlined, fontName, fontSize, fontColor, strikethrough);
-        } else {
-            font = Font.DEFAULT;
-        }
-        Fill fill;
-        if (fillColor == null) {
-            fill = Fill.NONE;
-        } else {
-            fill = Fill.fromColor(fillColor);
-        }
-        if (border == null) {
-            border = Border.NONE;
-        }
-
-        Protection protection;
-        if (protectionOptions != null) {
-            protection = new Protection(protectionOptions);
-        } else {
-            protection = null;
-        }
+        StyleSpec styleSpec = regularStyleSpec();
 
         // Compute a map giving new styles for current styles
-        Map<Integer, Integer> newStyles = currentStyles.stream().collect(Collectors.toMap(Function.identity(), s -> worksheet.getWorkbook().mergeAndCacheStyle(s, valueFormatting, font, fill, border, alignment, protection)));
+        Map<Integer, Integer> newStyles = currentStyles.stream().collect(Collectors.toMap(Function.identity(), s -> worksheet.getWorkbook().mergeAndCacheStyle(s, styleSpec)));
 
         // Apply styles
         stylesFunction.applyStyles(newStyles);
 
         if (shadingEnabled) {
-            // Shading color for alternate rows is cached separately
-            if (alternateShadingFillColor != null) {
-                getRange().shadeAlternateRows(Fill.fromColor(alternateShadingFillColor, false));
-            }
+            applyShading();
+        }
+    }
 
-            if (shadingFillColor != null) {
-                getRange().shadeRows(Fill.fromColor(shadingFillColor, false), eachNRows);
-            }
+    private StyleSpec regularStyleSpec() {
+        return new StyleSpec(valueFormatting, regularFont(), fill(Fill.NONE, true), border(Border.NONE), alignment(), protection());
+    }
+
+    private Alignment alignment() {
+        if (horizontalAlignment != null || verticalAlignment != null || wrapText || rotation != 0 || indent  != 0) {
+            return new Alignment(horizontalAlignment, verticalAlignment, wrapText, rotation, indent);
+        }
+        return null;
+    }
+
+    private Font regularFont() {
+        return fontSpec().toFont(worksheet.getWorkbook().getDefaultFont());
+    }
+
+    private Font differentialFont() {
+        FontSpec fontSpec = fontSpec();
+        return fontSpec.hasDifferentialOverrides() ? fontSpec.toFont(worksheet.getWorkbook().getDefaultFont()) : null;
+    }
+
+    private FontSpec fontSpec() {
+        return new FontSpec(bold, italic, underlined, fontName, fontSize, fontColor, strikethrough);
+    }
+
+    private Fill fill(Fill defaultFill, boolean indexed) {
+        if (fillColor != null) {
+            return Fill.fromColor(fillColor, indexed);
+        }
+        return defaultFill;
+    }
+
+    private Border border(Border defaultBorder) {
+        return border != null ? border : defaultBorder;
+    }
+
+    private Protection protection() {
+        if (protectionOptions != null) {
+            return new Protection(protectionOptions);
+        }
+        return null;
+    }
+
+    private void applyShading() {
+        // Shading color for alternate rows is cached separately
+        if (alternateShadingFillColor != null) {
+            getRange().shadeAlternateRows(Fill.fromColor(alternateShadingFillColor, false));
+        }
+
+        if (shadingFillColor != null) {
+            getRange().shadeRows(Fill.fromColor(shadingFillColor, false), eachNRows);
         }
     }
 
@@ -521,24 +540,8 @@ abstract class GenericStyleSetter<STYLE_SETTER extends GenericStyleSetter<STYLE_
      * @param conditionalFormattingRule Conditional formatting rule to apply
      */
     public void set(ConditionalFormattingRule conditionalFormattingRule) {
-        Alignment alignment = null;
-        if (horizontalAlignment != null || verticalAlignment != null || wrapText || rotation != 0 || indent != 0) {
-            alignment = new Alignment(horizontalAlignment, verticalAlignment, wrapText, rotation, indent);
-        }
-        Font font = null;
-        if (bold != null && bold || italic != null && italic || underlined != null && underlined || fontColor != null || fontName != null || fontSize != null || strikethrough != null && strikethrough) {
-            font = Font.build(bold, italic, underlined, fontName, fontSize, fontColor, strikethrough);
-        }
-        Fill fill = null;
-        if (fillColor != null) {
-            fill = Fill.fromColor(fillColor, false);
-        }
-        Protection protection = null;
-        if (protectionOptions != null) {
-            protection = new Protection(protectionOptions);
-        }
-
-        int dxfId = worksheet.getWorkbook().cacheDifferentialFormat(new DifferentialFormat(valueFormatting, font, fill, border, alignment, protection));
+        int dxfId = worksheet.getWorkbook().cacheDifferentialFormat(new DifferentialFormat(valueFormatting,
+                differentialFont(), fill(null, false), border, alignment(), protection()));
         conditionalFormattingRule.setDxfId(dxfId);
         ConditionalFormatting conditionalFormatting = new ConditionalFormatting(getRange(), conditionalFormattingRule);
         worksheet.addConditionalFormatting(conditionalFormatting);

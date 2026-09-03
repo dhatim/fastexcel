@@ -24,8 +24,8 @@ public class Cell {
 
     private static final long DAY_MILLISECONDS = 86_400_000L;
 
-    private final ReadableWorkbook workbook;
-    private final Object value;
+    private final boolean date1904;
+    private final CellValue value;
     private final String formula;
     private final CellType type;
     private final CellAddress address;
@@ -39,9 +39,9 @@ public class Cell {
 
     Cell(ReadableWorkbook workbook, CellType type, Object value, CellAddress address, String formula, String rawValue,
          String dataFormatId, String dataFormatString) {
-        this.workbook = workbook;
+        this.date1904 = workbook != null && workbook.isDate1904();
         this.type = type;
-        this.value = value;
+        this.value = CellValue.of(type, value);
         this.address = address;
         this.formula = formula;
         this.rawValue = rawValue;
@@ -62,7 +62,7 @@ public class Cell {
     }
 
     public Object getValue() {
-        return value;
+        return value.asObject();
     }
 
     /**
@@ -78,7 +78,7 @@ public class Cell {
 
     public BigDecimal asNumber() {
         requireType(CellType.NUMBER);
-        return (BigDecimal) value;
+        return value.asNumber();
     }
 
     /**
@@ -107,7 +107,7 @@ public class Cell {
 
         int startYear = 1900;
         int dayAdjust = -1; // Excel thinks 2/29/1900 is a valid date, which it isn't
-        if (workbook.isDate1904()) {
+        if (date1904) {
             startYear = 1904;
             dayAdjust = 1; // 1904 date windowing uses 1/2/1904 as the first day
         } else if (wholeDays < 61) {
@@ -122,7 +122,7 @@ public class Cell {
 
     public Boolean asBoolean() {
         requireType(CellType.BOOLEAN);
-        return (Boolean) value;
+        return value.asBoolean();
     }
 
     /**
@@ -132,7 +132,7 @@ public class Cell {
      */
     public String asString() {
         requireType(CellType.STRING);
-        return value == null ? "" : (String) value;
+        return value.asString();
     }
 
     private void requireType(CellType requiredType) {
@@ -146,7 +146,7 @@ public class Cell {
      * @see #asString()
      */
     public String getText() {
-        return value == null ? "" : value.toString();
+        return value.asText();
     }
 
     public Integer getDataFormatId() {
@@ -167,12 +167,95 @@ public class Cell {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append('[').append(type).append(' ');
-        if (value == null) {
+        if (value.asObject() == null) {
             sb.append("null");
         } else {
-            sb.append('"').append(value).append('"');
+            sb.append('"').append(value.asObject()).append('"');
         }
         return sb.append(']').toString();
+    }
+
+    private interface CellValue {
+        Object asObject();
+
+        default BigDecimal asNumber() {
+            return (BigDecimal) asObject();
+        }
+
+        default Boolean asBoolean() {
+            return (Boolean) asObject();
+        }
+
+        default String asString() {
+            Object value = asObject();
+            return value == null ? "" : (String) value;
+        }
+
+        default String asText() {
+            Object value = asObject();
+            return value == null ? "" : value.toString();
+        }
+
+        static CellValue of(CellType type, Object value) {
+            switch (type) {
+                case NUMBER:
+                    return new NumberCellValue((BigDecimal) value);
+                case BOOLEAN:
+                    return new BooleanCellValue((Boolean) value);
+                case STRING:
+                    return new StringCellValue((String) value);
+                default:
+                    return new ObjectCellValue(value);
+            }
+        }
+    }
+
+    private static final class ObjectCellValue implements CellValue {
+        private final Object value;
+
+        private ObjectCellValue(Object value) {
+            this.value = value;
+        }
+
+        public Object asObject() {
+            return value;
+        }
+    }
+
+    private static final class NumberCellValue implements CellValue {
+        private final BigDecimal value;
+
+        private NumberCellValue(BigDecimal value) {
+            this.value = value;
+        }
+
+        public Object asObject() {
+            return value;
+        }
+    }
+
+    private static final class BooleanCellValue implements CellValue {
+        private final Boolean value;
+
+        private BooleanCellValue(Boolean value) {
+            this.value = value;
+        }
+
+        public Object asObject() {
+            return value;
+        }
+    }
+
+    private static final class StringCellValue implements CellValue {
+        private final String value;
+
+        private StringCellValue(String value) {
+            this.value = value;
+        }
+
+        public Object asObject() {
+            return value;
+        }
     }
 
 }

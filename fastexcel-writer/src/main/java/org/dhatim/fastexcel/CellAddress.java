@@ -15,10 +15,9 @@
  */
 package org.dhatim.fastexcel;
 
-import java.nio.charset.StandardCharsets;
+import org.dhatim.fastexcel.common.CellAddressUtil;
 
 final class CellAddress {
-    private static final int COL_RADIX = 'Z' - 'A' + 1;
     private static final String[] CACHED_COLS = new String[1024];
 
     static {
@@ -45,24 +44,6 @@ final class CellAddress {
     }
 
     private static String convertNumToColStringImpl(int col) {
-        // Excel counts column A as the 1st column, we
-        // treat it as the 0th one
-        int excelColNum = col + 1;
-
-        final int MAX_COL_CHARS = 3;
-        final byte[] colRef = new byte[MAX_COL_CHARS];
-        int colRemain = excelColNum;
-        int pos = 2;
-        while (colRemain > 0) {
-            int thisPart = colRemain % COL_RADIX;
-            if (thisPart == 0) {
-                thisPart = COL_RADIX;
-            }
-            colRemain = (colRemain - thisPart) / COL_RADIX;
-
-            colRef[pos--] = (byte) (thisPart + (int) 'A' - 1);
-        }
-        pos++;
-        return new String(colRef, pos, (MAX_COL_CHARS - pos), StandardCharsets.ISO_8859_1);
+        return CellAddressUtil.convertNumToColString(col);
     }
 }

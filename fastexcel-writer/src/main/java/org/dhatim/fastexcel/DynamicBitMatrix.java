@@ -30,38 +30,43 @@ public class DynamicBitMatrix {
         int leftBitMatrixColIndex = left / UNIT_WEITH;
         int topBitMatrixRowIndex = top / UNIT_HIGHT;
         int bottomBitMatrixRowIndex = bottom / UNIT_HIGHT;
-        if (rightBitMatrixColIndex >= bitMatrixData.size()) {
-            for (int i = bitMatrixData.size() - 1; i < rightBitMatrixColIndex; i++) {
-                bitMatrixData.add(null);
-            }
-        }
         for (int i = leftBitMatrixColIndex; i <= rightBitMatrixColIndex; i++) {
-            if (bitMatrixData.get(i) == null || bitMatrixData.get(i).isEmpty()) {
-                bitMatrixData.set(i, new CopyOnWriteArrayList<>());
-            }
-            CopyOnWriteArrayList<BitMatrix> colBitMatrices = bitMatrixData.get(i);
-            if (bottomBitMatrixRowIndex >= colBitMatrices.size()) {
-                for (int j = colBitMatrices.size() - 1; j < bottomBitMatrixRowIndex; j++) {
-                    colBitMatrices.add(null);
-                }
-            }
+            CopyOnWriteArrayList<BitMatrix> colBitMatrices = ensureColumn(i);
             for (int j = topBitMatrixRowIndex; j <= bottomBitMatrixRowIndex; j++) {
-                if (colBitMatrices.get(j) == null || colBitMatrices.isEmpty()) {
-                    colBitMatrices.set(j, new BitMatrix(UNIT_WEITH, UNIT_HIGHT));
-                }
-                BitMatrix bitMatrix = colBitMatrices.get(j);
-
-                int l = Math.max(i * UNIT_WEITH, left) - i * UNIT_WEITH;
-                int t = Math.max(j * UNIT_HIGHT, top) - j * UNIT_HIGHT;
-                int r = Math.min((i + 1) * UNIT_WEITH - 1, right) - i * UNIT_WEITH;
-                int b = Math.min((j + 1) * UNIT_HIGHT - 1, bottom) - j * UNIT_HIGHT;
-
-                bitMatrix.setRegion(l, t, r - l + 1, b - t + 1);
+                BitMatrix bitMatrix = ensureChunk(colBitMatrices, j);
+                MatrixRegion region = MatrixRegion.intersection(i, j, top, left, bottom, right);
+                bitMatrix.setRegion(region.left, region.top, region.width(), region.height());
             }
 
 
         }
 
+    }
+
+    private CopyOnWriteArrayList<BitMatrix> ensureColumn(int columnIndex) {
+        ensureSize(bitMatrixData, columnIndex);
+        CopyOnWriteArrayList<BitMatrix> colBitMatrices = bitMatrixData.get(columnIndex);
+        if (colBitMatrices == null || colBitMatrices.isEmpty()) {
+            colBitMatrices = new CopyOnWriteArrayList<>();
+            bitMatrixData.set(columnIndex, colBitMatrices);
+        }
+        return colBitMatrices;
+    }
+
+    private BitMatrix ensureChunk(CopyOnWriteArrayList<BitMatrix> colBitMatrices, int rowIndex) {
+        ensureSize(colBitMatrices, rowIndex);
+        BitMatrix bitMatrix = colBitMatrices.get(rowIndex);
+        if (bitMatrix == null) {
+            bitMatrix = new BitMatrix(UNIT_WEITH, UNIT_HIGHT);
+            colBitMatrices.set(rowIndex, bitMatrix);
+        }
+        return bitMatrix;
+    }
+
+    private static <T> void ensureSize(CopyOnWriteArrayList<T> list, int index) {
+        for (int i = list.size() - 1; i < index; i++) {
+            list.add(null);
+        }
     }
 
     boolean isConflict(int top, int left, int bottom, int right) {
@@ -114,16 +119,53 @@ public class DynamicBitMatrix {
         for (int i = 0; i < maxBitMatrixRow; i++) {
             for (int h = 0; h < UNIT_HIGHT; h++) {
                 for (int j = 0; j < maxBitMatrixCol; j++) {
-                    boolean inNullArea = isInNullArea(i, j);
-                        for (int k = 0; k < UNIT_WEITH; k++) {
-                            builder.append(inNullArea ? fillNullString : bitMatrixData.get(j).get(i).get(k, h) ? setString : unsetString);
-                            builder.append(j == maxBitMatrixCol - 1 && k == UNIT_WEITH - 1 ? lineSeparator : ',');
-                        }
+                    appendChunkRow(builder, i, h, j, maxBitMatrixCol, setString, unsetString, fillNullString, lineSeparator);
                 }
             }
 
         }
         return builder.toString();
+    }
+
+    private void appendChunkRow(StringBuilder builder, int chunkRow, int localRow, int chunkCol, int maxBitMatrixCol,
+                                String setString, String unsetString, String fillNullString, String lineSeparator) {
+        boolean inNullArea = isInNullArea(chunkRow, chunkCol);
+        for (int k = 0; k < UNIT_WEITH; k++) {
+            builder.append(inNullArea ? fillNullString : bitMatrixData.get(chunkCol).get(chunkRow).get(k, localRow) ? setString : unsetString);
+            builder.append(chunkCol == maxBitMatrixCol - 1 && k == UNIT_WEITH - 1 ? lineSeparator : ',');
+        }
+    }
+
+    private static final class MatrixRegion {
+        private final int left;
+        private final int top;
+        private final int right;
+        private final int bottom;
+
+        private MatrixRegion(int left, int top, int right, int bottom) {
+            this.left = left;
+            this.top = top;
+            this.right = right;
+            this.bottom = bottom;
+        }
+
+        private static MatrixRegion intersection(int chunkCol, int chunkRow, int top, int left, int bottom, int right) {
+            int chunkLeft = chunkCol * UNIT_WEITH;
+            int chunkTop = chunkRow * UNIT_HIGHT;
+            return new MatrixRegion(
+                    Math.max(chunkLeft, left) - chunkLeft,
+                    Math.max(chunkTop, top) - chunkTop,
+                    Math.min((chunkCol + 1) * UNIT_WEITH - 1, right) - chunkLeft,
+                    Math.min((chunkRow + 1) * UNIT_HIGHT - 1, bottom) - chunkTop);
+        }
+
+        private int width() {
+            return right - left + 1;
+        }
+
+        private int height() {
+            return bottom - top + 1;
+        }
     }
 
 }
