@@ -17,17 +17,23 @@ package org.dhatim.fastexcel;
 
 import org.apache.commons.io.output.NullOutputStream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.*;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 import java.util.function.Consumer;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.dhatim.fastexcel.CellAddress.convertNumToColString;
@@ -768,6 +774,42 @@ class CorrectnessTest {
             ws.style(3, 0).format("\"Year '\"0").set();
         });
         // If we reach here without exception, the XML was valid
+    }
+
+    @Test
+    void stringCellsKeepEdgeWhitespace(@TempDir Path directory) throws Exception {
+        Path file = directory.resolve("whitespace.xlsx");
+        writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Sheet 1");
+            ws.value(0, 0, "  shared  ");
+            ws.inlineString(1, 0, "  inline  ");
+            ws.inlineString(2, 0, RichText.builder().run("  rich  ").end().build());
+        }, file.toString());
+
+        try (ZipFile workbook = new ZipFile(file.toFile())) {
+            String sharedStrings = readPart(workbook, "xl/sharedStrings.xml");
+            String sheet = readPart(workbook, "xl/worksheets/sheet1.xml");
+
+            // Every string path must mark its text as whitespace-significant, otherwise
+            // Excel trims leading and trailing whitespace when it reads the cell.
+            assertThat(sharedStrings).contains("<si><t xml:space=\"preserve\">  shared  </t></si>");
+            assertThat(sheet).contains("<is><t xml:space=\"preserve\">  inline  </t></is>");
+            assertThat(sheet).contains("<r><t xml:space=\"preserve\">  rich  </t></r>");
+        }
+    }
+
+    private static String readPart(ZipFile workbook, String name) throws IOException {
+        ZipEntry entry = workbook.getEntry(name);
+        assertThat(entry).as("%s should be present", name).isNotNull();
+        try (InputStream in = workbook.getInputStream(entry)) {
+            ByteArrayOutputStream contents = new ByteArrayOutputStream();
+            byte[] buffer = new byte[8192];
+            int read;
+            while ((read = in.read(buffer)) != -1) {
+                contents.write(buffer, 0, read);
+            }
+            return new String(contents.toByteArray(), StandardCharsets.UTF_8);
+        }
     }
 
 }
