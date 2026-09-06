@@ -115,6 +115,10 @@ abstract class GenericStyleSetter<STYLE_SETTER extends GenericStyleSetter<STYLE_
      * Border.
      */
     private Border border;
+    /**
+     * Whether the cell is rendered as a checkbox.
+     */
+    private boolean checkbox;
 
     /**
      * Protection options.
@@ -425,6 +429,19 @@ abstract class GenericStyleSetter<STYLE_SETTER extends GenericStyleSetter<STYLE_
     }
 
     /**
+     * Set the checkbox property. If it set to true, client applications supporting it (Excel 2024+) will render
+     * the cell as a checkbox.
+     *
+     * @param checkbox Whether a checkbox should be rendered in the cell.
+     * @return This style setter.
+     */
+    public STYLE_SETTER checkbox(boolean checkbox) {
+        this.checkbox = checkbox;
+        worksheet.getWorkbook().addFeaturePropertyBag();
+        return getThis();
+    }
+
+    /**
      * Set cell diagonal property.
      *
      * @param diagonalProperty Diagonal border property which should be aplied to a cell
@@ -499,7 +516,7 @@ abstract class GenericStyleSetter<STYLE_SETTER extends GenericStyleSetter<STYLE_
         }
 
         // Compute a map giving new styles for current styles
-        Map<Integer, Integer> newStyles = currentStyles.stream().collect(Collectors.toMap(Function.identity(), s -> worksheet.getWorkbook().mergeAndCacheStyle(s, valueFormatting, font, fill, border, alignment, protection)));
+        Map<Integer, Integer> newStyles = currentStyles.stream().collect(Collectors.toMap(Function.identity(), s -> worksheet.getWorkbook().mergeAndCacheStyle(s, valueFormatting, font, fill, border, checkbox, alignment, protection)));
 
         // Apply styles
         stylesFunction.applyStyles(newStyles);

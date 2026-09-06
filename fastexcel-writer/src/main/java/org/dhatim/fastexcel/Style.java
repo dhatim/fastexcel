@@ -51,6 +51,11 @@ class Style {
     private final Protection protection;
 
     /**
+     * Whether it is displayed as an Excel 2004 FeaturePropertyBag checkbox
+     */
+    private final boolean checkbox;
+
+    /**
      * Constructor.
      *
      * @param original Original style. If not {@code null}, its attributes are
@@ -58,21 +63,24 @@ class Style {
      * @param valueFormatting Index of cached value formatting. Zero if not set.
      * @param font Index of cached font. Zero if not set.
      * @param fill Index of cached fill pattern. Zero if not set.
+     * @param checkbox Whether this style should be renderes as checkbox.
      * @param border Index of cached border. Zero if not set.
      * @param alignment Alignment. {@code null} if not set.
+     * @param protection The cell protection applied to this style.
      */
-    Style(Style original, int valueFormatting, int font, int fill, int border, Alignment alignment, Protection protection) {
+    Style(Style original, int valueFormatting, int font, int fill, int border, boolean checkbox, Alignment alignment, Protection protection) {
         this.valueFormatting = (valueFormatting == 0 && original != null) ? original.valueFormatting : valueFormatting;
         this.font = (font == 0 && original != null) ? original.font : font;
         this.fill = (fill == 0 && original != null) ? original.fill : fill;
         this.border = (border == 0 && original != null) ? original.border : border;
+        this.checkbox = checkbox;
         this.alignment = (alignment == null && original != null) ? original.alignment : alignment;
         this.protection = (protection == null && original != null) ? original.protection : protection;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(valueFormatting, font, fill, border, alignment, protection);
+        return Objects.hash(valueFormatting, font, fill, border, checkbox, alignment, protection);
     }
 
     @Override
@@ -85,7 +93,8 @@ class Style {
                     && Objects.equals(fill, other.fill)
                     && Objects.equals(border, other.border)
                     && Objects.equals(alignment, other.alignment)
-                    && Objects.equals(protection, other.protection);
+                    && Objects.equals(protection, other.protection)
+                    && checkbox == other.checkbox;
         } else {
             result = false;
         }
@@ -104,7 +113,7 @@ class Style {
             w.append(" applyBorder=\"1\"");
         }
 
-        if (alignment == null && protection == null) {
+        if (alignment == null && protection == null && !checkbox) {
             w.append("/>");
             return;
         }
@@ -116,6 +125,14 @@ class Style {
         }
 
         w.append('>');
+        if (checkbox) {
+            w
+                    .append("<extLst>")
+                    .append("<ext xmlns:xfpb=\"http://schemas.microsoft.com/office/spreadsheetml/2022/featurepropertybag\" uri=\"{C7286773-470A-42A8-94C5-96B5CB345126}\">")
+                    .append("<xfpb:xfComplement i=\"0\"/>")
+                    .append("</ext>")
+                    .append("</extLst>");
+        }
         if (alignment != null) {
             alignment.write(w);
         }
