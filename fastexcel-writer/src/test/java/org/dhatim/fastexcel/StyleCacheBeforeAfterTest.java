@@ -29,6 +29,7 @@ class StyleCacheBeforeAfterTest {
                     helper.cacheFont(font),
                     helper.cacheFill(fill),
                     helper.cacheBorder(border),
+                    false,
                     alignment, protection);
             
             return styles.computeIfAbsent(s, k -> styles.size());
@@ -49,6 +50,7 @@ class StyleCacheBeforeAfterTest {
                     helper.cacheFont(font),
                     helper.cacheFill(fill),
                     helper.cacheBorder(border),
+                    false,
                     alignment, protection);
             
             Integer index = styles.computeIfAbsent(s, k -> styles.size());
