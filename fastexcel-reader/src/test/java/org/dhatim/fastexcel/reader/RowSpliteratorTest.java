@@ -11,7 +11,7 @@ public class RowSpliteratorTest {
 	@Test
 	void testBlankCells() throws Exception {
 		InputStream is = Resources.open("/xml/blank_cells.xml");
-		RowSpliterator it = new RowSpliterator(null, is);
+		RowSpliterator it = new RowSpliterator(null, null, is);
 		it.tryAdvance(row -> {
 			assertEquals(8, row.getCellCount());
 			Cell cell = row.getCell(7);
