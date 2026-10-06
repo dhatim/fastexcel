@@ -168,6 +168,7 @@ class RowSpliterator implements Spliterator<Row> {
                     value = "".equals(rawValue) ? null : parser.apply(rawValue);
                 } catch (ExcelReaderException e) {
                     if (workbook.getReadingOptions().isCellInErrorIfParseError()) {
+                        value = null;
                         definedType = CellType.ERROR;
                     } else {
                         throw e;
