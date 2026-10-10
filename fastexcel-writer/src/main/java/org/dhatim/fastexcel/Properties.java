@@ -158,7 +158,7 @@ public class Properties {
 
         @Override
         public void write(Writer w, int pid) throws IOException {
-            w.append("<property fmtid=\"{D5CDD505-2E9C-101B-9397-08002B2CF9AE}\" pid=\"" + pid + "\" name=\"" + key + "\"><vt:lpwstr>");
+            w.append("<property fmtid=\"{D5CDD505-2E9C-101B-9397-08002B2CF9AE}\" pid=\"" + pid + "\" name=\"").appendEscaped(key).append("\"><vt:lpwstr>");
             w.appendEscaped(value);
             w.append("</vt:lpwstr></property>");
         }
@@ -171,7 +171,7 @@ public class Properties {
 
         @Override
         public void write(Writer w, int pid) throws IOException {
-            w.append("<property fmtid=\"{D5CDD505-2E9C-101B-9397-08002B2CF9AE}\" pid=\"" + pid + "\" name=\"" + key + "\"><vt:filetime>" + DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX").withZone(ZoneId.of("UTC")).format(value) + "</vt:filetime></property>");
+            w.append("<property fmtid=\"{D5CDD505-2E9C-101B-9397-08002B2CF9AE}\" pid=\"" + pid + "\" name=\"").appendEscaped(key).append("\"><vt:filetime>" + DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX").withZone(ZoneId.of("UTC")).format(value) + "</vt:filetime></property>");
         }
     }
 
@@ -182,7 +182,7 @@ public class Properties {
 
         @Override
         public void write(Writer w, int pid) throws IOException {
-            w.append("<property fmtid=\"{D5CDD505-2E9C-101B-9397-08002B2CF9AE}\" pid=\"" + pid + "\" name=\"" + key + "\"><vt:r8>" + value.toPlainString() + "</vt:r8></property>");
+            w.append("<property fmtid=\"{D5CDD505-2E9C-101B-9397-08002B2CF9AE}\" pid=\"" + pid + "\" name=\"").appendEscaped(key).append("\"><vt:r8>" + value.toPlainString() + "</vt:r8></property>");
         }
     }
 
@@ -193,7 +193,7 @@ public class Properties {
 
         @Override
         public void write(Writer w, int pid) throws IOException {
-            w.append("<property fmtid=\"{D5CDD505-2E9C-101B-9397-08002B2CF9AE}\" pid=\"" + pid + "\" name=\"" + key + "\"><vt:bool>" + value.toString() + "</vt:bool></property>");
+            w.append("<property fmtid=\"{D5CDD505-2E9C-101B-9397-08002B2CF9AE}\" pid=\"" + pid + "\" name=\"").appendEscaped(key).append("\"><vt:bool>" + value.toString() + "</vt:bool></property>");
         }
     }
 
