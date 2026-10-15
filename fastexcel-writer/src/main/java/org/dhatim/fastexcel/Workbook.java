@@ -376,7 +376,7 @@ public class Workbook implements Closeable {
              * (if there are any repeating rows or cols in the sheet at all) **/
             w.append("<definedNames>");
             for (Worksheet ws : worksheets) {
-                int worksheetIndex = getIndex(ws) - 1;
+                int worksheetIndex = getPosition(ws);
                 List<Object> repeatingColsAndRows = Stream.of(ws.getRepeatingCols(), ws.getRepeatingRows())
                                                           .filter(Objects::nonNull)
                                                           .collect(Collectors.toList());
@@ -523,15 +523,25 @@ public class Workbook implements Closeable {
     }
 
     /**
-     * Get unique index of a worksheet.
+     * Get stable unique part index of a worksheet, independent of its tab order.
      *
      * @param ws Worksheet. It must have been created previously by calling
      *           {@link #newWorksheet(java.lang.String)} on this workbook.
      * @return Worksheet index.
      */
     int getIndex(Worksheet ws) {
+        return ws.index;
+    }
+
+    /**
+     * Get the current zero-based tab position of a worksheet.
+     *
+     * @param ws Worksheet belonging to this workbook.
+     * @return Worksheet position.
+     */
+    int getPosition(Worksheet ws) {
         synchronized (worksheets) {
-            return worksheets.indexOf(ws) + 1;
+            return worksheets.indexOf(ws);
         }
     }
 
@@ -563,7 +573,7 @@ public class Workbook implements Closeable {
                 }
                 ++number;
             }
-            Worksheet worksheet = new Worksheet(this, sheetName);
+            Worksheet worksheet = new Worksheet(this, sheetName, worksheets.size() + 1);
             worksheets.add(worksheet);
             return worksheet;
         }

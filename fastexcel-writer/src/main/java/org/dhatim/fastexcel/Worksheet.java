@@ -58,6 +58,7 @@ public class Worksheet implements Closeable {
 
     private final Workbook workbook;
     private final String name;
+    final int index;
     /**
      * List of rows. A row is an array of cells.
      * Flushed rows are null.
@@ -295,10 +296,12 @@ public class Worksheet implements Closeable {
      *
      * @param workbook Parent workbook.
      * @param name Worksheet name.
+     * @param index Stable worksheet part index.
      */
-    Worksheet(Workbook workbook, String name) {
+    Worksheet(Workbook workbook, String name, int index) {
         this.workbook = Objects.requireNonNull(workbook);
         this.name = Objects.requireNonNull(name);
+        this.index = index;
     }
 
     /**
@@ -498,9 +501,7 @@ public class Worksheet implements Closeable {
      * Keep this sheet in active tab.
      */
     public void keepInActiveTab() {
-        int sheetIndex = workbook.getIndex(this);
-        //tabs are indexed from 0, sheets are indexed from 1
-        workbook.setActiveTab(sheetIndex - 1);
+        workbook.setActiveTab(workbook.getPosition(this));
     }
 
     /**
