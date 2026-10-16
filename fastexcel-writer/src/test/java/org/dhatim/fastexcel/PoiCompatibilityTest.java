@@ -810,6 +810,21 @@ class PoiCompatibilityTest {
     }
 
     @Test
+    void conditionalFormattingExpressionIsEscaped() throws Exception {
+        String formula = "IF(A1<5,A1&\"x\",\"\")";
+        byte[] data = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Worksheet 1");
+            ws.style(0, 0).fillColor("FF8800").set(new ConditionalFormattingExpressionRule(formula, true));
+        });
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(new ByteArrayInputStream(data))) {
+            XSSFConditionalFormattingRule rule = workbook.getSheetAt(0)
+                    .getSheetConditionalFormatting().getConditionalFormattingAt(0).getRule(0);
+            assertEquals(formula, rule.getFormula1());
+        }
+    }
+
+    @Test
     void hasValidRangeConditionalFormatting() throws Exception {
         byte[] data = writeWorkbook(wb -> {
             Worksheet ws = wb.newWorksheet("Worksheet 1");

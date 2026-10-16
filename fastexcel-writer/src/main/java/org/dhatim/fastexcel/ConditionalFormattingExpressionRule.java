@@ -30,7 +30,7 @@ public class ConditionalFormattingExpressionRule extends ConditionalFormattingRu
     public void write(Writer w) throws IOException {
         w
             .append("<cfRule type=\"").append(TYPE).append("\" priority=\"").append(priority).append("\" stopIfTrue=\"").append(stopIfTrue ? "1" : "0").append("\" dxfId=\"").append(dxfId).append("\">")
-            .append("<formula>").append(expression).append("</formula>")
+            .append("<formula>").appendEscaped(expression).append("</formula>")
             .append("</cfRule>");
     }
 }
