@@ -12,6 +12,8 @@ public class ConditionalFormattingExpressionRule extends ConditionalFormattingRu
     /**
      * Constructor
      *
+     * Supply the expression directly; XML special characters are escaped when writing.
+     *
      * @param expression When the expression evaluates to true, the specified style is applied
      * @param stopIfTrue True indicates no rules with lower priority shall be applied over this rule, when this rule evaluates to true
      */
@@ -30,7 +32,7 @@ public class ConditionalFormattingExpressionRule extends ConditionalFormattingRu
     public void write(Writer w) throws IOException {
         w
             .append("<cfRule type=\"").append(TYPE).append("\" priority=\"").append(priority).append("\" stopIfTrue=\"").append(stopIfTrue ? "1" : "0").append("\" dxfId=\"").append(dxfId).append("\">")
-            .append("<formula>").append(expression).append("</formula>")
+            .append("<formula>").appendEscaped(expression).append("</formula>")
             .append("</cfRule>");
     }
 }
