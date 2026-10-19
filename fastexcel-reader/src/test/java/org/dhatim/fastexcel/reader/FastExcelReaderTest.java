@@ -208,6 +208,11 @@ class FastExcelReaderTest {
                                 }
                             }
                         }
+
+                        List<CellRangeAddress> expectedMergedCells = sheet.getMergedRegions().stream()
+                                .map(r -> new CellRangeAddress(r.getFirstRow(), r.getLastRow(), r.getFirstColumn(), r.getLastColumn()))
+                                .collect(toList());
+                        assertThat(sheetDef.getMergedCells()).as("merged cells").isEqualTo(expectedMergedCells);
                     } catch (Throwable e) {
                         throw new RuntimeException("On sheet " + sheetDef.getId() + " " + sheetDef.getName(), e);
                     }
