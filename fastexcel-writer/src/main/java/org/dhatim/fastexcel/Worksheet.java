@@ -58,6 +58,8 @@ public class Worksheet implements Closeable {
 
     private final Workbook workbook;
     private final String name;
+    private String codeName;
+
     /**
      * List of rows. A row is an array of cells.
      * Flushed rows are null.
@@ -308,6 +310,14 @@ public class Worksheet implements Closeable {
      */
     public String getName() {
         return name;
+    }
+
+    /**
+     * Set the worksheet code name for referencing in macros
+     * @param codeName the new code name to set
+     */
+    public void setCodeName(String codeName) {
+        this.codeName = codeName;
     }
 
     /**
@@ -1112,7 +1122,11 @@ public class Worksheet implements Closeable {
             writer = workbook.beginFile("xl/worksheets/sheet" + index + ".xml");
             writer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
             writer.append("<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">");
-            writer.append("<sheetPr filterMode=\"" + "false" + "\">");
+            if (codeName == null) {
+                writer.append("<sheetPr filterMode=\"" + "false" + "\">");
+            } else {
+                writer.append("<sheetPr filterMode=\"" + "false" + "\" codeName=\"" + codeName + "\">");
+            }
             if (tabColor != null) {
                 writer.append("<tabColor rgb=\"" + tabColor + "\"/>");
             }
