@@ -21,6 +21,8 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -38,6 +40,10 @@ class RowSpliterator implements Spliterator<Row> {
 
     private final HashMap<Integer, BaseFormulaCell> sharedFormula = new HashMap<>();
     private final HashMap<CellRangeAddress, String> arrayFormula = new HashMap<>();
+    // Array formula ranges that may cover the current row or the rows below it. Rows are normally read in
+    // ascending order, so a range is dropped from here once the reader has moved past its last row.
+    private final LinkedHashMap<CellRangeAddress, String> activeArrayFormula = new LinkedHashMap<>();
+    private int arrayFormulaRow = -1;
     private int rowCapacity = 16;
     private int trackedRowIndex = 0;
 
@@ -182,6 +188,7 @@ class RowSpliterator implements Spliterator<Row> {
                 if ("array".equals(t) && ref != null) {
                     CellRangeAddress range = CellRangeAddress.valueOf(ref);
                     arrayFormula.put(range, formula);
+                    activeArrayFormula.put(range, formula);
                 }
                 if ("shared".equals(t)) {
                     if (ref != null) {
@@ -330,7 +337,24 @@ class RowSpliterator implements Spliterator<Row> {
     }
 
     private Optional<String> getArrayFormula(CellAddress addr) {
-        for (Map.Entry<CellRangeAddress, String> entry : arrayFormula.entrySet()) {
+        int row = addr.getRow();
+        if (row < arrayFormulaRow) {
+            // rows out of order: ranges already dropped may cover this row, so look at all of them
+            return findArrayFormula(arrayFormula, addr);
+        }
+        if (row > arrayFormulaRow) {
+            for (Iterator<CellRangeAddress> it = activeArrayFormula.keySet().iterator(); it.hasNext(); ) {
+                if (it.next().getLastRow() < row) {
+                    it.remove();
+                }
+            }
+            arrayFormulaRow = row;
+        }
+        return findArrayFormula(activeArrayFormula, addr);
+    }
+
+    private static Optional<String> findArrayFormula(Map<CellRangeAddress, String> ranges, CellAddress addr) {
+        for (Map.Entry<CellRangeAddress, String> entry : ranges.entrySet()) {
             if (entry.getKey().isInRange(addr.getRow(), addr.getColumn())) {
                 return Optional.of(entry.getValue());
             }
