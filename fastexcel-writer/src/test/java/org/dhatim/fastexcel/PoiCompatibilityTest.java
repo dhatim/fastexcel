@@ -6,6 +6,8 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.*;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTAutoFilter;
 
 import java.io.ByteArrayInputStream;
@@ -834,6 +836,34 @@ class PoiCompatibilityTest {
         assertTrue(condFmtRule.getFormula1().equals("LENB(A1)>1"));
         assertTrue(condFmtRule.getPatternFormatting().getFillBackgroundColorColor().getARGBHex().equals("FFFF8800"));
         assertTrue(cellRange.formatAsString().equals("A1:C2"));
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {
+            "A1<A2|true",
+            "A1&A2=\"\"|false",
+            "A1=\"&lt;\"|true",
+            "SUM(A1:A3)>0|false"
+    }, delimiter = '|')
+    void conditionalFormattingPreservesFormula(String formula, boolean stopIfTrue) throws Exception {
+        byte[] data = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Worksheet 1");
+            ws.range(0, 0, 1, 2).style().fillColor("FF8800")
+                    .set(new ConditionalFormattingExpressionRule(formula, stopIfTrue));
+        });
+
+        try (XSSFWorkbook xwb = new XSSFWorkbook(new ByteArrayInputStream(data))) {
+            XSSFSheetConditionalFormatting sheetFormatting = xwb.getSheetAt(0).getSheetConditionalFormatting();
+            assertThat(sheetFormatting.getNumConditionalFormattings()).isEqualTo(1);
+            XSSFConditionalFormatting formatting = sheetFormatting.getConditionalFormattingAt(0);
+            assertThat(formatting.getNumberOfRules()).isEqualTo(1);
+            assertThat(formatting.getFormattingRanges()).hasSize(1);
+            assertThat(formatting.getFormattingRanges()[0].formatAsString()).isEqualTo("A1:C2");
+            XSSFConditionalFormattingRule rule = formatting.getRule(0);
+            assertThat(rule.getFormula1()).isEqualTo(formula);
+            assertThat(rule.getStopIfTrue()).isEqualTo(stopIfTrue);
+            assertThat(rule.getPatternFormatting().getFillBackgroundColorColor().getARGBHex()).isEqualTo("FFFF8800");
+        }
     }
 
     @Test
