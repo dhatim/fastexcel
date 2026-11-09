@@ -22,16 +22,21 @@ import org.junit.jupiter.api.io.TempDir;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.*;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -796,6 +801,106 @@ class CorrectnessTest {
             assertThat(sheet).contains("<is><t xml:space=\"preserve\">  inline  </t></is>");
             assertThat(sheet).contains("<r><t xml:space=\"preserve\">  rich  </t></r>");
         }
+    }
+
+    @Test
+    void flushDoesNotRepeatGroupedOrHiddenRows() throws Exception {
+        byte[] bytes = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Sheet 1");
+            ws.rowSumsBelow(false);
+            try {
+                for (int user = 0; user < 3; user++) {
+                    int summary = user * 3;
+                    ws.value(summary, 0, "user " + user);
+                    ws.value(summary + 1, 0, "a");
+                    ws.value(summary + 2, 0, "b");
+                    ws.groupRows(summary + 1, summary + 2);
+                    ws.hideRow(summary + 1);
+                    ws.hideRow(summary + 2);
+                    ws.flush();
+                }
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
+
+        try (ZipFile zip = zipOf(bytes)) {
+            String sheet = readPart(zip, "xl/worksheets/sheet1.xml");
+            Matcher rows = Pattern.compile("<row r=\"(\\d+)\"").matcher(sheet);
+            List<String> numbers = new ArrayList<>();
+            while (rows.find()) {
+                numbers.add(rows.group(1));
+            }
+            assertThat(numbers).containsExactly("1", "2", "3", "4", "5", "6", "7", "8", "9");
+        }
+    }
+
+    @Test
+    void flushWritesPlainRowsOnce() throws Exception {
+        byte[] bytes = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Sheet 1");
+            try {
+                ws.value(0, 0, "a");
+                ws.flush();
+                ws.value(1, 0, "b");
+                ws.flush();
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
+        try (ZipFile zip = zipOf(bytes)) {
+            String sheet = readPart(zip, "xl/worksheets/sheet1.xml");
+            assertThat(sheet).containsOnlyOnce("<row r=\"1\"").containsOnlyOnce("<row r=\"2\"");
+        }
+    }
+
+    @Test
+    void collapsedRowsAndColumnsAreMarked() throws Exception {
+        byte[] bytes = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Sheet 1");
+            ws.rowSumsBelow(false);
+            ws.rowSumsRight(false);
+            ws.value(0, 0, "summary");
+            ws.value(1, 0, "detail");
+            ws.groupRows(1, 1);
+            ws.hideRow(1);
+            ws.collapseRow(0);
+            ws.value(0, 3, "x");
+            ws.groupCols(1, 2);
+            ws.hideColumn(1);
+            ws.hideColumn(2);
+            ws.collapseColumn(0);
+        });
+        try (ZipFile zip = zipOf(bytes)) {
+            String sheet = readPart(zip, "xl/worksheets/sheet1.xml");
+            assertThat(sheet).contains("<row r=\"1\" collapsed=\"1\">");
+            assertThat(sheet).contains("<row r=\"2\" hidden=\"true\" outlineLevel=\"1\">");
+            assertThat(sheet).containsPattern("<col min=\"1\" max=\"1\"[^>]* collapsed=\"1\"");
+            assertThat(sheet).doesNotContainPattern("<col min=\"2\"[^>]* collapsed=");
+            assertThat(sheet.split("collapsed=\"1\"", -1)).hasSize(3);
+        }
+    }
+
+    @Test
+    void expandedRowsAndColumnsAreNotMarked() throws Exception {
+        byte[] bytes = writeWorkbook(wb -> {
+            Worksheet ws = wb.newWorksheet("Sheet 1");
+            ws.value(0, 0, "summary");
+            ws.collapseRow(0);
+            ws.expandRow(0);
+            ws.collapseColumn(0);
+            ws.expandColumn(0);
+        });
+        try (ZipFile zip = zipOf(bytes)) {
+            assertThat(readPart(zip, "xl/worksheets/sheet1.xml")).doesNotContain("collapsed");
+        }
+    }
+
+    private static ZipFile zipOf(byte[] bytes) throws IOException {
+        Path file = Files.createTempFile("fastexcel", ".xlsx");
+        file.toFile().deleteOnExit();
+        Files.write(file, bytes);
+        return new ZipFile(file.toFile());
     }
 
     private static String readPart(ZipFile workbook, String name) throws IOException {

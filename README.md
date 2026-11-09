@@ -251,6 +251,23 @@ ws.groupCols(2，3);
 ws.groupCols(1，5);
 ```
 
+Start a group collapsed: hide its rows or columns and mark the summary row or column as collapsed,
+so the outline button shows the right state in Excel and LibreOffice
+
+```java
+ws.rowSumsBelow(false);
+ws.groupRows(2, 3);
+ws.hideRow(2);
+ws.hideRow(3);
+ws.collapseRow(1);  // the summary row, above the group
+
+ws.rowSumsRight(false);
+ws.groupCols(2, 3);
+ws.hideColumn(2);
+ws.hideColumn(3);
+ws.collapseColumn(1);  // the summary column, left of the group
+```
+
 Indicating summary rows/columns appear direction 
 
 ```java
