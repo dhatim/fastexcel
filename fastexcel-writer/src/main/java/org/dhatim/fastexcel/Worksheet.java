@@ -96,6 +96,16 @@ public class Worksheet implements Closeable {
      * List of columns to hide
      */
     private final Set<Integer> hiddenColumns = new HashSet<>();
+
+    /**
+     * List of rows marked as the collapsed summary row of a group
+     */
+    private final Set<Integer> collapsedRows = new HashSet<>();
+
+    /**
+     * List of columns marked as the collapsed summary column of a group
+     */
+    private final Set<Integer> collapsedColumns = new HashSet<>();
     /**
      * Array of column's group level
      */
@@ -287,6 +297,11 @@ public class Worksheet implements Closeable {
      * Those rows are set to null in {@link #rows}
      */
     private int flushedRows = 0;
+
+    /**
+     * Whether the row at index {@link #flushedRows} has already been written to {@link #writer}.
+     */
+    private boolean lastFlushedRowWritten = false;
 
     private String tabColor;
 
@@ -492,6 +507,51 @@ public class Worksheet implements Closeable {
      */
     public void showColumn(int column) {
         hiddenColumns.remove(column);
+    }
+
+    /**
+     * Mark the given row as the summary row of a collapsed group of rows.
+     * <p>
+     * This only sets the {@code collapsed} flag, which makes the outline button show the group as collapsed.
+     * The rows of the group still have to be hidden with {@link #hideRow(int)}. The summary row is the row
+     * above the group, or the row below it if {@link #rowSumsBelow(boolean)} is left at its default.
+     *
+     * @param row Zero-based row number
+     */
+    public void collapseRow(int row) {
+        collapsedRows.add(row);
+    }
+
+    /**
+     * Remove the collapsed flag set by {@link #collapseRow(int)}.
+     *
+     * @param row Zero-based row number
+     */
+    public void expandRow(int row) {
+        collapsedRows.remove(row);
+    }
+
+    /**
+     * Mark the given column as the summary column of a collapsed group of columns.
+     * <p>
+     * This only sets the {@code collapsed} flag, which makes the outline button show the group as collapsed.
+     * The columns of the group still have to be hidden with {@link #hideColumn(int)}. The summary column is
+     * the column to the left of the group when {@link #rowSumsRight(boolean)} is set to {@code false},
+     * and the column to its right otherwise.
+     *
+     * @param column Zero-based column number
+     */
+    public void collapseColumn(int column) {
+        collapsedColumns.add(column);
+    }
+
+    /**
+     * Remove the collapsed flag set by {@link #collapseColumn(int)}.
+     *
+     * @param column Zero-based column number
+     */
+    public void expandColumn(int column) {
+        collapsedColumns.remove(column);
     }
 
     /**
@@ -859,13 +919,14 @@ public class Worksheet implements Closeable {
             boolean hasStyle = colStyles.containsKey(c);
             boolean widthChanged = colWidths.containsKey(c) || maxWidth > DEFAULT_COL_WIDTH;
             int groupLevel = groupColumns.get(c);
-            if (widthChanged || isHidden || groupLevel != 0 || hasStyle) {
+            boolean isCollapsed = collapsedColumns.contains(c);
+            if (widthChanged || isHidden || isCollapsed || groupLevel != 0 || hasStyle) {
                 if (!started) {
                     w.append("<cols>");
                     started = true;
                 }
                 Integer style = colStyles.getOrDefault(c, Column.noStyle(this, c)).getStyle();
-                writeCol(w, c, maxWidth, bestFit, isHidden,groupLevel, style);
+                writeCol(w, c, maxWidth, bestFit, isHidden, isCollapsed, groupLevel, style);
             }
         }
         if (started) {
@@ -882,11 +943,12 @@ public class Worksheet implements Closeable {
      * @param maxWidth The maximum width
      * @param bestFit Whether or not this column should be optimized for fit
      * @param isHidden Whether or not this column is hidden
+     * @param isCollapsed Whether or not this column is the summary column of a collapsed group
      * @param style Cached style index of the column
      * @throws IOException If an I/O error occurs.
      */
-    private static void writeCol(Writer w, int columnIndex, double maxWidth, boolean bestFit, boolean isHidden, int groupLevel,
-                                 int style) throws IOException {
+    private static void writeCol(Writer w, int columnIndex, double maxWidth, boolean bestFit, boolean isHidden,
+                                 boolean isCollapsed, int groupLevel, int style) throws IOException {
         final int col = columnIndex + 1;
         w.append("<col min=\"").append(col).append("\" max=\"").append(col).append("\" width=\"")
                 .append(Math.min(MAX_COL_WIDTH, maxWidth));
@@ -896,6 +958,9 @@ public class Worksheet implements Closeable {
 
         if (isHidden) {
             w.append("\" hidden=\"true");
+        }
+        if (isCollapsed) {
+            w.append("\" collapsed=\"1");
         }
         w.append("\"");
         if (style > 0) {
@@ -1147,31 +1212,42 @@ public class Worksheet implements Closeable {
             final int nbCols = rows.stream().filter(Objects::nonNull).mapToInt(r -> r.length).max().orElse(0);
             final int maxHideCol = hiddenColumns.stream().mapToInt(a -> a).max().orElse(0);
             final int maxStyleCol = colStyles.values().stream().mapToInt(Column::getColNumber).max().orElse(0);
+            final int maxCollapsedCol = collapsedColumns.stream().mapToInt(a -> a).max().orElse(0);
             final int maxNoZeroIndex = groupColumns.getMaxNoZeroIndex();
-            if (nbCols > 0 || !hiddenColumns.isEmpty()||maxNoZeroIndex!=-1 || !colStyles.isEmpty()) {
-                int maxCol = Math.max(nbCols, Math.max(Math.max(maxHideCol,maxNoZeroIndex), maxStyleCol) + 1);
+            if (nbCols > 0 || !hiddenColumns.isEmpty() || !collapsedColumns.isEmpty() || maxNoZeroIndex!=-1 || !colStyles.isEmpty()) {
+                int maxCol = Math.max(nbCols, Math.max(Math.max(Math.max(maxHideCol, maxCollapsedCol), maxNoZeroIndex), maxStyleCol) + 1);
                 writeCols(writer, maxCol);
             }
             writer.append("<sheetData>");
         }
         final int nbRows = rows.size();
         final int maxHideRow = hiddenRows.stream().mapToInt(a -> a).max().orElse(0);
+        final int maxCollapsedRow = collapsedRows.stream().mapToInt(a -> a).max().orElse(0);
         final int maxGroupRow = groupRows.getMaxNoZeroIndex();
-        final int maxRow = Math.max(nbRows, Math.max(maxGroupRow,maxHideRow) + 1);
+        final int maxRow = Math.max(nbRows, Math.max(maxGroupRow, Math.max(maxHideRow, maxCollapsedRow)) + 1);
+        boolean lastRowWritten = false;
         for (int r = flushedRows; r < maxRow; ++r) {
             boolean notEmptyRow = r < rows.size();
             Cell[] row = notEmptyRow ? rows.get(r) : null;
             boolean isHidden = hiddenRows.contains(r);
             byte groupLevel = groupRows.get(r);
-            if (row != null || isHidden || groupLevel != 0) {
-                writeRow(writer, r, isHidden,groupLevel,
+            boolean isCollapsed = collapsedRows.contains(r);
+            // The last row of the previous flush is visited again. If it was already written, only
+            // new cells justify writing it again: its hidden, group and collapsed attributes alone
+            // would add a duplicate <row> element.
+            boolean alreadyWritten = r == flushedRows && lastFlushedRowWritten;
+            lastRowWritten = alreadyWritten;
+            if (row != null || (!alreadyWritten && (isHidden || isCollapsed || groupLevel != 0))) {
+                writeRow(writer, r, isHidden, isCollapsed, groupLevel,
                         rowHeights.get(r), row);
+                lastRowWritten = true;
             }
             if (notEmptyRow) {
                 rows.set(r, null); // free flushed row data
             }
         }
         flushedRows = maxRow - 1;
+        lastFlushedRowWritten = lastRowWritten;
 
 
         writer.flush();
@@ -1221,16 +1297,20 @@ public class Worksheet implements Closeable {
      * @param w Output writer.
      * @param r Zero-based row number.
      * @param isHidden Whether or not this row is hidden
+     * @param isCollapsed Whether or not this row is the summary row of a collapsed group
      * @param groupLevel Group level of row
      * @param rowHeight Row height value in points to be set if customHeight is true
      * @param row Cells in the row.
      * @throws IOException If an I/O error occurs.
      */
-    private static void writeRow(Writer w, int r, boolean isHidden,byte groupLevel,
+    private static void writeRow(Writer w, int r, boolean isHidden, boolean isCollapsed, byte groupLevel,
                                  Double rowHeight, Cell... row) throws IOException {
         w.append("<row r=\"").append(r + 1).append("\"");
         if (isHidden) {
             w.append(" hidden=\"true\"");
+        }
+        if (isCollapsed) {
+            w.append(" collapsed=\"1\"");
         }
         if(rowHeight != null) {
             w.append(" ht=\"")
