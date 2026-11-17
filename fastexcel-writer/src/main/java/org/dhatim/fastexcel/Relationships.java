@@ -13,6 +13,7 @@ public class Relationships {
     private static final String TYPE_OF_COMMENTS= "http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments";
     private static final String TYPE_OF_VMLDRAWING= "http://schemas.openxmlformats.org/officeDocument/2006/relationships/vmlDrawing";
     private static final String TYPE_OF_TABLE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/table";
+    private static final String TYPE_OF_VBAPROJECT = "http://schemas.microsoft.com/office/2006/relationships/vbaProject";
 
     private final AtomicInteger maxIndex = new AtomicInteger(1);
 
