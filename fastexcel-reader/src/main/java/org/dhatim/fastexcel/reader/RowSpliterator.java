@@ -57,6 +57,10 @@ class RowSpliterator implements Spliterator<Row> {
         r.goTo("sheetData");
     }
 
+    public RowSpliterator(ReadableWorkbook workbook, InputStream inputStream) throws XMLStreamException {
+        this(workbook, null, inputStream);
+    }
+
     @Override
     public boolean tryAdvance(Consumer<? super Row> action) {
         try {
