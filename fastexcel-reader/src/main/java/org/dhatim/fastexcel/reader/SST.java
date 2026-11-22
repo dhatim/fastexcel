@@ -26,6 +26,9 @@ class SST {
   }
 
   String getItemAt(int index) throws XMLStreamException {
+    if (index < 0) {
+      throw new ExcelReaderException("Invalid shared string index: " + index);
+    }
     if (reader == null) {
       return null;
     }
@@ -35,7 +38,10 @@ class SST {
 
     private void readUpTo(int index) throws XMLStreamException {
         while (index >= values.size()) {
-            reader.goTo("si");
+            if (!reader.goTo("si")) {
+                throw new ExcelReaderException("Shared string index " + index
+                        + " exceeds shared string table size " + values.size());
+            }
             StringBuilder sb = new StringBuilder();
             while (reader.goTo(() -> reader.isStartElement("t")
                     || reader.isStartElement("rPh")

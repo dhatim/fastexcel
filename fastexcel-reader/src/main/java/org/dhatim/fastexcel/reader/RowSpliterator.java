@@ -210,6 +210,9 @@ class RowSpliterator implements Spliterator<Row> {
 
     private String parseSharedFormula(Integer si, CellAddress addr) {
         BaseFormulaCell baseFormulaCell = sharedFormula.get(si);
+        if (baseFormulaCell == null) {
+            throw new ExcelReaderException("Missing base formula for shared formula index " + si + " at " + addr);
+        }
         int dRow = addr.getRow() - baseFormulaCell.getBaseCelAddr().getRow();
         int dCol = addr.getColumn() - baseFormulaCell.getBaseCelAddr().getColumn();
         String baseFormula = baseFormulaCell.getFormula();
