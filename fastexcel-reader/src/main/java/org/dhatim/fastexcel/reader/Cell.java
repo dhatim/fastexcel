@@ -76,7 +76,16 @@ public class Cell {
         return formula;
     }
 
+    /**
+     * Reads the stored numeric value without evaluating formulas.
+     *
+     * @return numeric value or cached numeric formula result, or null for an empty cell
+     * @throws ExcelReaderException if the cell has no numeric value and is not empty
+     */
     public BigDecimal asNumber() {
+        if (type == CellType.FORMULA && value instanceof BigDecimal) {
+            return (BigDecimal) value;
+        }
         requireType(CellType.NUMBER);
         return (BigDecimal) value;
     }
