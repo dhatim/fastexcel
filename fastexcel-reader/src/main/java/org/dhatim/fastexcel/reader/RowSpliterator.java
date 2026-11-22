@@ -20,6 +20,7 @@ import static org.dhatim.fastexcel.reader.DefaultXMLInputFactory.factory;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,14 +36,16 @@ class RowSpliterator implements Spliterator<Row> {
 
     private final SimpleXmlReader r;
     private final ReadableWorkbook workbook;
+    private final Sheet sheet;
 
     private final HashMap<Integer, BaseFormulaCell> sharedFormula = new HashMap<>();
     private final HashMap<CellRangeAddress, String> arrayFormula = new HashMap<>();
     private int rowCapacity = 16;
     private int trackedRowIndex = 0;
 
-    public RowSpliterator(ReadableWorkbook workbook, InputStream inputStream) throws XMLStreamException {
+    public RowSpliterator(ReadableWorkbook workbook, Sheet sheet, InputStream inputStream) throws XMLStreamException {
         this.workbook = workbook;
+        this.sheet = sheet;
         this.r = new SimpleXmlReader(factory, inputStream);
 
         r.goTo("sheetData");
@@ -79,10 +82,23 @@ class RowSpliterator implements Spliterator<Row> {
 
     private boolean hasNext() throws XMLStreamException {
         if (r.goTo(() -> r.isStartElement("row") || r.isEndElement("sheetData"))) {
-            return "row".equals(r.getLocalName());
+            if ("row".equals(r.getLocalName())) {
+                return true;
+            }
+            // mergeCells follows sheetData: read the merged cell ranges in the same pass, after the last row
+            if (sheet != null) {
+                sheet.setMergedCells(readMergedCells());
+            }
+            return false;
         } else {
             return false;
         }
+    }
+
+    private List<CellRangeAddress> readMergedCells() throws XMLStreamException {
+        List<CellRangeAddress> mergedCells = new ArrayList<>();
+        r.forEach("mergeCell", "mergeCells", reader -> mergedCells.add(CellRangeAddress.valueOf(reader.getAttribute("ref"))));
+        return Collections.unmodifiableList(mergedCells);
     }
 
 

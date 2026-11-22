@@ -28,6 +28,7 @@ public class Sheet {
     private final String stableId;
     private final String name;
     private final SheetVisibility visibility;
+    private List<CellRangeAddress> mergedCells;
 
     Sheet(ReadableWorkbook workbook, int index, String id, String stableId,
           String name, SheetVisibility visibility) {
@@ -67,6 +68,24 @@ public class Sheet {
         try (Stream<Row> stream = openStream()) {
             return stream.collect(Collectors.toList());
         }
+    }
+
+    /**
+     * Returns the merged cell ranges of this sheet.
+     * <p>
+     * Available once the rows have been read to the end, using {@link #read()} or a stream from {@link #openStream()}.
+     *
+     * @throws IllegalStateException if the rows have not been read to the end
+     */
+    public List<CellRangeAddress> getMergedCells() {
+        if (mergedCells == null) {
+            throw new IllegalStateException("Merged cells are available once the rows of sheet " + name + " have been read");
+        }
+        return mergedCells;
+    }
+
+    void setMergedCells(List<CellRangeAddress> mergedCells) {
+        this.mergedCells = mergedCells;
     }
 
 }

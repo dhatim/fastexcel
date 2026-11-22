@@ -148,7 +148,7 @@ public class ReadableWorkbook implements Closeable {
     Stream<Row> openStream(Sheet sheet) throws IOException {
         try {
             InputStream inputStream = pkg.getSheetContent(sheet);
-            Stream<Row> stream = StreamSupport.stream(new RowSpliterator(this, inputStream), false);
+            Stream<Row> stream = StreamSupport.stream(new RowSpliterator(this, sheet, inputStream), false);
             return stream.onClose(asUncheckedRunnable(inputStream));
         } catch (XMLStreamException e) {
             throw new IOException(e);
